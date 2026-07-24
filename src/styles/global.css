@@ -1,0 +1,153 @@
+/* Horizon Skills Academy — base theme.
+   Design principle (cahier): simple for everyone. Large buttons, clear icons,
+   plenty of contrast, RTL-first via CSS logical properties. */
+
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --border: #e3e8f0;
+  --text: #1a2230;
+  --muted: #6b7688;
+  --primary: #1f4fd8;
+  --primary-dark: #163ca6;
+  --primary-soft: #e7edfd;
+  --success: #1a9d5a;
+  --danger: #d8362f;
+  --warning: #d98a00;
+  --radius: 14px;
+  --shadow: 0 2px 8px rgba(20, 40, 90, 0.06);
+  font-family: "Segoe UI", system-ui, "Tahoma", "Noto Sans Arabic", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1420;
+    --surface: #171e2d;
+    --border: #26304380;
+    --text: #eef2f8;
+    --muted: #9aa6ba;
+    --primary-soft: #1c2a4d;
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 { font-size: 1.6rem; margin: 0 0 0.25rem; }
+h2 { font-size: 1.25rem; margin: 0; }
+.muted { color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 1rem; }
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  border: 1px solid transparent; border-radius: var(--radius);
+  padding: 0.7rem 1.1rem; font-size: 1rem; font-weight: 600;
+  cursor: pointer; background: var(--surface); color: var(--text);
+  transition: background 0.15s, transform 0.05s;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { opacity: 0.6; cursor: default; }
+.btn-lg { padding: 0.9rem 1.4rem; font-size: 1.05rem; width: 100%; }
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--primary-soft); }
+
+/* ---- Cards ---- */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem;
+}
+
+.badge {
+  font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.6rem;
+  border-radius: 999px; background: var(--primary-soft); color: var(--primary);
+}
+.badge-soft { background: transparent; border: 1px dashed var(--border); color: var(--muted); }
+
+/* ---- Login ---- */
+.login-screen { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; }
+.login-card { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 1rem; }
+.login-title { text-align: center; color: var(--primary); }
+.login-sub { text-align: center; margin: -0.5rem 0 0.5rem; color: var(--muted); }
+.field { display: flex; flex-direction: column; gap: 0.35rem; font-weight: 600; }
+.field input {
+  padding: 0.75rem; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--text); font-size: 1rem;
+}
+.field input:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
+.error-text { color: var(--danger); margin: 0; font-weight: 600; }
+
+/* ---- App shell ---- */
+.app-shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--surface); border-inline-end: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 1rem; gap: 1rem;
+}
+.brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 1.1rem; }
+.brand-mark { font-size: 1.6rem; }
+.nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.nav-link {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem;
+  border-radius: 10px; text-decoration: none; color: var(--text); font-weight: 600;
+}
+.nav-link:hover { background: var(--primary-soft); }
+.nav-link.active { background: var(--primary); color: #fff; }
+.nav-icon { font-size: 1.2rem; }
+.sidebar-footer { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.content { display: flex; flex-direction: column; min-width: 0; }
+.topbar {
+  display: flex; justify-content: flex-end; align-items: center;
+  padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.topbar-user { display: flex; align-items: center; gap: 0.6rem; }
+.page { padding: 1.5rem; overflow: auto; }
+.center-screen { min-height: 100vh; display: grid; place-items: center; font-size: 2rem; }
+
+/* ---- Dashboard ---- */
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.stat-card { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
+.stat-icon { font-size: 1.8rem; }
+.stat-value { font-size: 1.8rem; font-weight: 700; }
+.stat-label { color: var(--muted); font-weight: 600; }
+
+/* ---- Placeholder ---- */
+.placeholder { display: flex; flex-direction: column; gap: 1rem; max-width: 720px; }
+.placeholder-head { display: flex; align-items: center; gap: 1rem; }
+.placeholder-icon { font-size: 2.5rem; }
+.placeholder-list { margin: 0; padding-inline-start: 1.25rem; line-height: 1.9; color: var(--muted); }
+
+/* ---- Schedule grid ---- */
+.schedule-wrap { overflow-x: auto; }
+.schedule-grid { border-collapse: collapse; width: 100%; min-width: 720px; }
+.schedule-grid th, .schedule-grid td { border: 1px solid var(--border); text-align: center; }
+.schedule-grid thead th { padding: 0.6rem; background: var(--primary-soft); }
+.slot-time { padding: 0.5rem; font-size: 0.85rem; white-space: nowrap; background: var(--surface); }
+.cell { height: 56px; cursor: pointer; }
+.cell-free:hover { background: var(--primary-soft); }
+.cell-free { color: var(--success); font-size: 1.4rem; font-weight: 700; }
+.cell-busy { background: repeating-linear-gradient(45deg, transparent, transparent 6px, var(--border) 6px, var(--border) 7px); cursor: not-allowed; }
+.cell-booked { background: var(--primary-soft); }
+.cell-class {
+  width: 100%; height: 100%; border: none; background: transparent; cursor: pointer;
+  color: var(--primary); font-weight: 700; display: flex; align-items: center;
+  justify-content: center; gap: 0.35rem;
+}
+.cell-x { opacity: 0.5; }
+.cell-class:hover .cell-x { opacity: 1; color: var(--danger); }
+
+/* ---- Responsive: sidebar collapses on small screens ---- */
+@media (max-width: 760px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .nav { flex-direction: row; flex-wrap: wrap; }
+}

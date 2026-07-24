@@ -1,0 +1,53 @@
+{
+  "app": { "name": "أفق سكيلز أكاديمي", "tagline": "نظام إدارة المدرسة" },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "students": "الطلاب",
+    "teachers": "الأساتذة",
+    "schedule": "الجدول",
+    "attendance": "الحضور",
+    "payments": "المدفوعات",
+    "notifications": "الإشعارات",
+    "logout": "تسجيل الخروج"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "google": "الدخول عبر جوجل",
+    "error": "خطأ في تسجيل الدخول",
+    "loading": "جارٍ التحميل..."
+  },
+  "roles": { "admin": "المدير", "teacher": "أستاذ", "student": "طالب / ولي أمر" },
+  "days": {
+    "saturday": "السبت",
+    "sunday": "الأحد",
+    "monday": "الاثنين",
+    "tuesday": "الثلاثاء",
+    "wednesday": "الأربعاء",
+    "thursday": "الخميس",
+    "friday": "الجمعة"
+  },
+  "attendance": {
+    "present": "حاضر",
+    "absent_paid": "غائب (يُحتسب)",
+    "absent_free": "غائب (مجاني)"
+  },
+  "payments": {
+    "paid": "مدفوع",
+    "unpaid": "غير مدفوع",
+    "totalDue": "المبلغ الإجمالي المستحق",
+    "session": "الحصة",
+    "of": "من"
+  },
+  "common": {
+    "add": "إضافة",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "search": "بحث",
+    "language": "اللغة",
+    "comingSoon": "قيد الإنجاز"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "app": { "name": "Horizon Skills Academy", "tagline": "Système de gestion scolaire" },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "students": "Étudiants",
+    "teachers": "Enseignants",
+    "schedule": "Emploi du temps",
+    "attendance": "Présence",
+    "payments": "Paiements",
+    "notifications": "Notifications",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Connexion",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "google": "Continuer avec Google",
+    "error": "Échec de la connexion",
+    "loading": "Chargement..."
+  },
+  "roles": { "admin": "Administrateur", "teacher": "Enseignant", "student": "Étudiant / Parent" },
+  "days": {
+    "saturday": "Samedi",
+    "sunday": "Dimanche",
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi"
+  },
+  "attendance": {
+    "present": "Présent",
+    "absent_paid": "Absent (facturé)",
+    "absent_free": "Absent (gratuit)"
+  },
+  "payments": {
+    "paid": "Payé",
+    "unpaid": "Non payé",
+    "totalDue": "Total dû",
+    "session": "Séance",
+    "of": "sur"
+  },
+  "common": {
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "search": "Rechercher",
+    "language": "Langue",
+    "comingSoon": "Bientôt disponible"
+  }
+}
