@@ -11,10 +11,10 @@ export default function ProtectedRoute({
   children: ReactNode;
   allow?: Role[];
 }) {
-  const { user, role, loading } = useAuth();
+  const { authed, role, loading } = useAuth();
 
   if (loading) return <div className="center-screen">…</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!authed) return <Navigate to="/login" replace />;
   if (allow && role && !allow.includes(role)) return <Navigate to="/" replace />;
 
   return <>{children}</>;

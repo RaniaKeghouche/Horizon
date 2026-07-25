@@ -6,6 +6,7 @@ import LoginPage from "./features/auth/LoginPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import StudentsPage from "./features/students/StudentsPage";
 import TeachersPage from "./features/teachers/TeachersPage";
+import SubjectsPage from "./features/subjects/SubjectsPage";
 import SchedulePage from "./features/schedule/SchedulePage";
 import AttendancePage from "./features/attendance/AttendancePage";
 import PaymentsPage from "./features/payments/PaymentsPage";
@@ -13,9 +14,9 @@ import NotificationsPage from "./features/notifications/NotificationsPage";
 
 // Redirects logged-in users away from /login.
 function LoginRoute() {
-  const { user, loading } = useAuth();
+  const { authed, loading } = useAuth();
   if (loading) return <div className="center-screen">…</div>;
-  return user ? <Navigate to="/" replace /> : <LoginPage />;
+  return authed ? <Navigate to="/" replace /> : <LoginPage />;
 }
 
 export default function App() {
@@ -45,6 +46,14 @@ export default function App() {
               element={
                 <ProtectedRoute allow={["admin"]}>
                   <TeachersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="subjects"
+              element={
+                <ProtectedRoute allow={["admin"]}>
+                  <SubjectsPage />
                 </ProtectedRoute>
               }
             />

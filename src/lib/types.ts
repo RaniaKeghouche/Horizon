@@ -1,6 +1,9 @@
 // TypeScript models for every Firestore collection.
 // Mirrors the schema in the Cahier des Charges v1.1 §12.
-import type { Timestamp } from "firebase/firestore";
+//
+// Dates are stored as epoch milliseconds (number) to keep the domain model plain and
+// serializable (localStorage, JSON, tests). Conversion to/from Firestore Timestamp
+// happens at the data layer boundary when Firebase is wired in.
 
 // ---- Enums / unions ----------------------------------------------------------
 
@@ -55,7 +58,7 @@ export interface AppUser {
   linkedStudentId?: string; // for student/parent accounts
   teacherId?: string; // for teacher accounts
   fcmTokens?: string[];
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 export interface Student {
@@ -68,7 +71,7 @@ export interface Student {
   status: StudentStatus;
   enrolledSubjects: string[]; // subject ids
   linkedAccountId?: string;
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 export interface Teacher {
@@ -79,14 +82,14 @@ export interface Teacher {
   paymentMode: PaymentMode;
   schoolCutValue: number; // percentage (0-100) OR fixed amount in DA depending on mode
   negotiatedRate?: number;
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 export interface Subject {
   id: string;
   name: string;
   isCustom: boolean;
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 export interface ClassRoom {
@@ -100,7 +103,7 @@ export interface ClassRoom {
   maxStudents: number; // 4..20
   currentStudents: number;
   isLocked: boolean;
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 export interface Enrollment {
@@ -110,7 +113,7 @@ export interface Enrollment {
   subjectId: string;
   teacherId: string;
   pricePerSession: number; // overrideable default price
-  startDate: Timestamp;
+  startDate: number;
   status: StudentStatus;
 }
 
@@ -118,7 +121,7 @@ export interface Session {
   id: string;
   classId: string;
   teacherId: string;
-  date: Timestamp;
+  date: number;
   sessionNumber?: number; // "session X of Y" for the billing period
   notes?: string; // teacher note visible to parent/student
   attendance: Record<string, AttendanceState>; // studentId -> state
@@ -132,11 +135,11 @@ export interface Payment {
   amount: number;
   status: PaymentStatus;
   month: string; // "2026-07"
-  paidAt?: Timestamp;
+  paidAt?: number;
   schoolCut: number;
   teacherCut: number;
   reminderCount: number; // number of automated reminders sent
-  lastReminderAt?: Timestamp;
+  lastReminderAt?: number;
 }
 
 export interface AppNotification {
@@ -145,7 +148,7 @@ export interface AppNotification {
   type: NotificationType;
   message: string;
   read: boolean;
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 export interface ActivityLog {
@@ -153,7 +156,7 @@ export interface ActivityLog {
   userId: string;
   action: string;
   details: string;
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 export interface TeacherSlotRequest {
@@ -163,7 +166,7 @@ export interface TeacherSlotRequest {
   dayOfWeek: DayOfWeek;
   timeSlot: string;
   status: "pending" | "approved" | "rejected";
-  createdAt: Timestamp;
+  createdAt: number;
 }
 
 // Firestore collection names — one place to avoid typos.
