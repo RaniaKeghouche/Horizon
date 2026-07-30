@@ -19,6 +19,15 @@
     "error": "Échec de la connexion",
     "loading": "Chargement..."
   },
+  "login": {
+    "headline": "Gérez votre école, simplement",
+    "demoHint": "Mode démo — choisissez un profil pour entrer :",
+    "features": {
+      "attendance": "Présence en un tap",
+      "payments": "Paiements & factures",
+      "schedule": "Emploi du temps intelligent"
+    }
+  },
   "roles": { "admin": "Administrateur", "teacher": "Enseignant", "student": "Étudiant / Parent" },
   "days": {
     "saturday": "Samedi",
@@ -49,6 +58,7 @@
     "cancel": "Annuler",
     "search": "Rechercher",
     "language": "Langue",
+    "hello": "Bonjour",
     "comingSoon": "Bientôt disponible"
   }
 }

@@ -35,8 +35,14 @@ function AdminPayments() {
       <h1>{t("nav.payments")}</h1>
 
       <div className="grid-cards">
-        <div className="card stat-card"><span className="stat-icon">💰</span><span className="stat-value text-ok">{formatDA(totalCollected)}</span><span className="stat-label">Encaissé</span></div>
-        <div className="card stat-card"><span className="stat-icon">⚠️</span><span className="stat-value text-danger">{formatDA(totalDebt)}</span><span className="stat-label">Dette totale</span></div>
+        <div className="card stat-card">
+          <span className="stat-icon badge-green">💰</span>
+          <div className="stat-body"><span className="stat-value text-ok">{formatDA(totalCollected)}</span><span className="stat-label">Encaissé</span></div>
+        </div>
+        <div className="card stat-card">
+          <span className="stat-icon badge-amber">⚠️</span>
+          <div className="stat-body"><span className="stat-value text-danger">{formatDA(totalDebt)}</span><span className="stat-label">Dette totale</span></div>
+        </div>
       </div>
 
       <div className="card table-wrap">

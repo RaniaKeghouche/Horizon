@@ -26,12 +26,26 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ icon, label, value, tone }: { icon: string; label: string; value: string; tone?: string }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  tone,
+  color = "violet",
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  tone?: string;
+  color?: string;
+}) {
   return (
     <div className="card stat-card">
-      <span className="stat-icon">{icon}</span>
-      <span className={"stat-value " + (tone ?? "")}>{value}</span>
-      <span className="stat-label">{label}</span>
+      <span className={"stat-icon badge-" + color}>{icon}</span>
+      <div className="stat-body">
+        <span className={"stat-value " + (tone ?? "")}>{value}</span>
+        <span className="stat-label">{label}</span>
+      </div>
     </div>
   );
 }
@@ -49,14 +63,14 @@ function AdminHome() {
   return (
     <>
       <div className="grid-cards">
-        <StatCard icon="🎓" label={t("nav.students")} value={String(students.length)} />
-        <StatCard icon="👨‍🏫" label={t("nav.teachers")} value={String(teachers.length)} />
-        <StatCard icon="🗓️" label={t("nav.schedule")} value={`${classes.length} classes`} />
-        <StatCard icon="⚠️" label="Dette totale" value={formatDA(totalDebt)} tone="text-danger" />
+        <StatCard icon="🎓" label={t("nav.students")} value={String(students.length)} color="blue" />
+        <StatCard icon="👨‍🏫" label={t("nav.teachers")} value={String(teachers.length)} color="violet" />
+        <StatCard icon="🗓️" label={t("nav.schedule")} value={`${classes.length} classes`} color="cyan" />
+        <StatCard icon="⚠️" label="Dette totale" value={formatDA(totalDebt)} tone="text-danger" color="amber" />
       </div>
-      <div className="card digest-card">
+      <div className="card promo-card">
         <strong>📅 Programme</strong>
-        <p className="muted">{digest}</p>
+        <p>{digest}</p>
       </div>
     </>
   );
@@ -72,9 +86,9 @@ function TeacherHome({ teacherId }: { teacherId?: string }) {
   return (
     <>
       <div className="grid-cards">
-        <StatCard icon="🗓️" label="Mes classes" value={String(myClasses.length)} />
-        <StatCard icon="📅" label="Aujourd'hui" value={String(todays.length)} />
-        <StatCard icon="✅" label="Séances tenues" value={String(sessions.filter((s) => myClasses.some((c) => c.id === s.classId)).length)} />
+        <StatCard icon="🗓️" label="Mes classes" value={String(myClasses.length)} color="violet" />
+        <StatCard icon="📅" label="Aujourd'hui" value={String(todays.length)} color="blue" />
+        <StatCard icon="✅" label="Séances tenues" value={String(sessions.filter((s) => myClasses.some((c) => c.id === s.classId)).length)} color="green" />
       </div>
       <div className="card">
         <strong>Mes classes d'aujourd'hui</strong>
@@ -102,9 +116,9 @@ function StudentHome({ linkedStudentId }: { linkedStudentId?: string }) {
   return (
     <>
       <div className="grid-cards">
-        <StatCard icon="📚" label="Matières" value={String(billing.subjects.length)} />
-        <StatCard icon="💰" label="Total dû" value={formatDA(billing.totalDue)} tone={billing.totalDue > 0 ? "text-danger" : "text-ok"} />
-        <StatCard icon="✅" label="Payé" value={formatDA(billing.totalPaid)} tone="text-ok" />
+        <StatCard icon="📚" label="Matières" value={String(billing.subjects.length)} color="violet" />
+        <StatCard icon="💰" label="Total dû" value={formatDA(billing.totalDue)} tone={billing.totalDue > 0 ? "text-danger" : "text-ok"} color={billing.totalDue > 0 ? "amber" : "green"} />
+        <StatCard icon="✅" label="Payé" value={formatDA(billing.totalPaid)} tone="text-ok" color="green" />
       </div>
       <div className="card">
         <strong>Où en suis-je ?</strong>
