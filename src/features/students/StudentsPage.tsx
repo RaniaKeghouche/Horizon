@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useData } from "../../data/store";
 import { computeStudentBilling } from "../../lib/billing";
@@ -11,13 +12,14 @@ import type { Student, StudentLevel } from "../../lib/types";
 
 export default function StudentsPage() {
   const { t } = useTranslation();
-  const { role } = useAuth();
-  const { students, subjects, teachers, enrollments, sessions, payments } = useData();
+  const { role, profile } = useAuth();
+  const { students, subjects, teachers, classes, enrollments, sessions, payments } = useData();
   const addStudent = useData((s) => s.addStudent);
   const updateStudent = useData((s) => s.updateStudent);
   const deleteStudent = useData((s) => s.deleteStudent);
 
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [levelFilter, setLevelFilter] = useState<StudentLevel | "">("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Student | null>(null);
@@ -25,13 +27,27 @@ export default function StudentsPage() {
 
   const isAdmin = role === "admin";
 
+  // Pick up the topbar search (?q=...) when navigating in.
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q !== null) setSearch(q);
+  }, [searchParams]);
+
+  // A teacher only sees students enrolled in their own classes (cahier §2).
+  const teacherStudentIds = useMemo(() => {
+    if (role !== "teacher" || !profile?.teacherId) return null;
+    const myClasses = new Set(classes.filter((c) => c.teacherId === profile.teacherId).map((c) => c.id));
+    return new Set(enrollments.filter((e) => myClasses.has(e.classId)).map((e) => e.studentId));
+  }, [role, profile, classes, enrollments]);
+
   const filtered = useMemo(() => {
     return students.filter((s) => {
+      if (teacherStudentIds && !teacherStudentIds.has(s.id)) return false;
       if (levelFilter && s.level !== levelFilter) return false;
       if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [students, search, levelFilter]);
+  }, [students, search, levelFilter, teacherStudentIds]);
 
   function dueFor(student: Student) {
     return computeStudentBilling(student, enrollments, sessions, payments, { subjects, teachers })

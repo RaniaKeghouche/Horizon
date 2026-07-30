@@ -11,6 +11,8 @@ import SchedulePage from "./features/schedule/SchedulePage";
 import AttendancePage from "./features/attendance/AttendancePage";
 import PaymentsPage from "./features/payments/PaymentsPage";
 import NotificationsPage from "./features/notifications/NotificationsPage";
+import AnalyticsPage from "./features/analytics/AnalyticsPage";
+import ActivityLogPage from "./features/activity/ActivityLogPage";
 
 // Redirects logged-in users away from /login.
 function LoginRoute() {
@@ -75,6 +77,22 @@ export default function App() {
               }
             />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route
+              path="analytics"
+              element={
+                <ProtectedRoute allow={["admin"]}>
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="activity"
+              element={
+                <ProtectedRoute allow={["admin"]}>
+                  <ActivityLogPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

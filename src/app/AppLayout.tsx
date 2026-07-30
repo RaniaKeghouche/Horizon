@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/AuthContext";
@@ -17,6 +18,7 @@ export default function AppLayout() {
   const { t, i18n } = useTranslation();
   const { role, profile, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
   const unread = useData((s) =>
     s.notifications.filter((n) => n.userId === profile?.id && !n.read).length
   );
@@ -74,10 +76,20 @@ export default function AppLayout() {
             {t("common.hello")}, {firstName} 👋
           </div>
           <div className="topbar-right">
-            <div className="search-box">
+            <form
+              className="search-box"
+              onSubmit={(e) => {
+                e.preventDefault();
+                navigate(`/students?q=${encodeURIComponent(searchTerm.trim())}`);
+              }}
+            >
               <span>🔎</span>
-              <input placeholder={t("common.search")} />
-            </div>
+              <input
+                placeholder={t("common.search")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </form>
             <button
               className="icon-btn bell"
               onClick={() => navigate("/notifications")}

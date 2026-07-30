@@ -2,7 +2,8 @@
 //
 // Two modes:
 //  - DEMO_MODE (no Firebase key): pick a role, profile comes from the local store.
-//  - Firebase mode: real email/password login; role read from `users/{uid}` (RBAC §9).
+//  - Firebase mode: real email/password or Google login; profile auto-provisioned in
+//    Firestore on first login (owner e-mail => admin), then real-time sync starts.
 import {
   createContext,
   useContext,
@@ -12,6 +13,8 @@ import {
 } from "react";
 import { DEMO_MODE } from "../../lib/config";
 import { useData } from "../../data/store";
+import { startSync, stopSync } from "../../data/firebaseSync";
+import { provisionUser, seedDefaultSubjects } from "../../data/bootstrap";
 import type { AppUser, Role } from "../../lib/types";
 
 interface AuthState {
@@ -20,7 +23,9 @@ interface AuthState {
   authed: boolean;
   loading: boolean;
   loginAs: (role: Role) => void; // demo mode
-  login: (email: string, password: string) => Promise<void>; // firebase mode
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -40,20 +45,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, [users]);
 
-  // ---- Firebase mode (lazy-loaded so DEMO_MODE has zero Firebase dependency) ----
+  // ---- Firebase mode ----
   useEffect(() => {
     if (DEMO_MODE) return;
     let unsub = () => {};
     (async () => {
       const { onAuthStateChanged } = await import("firebase/auth");
-      const { doc, getDoc } = await import("firebase/firestore");
-      const { auth, db } = await import("../../lib/firebase");
-      const { COLLECTIONS } = await import("../../lib/types");
+      const { auth } = await import("../../lib/firebase");
       unsub = onAuthStateChanged(auth, async (fbUser) => {
         if (fbUser) {
-          const snap = await getDoc(doc(db, COLLECTIONS.users, fbUser.uid));
-          setProfile(snap.exists() ? ({ id: snap.id, ...snap.data() } as AppUser) : null);
+          const p = await provisionUser(fbUser.uid, fbUser.email);
+          setProfile(p);
+          await startSync();
+          if (p.role === "admin") {
+            try {
+              await seedDefaultSubjects();
+            } catch {
+              /* rules may not be deployed yet — ignore */
+            }
+          }
         } else {
+          stopSync();
           setProfile(null);
         }
         setLoading(false);
@@ -73,12 +85,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
+  const signup = async (email: string, password: string) => {
+    const { createUserWithEmailAndPassword } = await import("firebase/auth");
+    const { auth } = await import("../../lib/firebase");
+    await createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  const loginWithGoogle = async () => {
+    const { GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
+    const { auth } = await import("../../lib/firebase");
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  };
+
   const logout = async () => {
     if (DEMO_MODE) {
       localStorage.removeItem(DEMO_KEY);
       setProfile(null);
       return;
     }
+    stopSync();
     const { signOut } = await import("firebase/auth");
     const { auth } = await import("../../lib/firebase");
     await signOut(auth);
@@ -93,6 +118,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         loginAs,
         login,
+        signup,
+        loginWithGoogle,
         logout,
       }}
     >

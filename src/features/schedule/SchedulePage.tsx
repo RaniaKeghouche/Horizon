@@ -4,6 +4,7 @@ import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { DAYS, TIME_SLOTS, checkSlot } from "../../lib/schedule";
 import { DAY_LABEL } from "../../lib/labels";
+import Modal from "../../components/Modal";
 import ClassForm from "./ClassForm";
 import type { ClassRoom, DayOfWeek } from "../../lib/types";
 
@@ -13,6 +14,7 @@ export default function SchedulePage() {
   const { role, profile } = useAuth();
   const { classes, teachers, subjects } = useData();
   const deleteClass = useData((s) => s.deleteClass);
+  const addSlotRequest = useData((s) => s.addSlotRequest);
 
   const isAdmin = role === "admin";
   // Teacher whose free slots are highlighted (admin picks; teacher is locked to self).
@@ -22,6 +24,11 @@ export default function SchedulePage() {
 
   const [adding, setAdding] = useState<{ dayOfWeek: DayOfWeek; timeSlot: string } | null>(null);
   const [editing, setEditing] = useState<ClassRoom | null>(null);
+  const [duplicating, setDuplicating] = useState<Partial<ClassRoom> | null>(null);
+  const [requesting, setRequesting] = useState(false);
+  const [reqDay, setReqDay] = useState<DayOfWeek>("monday");
+  const [reqSlot, setReqSlot] = useState(TIME_SLOTS[0]);
+  const [reqSubject, setReqSubject] = useState("");
 
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
   const teacherName = (id: string) => teachers.find((x) => x.id === id)?.name ?? "?";
@@ -48,6 +55,9 @@ export default function SchedulePage() {
               {teachers.map((tc) => <option key={tc.id} value={tc.id}>{tc.name}</option>)}
             </select>
           </div>
+        )}
+        {role === "teacher" && (
+          <button className="btn btn-primary" onClick={() => setRequesting(true)}>🗓️ Demander un créneau</button>
         )}
       </div>
 
@@ -121,7 +131,68 @@ export default function SchedulePage() {
                 }
               : undefined
           }
+          onDuplicate={
+            isAdmin
+              ? () => {
+                  setDuplicating({
+                    subjectId: editing.subjectId,
+                    teacherId: editing.teacherId,
+                    level: editing.level,
+                    sessionType: editing.sessionType,
+                    maxStudents: editing.maxStudents,
+                  });
+                  setEditing(null);
+                }
+              : undefined
+          }
         />
+      )}
+      {duplicating && (
+        <ClassForm prefill={duplicating} onClose={() => setDuplicating(null)} />
+      )}
+
+      {requesting && (
+        <Modal
+          title="Demander un créneau"
+          onClose={() => setRequesting(false)}
+          footer={
+            <>
+              <button className="btn btn-ghost" onClick={() => setRequesting(false)}>Annuler</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  addSlotRequest(teacherId, reqSubject || undefined, reqDay, reqSlot);
+                  setRequesting(false);
+                  alert("Demande envoyée à l'administration.");
+                }}
+              >
+                Envoyer la demande
+              </button>
+            </>
+          }
+        >
+          <div className="form-grid">
+            <label className="field">
+              <span>Jour</span>
+              <select className="input" value={reqDay} onChange={(e) => setReqDay(e.target.value as DayOfWeek)}>
+                {DAYS.map((d) => <option key={d} value={d}>{DAY_LABEL[d]}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              <span>Créneau</span>
+              <select className="input" value={reqSlot} onChange={(e) => setReqSlot(e.target.value)}>
+                {TIME_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              <span>Matière (optionnel)</span>
+              <select className="input" value={reqSubject} onChange={(e) => setReqSubject(e.target.value)}>
+                <option value="">—</option>
+                {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </label>
+          </div>
+        </Modal>
       )}
     </div>
   );

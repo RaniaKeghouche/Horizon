@@ -103,6 +103,7 @@ export interface ClassRoom {
   maxStudents: number; // 4..20
   currentStudents: number;
   isLocked: boolean;
+  waitingList?: string[]; // studentIds waiting for a spot (cahier §5.3)
   createdAt: number;
 }
 

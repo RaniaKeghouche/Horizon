@@ -17,16 +17,20 @@ export default function StudentDetail({
   const { subjects, teachers, classes, enrollments, sessions, payments } = useData();
   const enroll = useData((s) => s.enroll);
   const unenroll = useData((s) => s.unenroll);
+  const joinWaitlist = useData((s) => s.joinWaitlist);
+  const leaveWaitlist = useData((s) => s.leaveWaitlist);
 
   const billing = computeStudentBilling(student, enrollments, sessions, payments, {
     subjects,
     teachers,
   });
 
-  // Classes the student is not yet enrolled in.
+  // Classes the student is not yet enrolled in, split by availability.
   const available = classes.filter(
     (c) => !enrollments.some((e) => e.studentId === student.id && e.classId === c.id)
   );
+  const enrollable = available.filter((c) => c.currentStudents < c.maxStudents);
+  const fullClasses = available.filter((c) => c.currentStudents >= c.maxStudents);
 
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState<number>(0);
@@ -95,17 +99,16 @@ export default function StudentDetail({
       </div>
 
       <h3 className="section-title">Inscrire à une classe</h3>
-      {available.length === 0 ? (
-        <p className="muted">Inscrit à toutes les classes disponibles.</p>
+      {enrollable.length === 0 ? (
+        <p className="muted">Aucune classe disponible (non pleine) pour l'instant.</p>
       ) : (
         <div className="enroll-row">
           <select className="input" value={classId} onChange={(e) => onPickClass(e.target.value)}>
             <option value="">— Choisir une classe —</option>
-            {available.map((c) => (
+            {enrollable.map((c) => (
               <option key={c.id} value={c.id}>
                 {subjectName(c.subjectId)} · {SESSION_TYPE_LABEL[c.sessionType]} ·{" "}
-                {DAY_LABEL[c.dayOfWeek]} {c.timeSlot}
-                {c.isLocked ? " (complet)" : ""}
+                {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} ({c.currentStudents}/{c.maxStudents})
               </option>
             ))}
           </select>
@@ -120,6 +123,34 @@ export default function StudentDetail({
             Inscrire
           </button>
         </div>
+      )}
+
+      {fullClasses.length > 0 && (
+        <>
+          <h3 className="section-title">Classes complètes — liste d'attente</h3>
+          <div className="stack">
+            {fullClasses.map((c) => {
+              const list = c.waitingList ?? [];
+              const pos = list.indexOf(student.id);
+              return (
+                <div key={c.id} className="billing-row">
+                  <div>
+                    <strong>{subjectName(c.subjectId)}</strong>
+                    <div className="muted small">
+                      {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} · complet ({c.maxStudents}/{c.maxStudents})
+                    </div>
+                    {pos >= 0 && <span className="pill pill-warn">En attente · position {pos + 1}</span>}
+                  </div>
+                  {pos >= 0 ? (
+                    <button className="btn btn-ghost sm" onClick={() => leaveWaitlist(c.id, student.id)}>Quitter</button>
+                  ) : (
+                    <button className="btn btn-primary sm" onClick={() => joinWaitlist(c.id, student.id)}>🎟️ Liste d'attente</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </Modal>
   );

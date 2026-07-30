@@ -17,10 +17,13 @@ service cloud.firestore {
       return isSignedIn() && role() == 'teacher';
     }
 
-    // A user can always read their own profile; only admin manages roles.
+    // A user can always read their own profile.
+    // Bootstrap: a signed-in user may create their OWN profile doc on first login.
+    // Only admin can update/delete (change roles, link accounts).
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update, delete: if isAdmin();
     }
 
     // Admin manages the whole school; teachers read to build their views.

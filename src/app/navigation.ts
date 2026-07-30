@@ -17,6 +17,8 @@ export const NAV_ITEMS: NavItem[] = [
   { path: "/attendance", labelKey: "nav.attendance", icon: "✅", roles: ["admin", "teacher", "student"] },
   { path: "/payments", labelKey: "nav.payments", icon: "💰", roles: ["admin", "student"] },
   { path: "/notifications", labelKey: "nav.notifications", icon: "🔔", roles: ["admin", "teacher", "student"] },
+  { path: "/analytics", labelKey: "nav.analytics", icon: "📈", roles: ["admin"] },
+  { path: "/activity", labelKey: "nav.activity", icon: "📜", roles: ["admin"] },
 ];
 
 export function navItemsForRole(role: Role): NavItem[] {

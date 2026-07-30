@@ -9,6 +9,8 @@
     "attendance": "Présence",
     "payments": "Paiements",
     "notifications": "Notifications",
+    "analytics": "Analytique",
+    "activity": "Journal",
     "logout": "Déconnexion"
   },
   "auth": {
@@ -16,6 +18,10 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "google": "Continuer avec Google",
+    "signup": "Créer un compte",
+    "or": "ou",
+    "noAccount": "Pas de compte ? En créer un",
+    "haveAccount": "Déjà un compte ? Se connecter",
     "error": "Échec de la connexion",
     "loading": "Chargement..."
   },

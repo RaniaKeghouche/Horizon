@@ -6,7 +6,8 @@ import type { Role } from "../../lib/types";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
-  const { login, loginAs } = useAuth();
+  const { login, signup, loginWithGoogle, loginAs } = useAuth();
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,9 +18,22 @@ export default function LoginPage() {
     setError("");
     setBusy(true);
     try {
-      await login(email, password);
-    } catch {
-      setError(t("auth.error"));
+      if (mode === "signup") await signup(email, password);
+      else await login(email, password);
+    } catch (err) {
+      setError((err as { message?: string })?.message ?? t("auth.error"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onGoogle() {
+    setError("");
+    setBusy(true);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      setError((err as { message?: string })?.message ?? t("auth.error"));
     } finally {
       setBusy(false);
     }
@@ -28,7 +42,6 @@ export default function LoginPage() {
   function toggleLang() {
     i18n.changeLanguage(i18n.language === "ar" ? "fr" : "ar");
   }
-
   function scrollToLogin() {
     document.getElementById("login-panel")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -38,7 +51,6 @@ export default function LoginPage() {
     { role: "teacher", icon: "👨‍🏫" },
     { role: "student", icon: "🎓" },
   ];
-
   const features: { icon: string; key: string }[] = [
     { icon: "✅", key: "login.features.attendance" },
     { icon: "💰", key: "login.features.payments" },
@@ -47,16 +59,13 @@ export default function LoginPage() {
 
   return (
     <div className="landing">
-      {/* Top navigation */}
       <header className="landing-nav">
         <div className="auth-brand">
           <span className="brand-mark">🏫</span>
           <span>{t("app.name")}</span>
         </div>
         <nav className="landing-links">
-          <a href="#login-panel" onClick={(e) => { e.preventDefault(); scrollToLogin(); }}>
-            {t("nav.dashboard")}
-          </a>
+          <a href="#login-panel" onClick={(e) => { e.preventDefault(); scrollToLogin(); }}>{t("nav.dashboard")}</a>
           <a href="#features">{t("nav.schedule")}</a>
           <a href="#features">{t("nav.payments")}</a>
           <button className="btn nav-pill" onClick={toggleLang}>
@@ -65,15 +74,12 @@ export default function LoginPage() {
         </nav>
       </header>
 
-      {/* Hero */}
       <section className="landing-hero">
         <div className="hero-copy">
           <span className="hero-eyebrow">✦ {t("app.tagline")}</span>
           <h1 className="hero-title">{t("login.headline")}</h1>
           <p className="hero-lead">{t("login.lead")}</p>
-          <button className="btn btn-primary btn-cta" onClick={scrollToLogin}>
-            {t("login.cta")} ↓
-          </button>
+          <button className="btn btn-primary btn-cta" onClick={scrollToLogin}>{t("login.cta")} ↓</button>
           <div className="hero-features" id="features">
             {features.map((f) => (
               <div key={f.key} className="hero-feat">
@@ -84,7 +90,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Neon orbit visual */}
         <div className="hero-visual">
           <div className="orbit">
             <div className="orbit-core">🎓</div>
@@ -97,17 +102,15 @@ export default function LoginPage() {
         </div>
       </section>
 
-      {/* Wave divider */}
       <svg className="landing-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
         <path d="M0,50 C240,95 480,10 720,40 C960,70 1200,95 1440,45 L1440,90 L0,90 Z" />
       </svg>
 
-      {/* Light panel: choose profile / login */}
       <section className="landing-panel" id="login-panel">
         <div className="login-card2 card">
-          <h2 className="login-title">{t("auth.login")}</h2>
           {DEMO_MODE ? (
             <>
+              <h2 className="login-title">{t("auth.login")}</h2>
               <p className="demo-hint">{t("login.demoHint")}</p>
               <div className="role-picker">
                 {roles.map(({ role, icon }) => (
@@ -119,20 +122,33 @@ export default function LoginPage() {
               </div>
             </>
           ) : (
-            <form onSubmit={onSubmit} className="stack">
-              <label className="field">
-                <span>{t("auth.email")}</span>
-                <input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
-              </label>
-              <label className="field">
-                <span>{t("auth.password")}</span>
-                <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
-              </label>
-              {error && <p className="error-text">{error}</p>}
-              <button className="btn btn-primary btn-lg" type="submit" disabled={busy}>
-                {busy ? t("auth.loading") : t("auth.login")}
+            <>
+              <h2 className="login-title">{mode === "signup" ? t("auth.signup") : t("auth.login")}</h2>
+
+              <button className="btn btn-ghost btn-lg" onClick={onGoogle} disabled={busy}>
+                🔵 {t("auth.google")}
               </button>
-            </form>
+              <div className="or-divider"><span>{t("auth.or")}</span></div>
+
+              <form onSubmit={onSubmit} className="stack">
+                <label className="field">
+                  <span>{t("auth.email")}</span>
+                  <input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
+                </label>
+                <label className="field">
+                  <span>{t("auth.password")}</span>
+                  <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={6} />
+                </label>
+                {error && <p className="error-text">{error}</p>}
+                <button className="btn btn-primary btn-lg" type="submit" disabled={busy}>
+                  {busy ? t("auth.loading") : mode === "signup" ? t("auth.signup") : t("auth.login")}
+                </button>
+              </form>
+
+              <button className="link-btn" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}>
+                {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")}
+              </button>
+            </>
           )}
         </div>
       </section>

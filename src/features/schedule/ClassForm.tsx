@@ -8,26 +8,30 @@ import type { ClassRoom, DayOfWeek, SessionType, StudentLevel } from "../../lib/
 
 export default function ClassForm({
   initial,
+  prefill,
   defaults,
   onClose,
   onDelete,
+  onDuplicate,
 }: {
   initial?: ClassRoom;
+  prefill?: Partial<ClassRoom>;
   defaults?: { dayOfWeek: DayOfWeek; timeSlot: string; teacherId?: string };
   onClose: () => void;
   onDelete?: () => void;
+  onDuplicate?: () => void;
 }) {
   const { subjects, teachers, classes } = useData();
   const addClass = useData((s) => s.addClass);
   const updateClass = useData((s) => s.updateClass);
 
-  const [subjectId, setSubjectId] = useState(initial?.subjectId ?? subjects[0]?.id ?? "");
-  const [teacherId, setTeacherId] = useState(initial?.teacherId ?? defaults?.teacherId ?? teachers[0]?.id ?? "");
-  const [level, setLevel] = useState<StudentLevel>(initial?.level ?? "high");
-  const [sessionType, setSessionType] = useState<SessionType>(initial?.sessionType ?? "group");
+  const [subjectId, setSubjectId] = useState(initial?.subjectId ?? prefill?.subjectId ?? subjects[0]?.id ?? "");
+  const [teacherId, setTeacherId] = useState(initial?.teacherId ?? prefill?.teacherId ?? defaults?.teacherId ?? teachers[0]?.id ?? "");
+  const [level, setLevel] = useState<StudentLevel>(initial?.level ?? prefill?.level ?? "high");
+  const [sessionType, setSessionType] = useState<SessionType>(initial?.sessionType ?? prefill?.sessionType ?? "group");
   const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(initial?.dayOfWeek ?? defaults?.dayOfWeek ?? "monday");
   const [timeSlot, setTimeSlot] = useState(initial?.timeSlot ?? defaults?.timeSlot ?? TIME_SLOTS[0]);
-  const [maxStudents, setMaxStudents] = useState(initial?.maxStudents ?? 15);
+  const [maxStudents, setMaxStudents] = useState(initial?.maxStudents ?? prefill?.maxStudents ?? 15);
   const [error, setError] = useState("");
 
   function save() {
@@ -57,8 +61,11 @@ export default function ClassForm({
       onClose={onClose}
       footer={
         <>
-          {onDelete && (
-            <button className="btn btn-danger mr-auto" onClick={onDelete}>🗑 Supprimer</button>
+          {(onDelete || onDuplicate) && (
+            <div className="foot-left">
+              {onDelete && <button className="btn btn-danger" onClick={onDelete}>🗑 Supprimer</button>}
+              {onDuplicate && <button className="btn btn-ghost" onClick={onDuplicate}>⧉ Dupliquer</button>}
+            </div>
           )}
           <button className="btn btn-ghost" onClick={onClose}>Annuler</button>
           <button className="btn btn-primary" onClick={save} disabled={!subjectId || !teacherId}>
