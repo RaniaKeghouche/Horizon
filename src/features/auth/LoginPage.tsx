@@ -5,7 +5,7 @@ import { DEMO_MODE } from "../../lib/config";
 import type { Role } from "../../lib/types";
 
 export default function LoginPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { login, loginAs } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +25,14 @@ export default function LoginPage() {
     }
   }
 
+  function toggleLang() {
+    i18n.changeLanguage(i18n.language === "ar" ? "fr" : "ar");
+  }
+
+  function scrollToLogin() {
+    document.getElementById("login-panel")?.scrollIntoView({ behavior: "smooth" });
+  }
+
   const roles: { role: Role; icon: string }[] = [
     { role: "admin", icon: "🏫" },
     { role: "teacher", icon: "👨‍🏫" },
@@ -38,33 +46,66 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="login-screen">
-      <div className="auth-card">
-        {/* Dark hero section */}
-        <div className="auth-hero">
-          <div className="auth-brand">
-            <span className="brand-mark">🏫</span>
-            <span>{t("app.name")}</span>
-          </div>
-          <h1 className="auth-headline">{t("login.headline")}</h1>
-          <p className="auth-tagline">{t("app.tagline")}</p>
-          <div className="auth-features">
+    <div className="landing">
+      {/* Top navigation */}
+      <header className="landing-nav">
+        <div className="auth-brand">
+          <span className="brand-mark">🏫</span>
+          <span>{t("app.name")}</span>
+        </div>
+        <nav className="landing-links">
+          <a href="#login-panel" onClick={(e) => { e.preventDefault(); scrollToLogin(); }}>
+            {t("nav.dashboard")}
+          </a>
+          <a href="#features">{t("nav.schedule")}</a>
+          <a href="#features">{t("nav.payments")}</a>
+          <button className="btn nav-pill" onClick={toggleLang}>
+            🌐 {i18n.language === "ar" ? "Français" : "العربية"}
+          </button>
+        </nav>
+      </header>
+
+      {/* Hero */}
+      <section className="landing-hero">
+        <div className="hero-copy">
+          <span className="hero-eyebrow">✦ {t("app.tagline")}</span>
+          <h1 className="hero-title">{t("login.headline")}</h1>
+          <p className="hero-lead">{t("login.lead")}</p>
+          <button className="btn btn-primary btn-cta" onClick={scrollToLogin}>
+            {t("login.cta")} ↓
+          </button>
+          <div className="hero-features" id="features">
             {features.map((f) => (
-              <div key={f.key} className="feat">
+              <div key={f.key} className="hero-feat">
                 <span className="feat-badge">{f.icon}</span>
                 <span>{t(f.key)}</span>
               </div>
             ))}
           </div>
-
-          {/* Wave divider between the dark hero and the light panel below */}
-          <svg className="auth-wave" viewBox="0 0 480 64" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0,34 C110,66 190,8 300,32 C384,50 432,54 480,28 L480,64 L0,64 Z" />
-          </svg>
         </div>
 
-        {/* Light panel */}
-        <div className="auth-panel">
+        {/* Neon orbit visual */}
+        <div className="hero-visual">
+          <div className="orbit">
+            <div className="orbit-core">🎓</div>
+            <span className="orbit-badge b1">📚</span>
+            <span className="orbit-badge b2">✅</span>
+            <span className="orbit-badge b3">💰</span>
+            <span className="orbit-badge b4">🗓️</span>
+            <span className="orbit-badge b5">🔔</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Wave divider */}
+      <svg className="landing-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,50 C240,95 480,10 720,40 C960,70 1200,95 1440,45 L1440,90 L0,90 Z" />
+      </svg>
+
+      {/* Light panel: choose profile / login */}
+      <section className="landing-panel" id="login-panel">
+        <div className="login-card2 card">
+          <h2 className="login-title">{t("auth.login")}</h2>
           {DEMO_MODE ? (
             <>
               <p className="demo-hint">{t("login.demoHint")}</p>
@@ -94,7 +135,7 @@ export default function LoginPage() {
             </form>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

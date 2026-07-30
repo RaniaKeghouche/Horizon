@@ -21,6 +21,8 @@
   },
   "login": {
     "headline": "Gérez votre école, simplement",
+    "lead": "Présence, paiements, emploi du temps et notifications — tout ce qu'il faut pour piloter votre centre, réuni au même endroit, sans complexité.",
+    "cta": "Commencer",
     "demoHint": "Mode démo — choisissez un profil pour entrer :",
     "features": {
       "attendance": "Présence en un tap",
