@@ -386,6 +386,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; }
 .req-head { display: flex; align-items: center; gap: 0.7rem; }
 .req-fields { line-height: 1.6; }
 .pending-icon { font-size: 3rem; text-align: center; }
+.username-badge { align-self: center; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.02em; color: var(--primary); background: var(--primary-soft); padding: 0.5rem 1.1rem; border-radius: 12px; margin: 0; user-select: all; }
 
 /* ---- Bar chart ---- */
 .bars { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.5rem; }

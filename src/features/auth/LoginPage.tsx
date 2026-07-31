@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "./AuthContext";
 import { DEMO_MODE } from "../../lib/config";
+import { toLoginEmail } from "../../lib/username";
 import RegisterFlow from "./RegisterFlow";
 import type { Role } from "../../lib/types";
 
@@ -19,7 +20,7 @@ export default function LoginPage() {
     setError("");
     setBusy(true);
     try {
-      await login(email, password);
+      await login(toLoginEmail(email), password);
     } catch (err) {
       setError((err as { message?: string })?.message ?? t("auth.error"));
     } finally {
@@ -144,8 +145,8 @@ export default function LoginPage() {
               <div className="or-divider"><span>{t("auth.or")}</span></div>
               <form onSubmit={onSubmit} className="stack">
                 <label className="field">
-                  <span>{t("auth.email")}</span>
-                  <input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
+                  <span>Identifiant</span>
+                  <input type="text" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" placeholder="votre identifiant" />
                 </label>
                 <label className="field">
                   <span>{t("auth.password")}</span>

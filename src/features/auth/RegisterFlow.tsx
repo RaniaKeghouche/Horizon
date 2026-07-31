@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useData } from "../../data/store";
 import { useAuth } from "./AuthContext";
 import { DEMO_MODE } from "../../lib/config";
-import { generateCode, sendCodeEmail } from "../../lib/email";
+import { slugName, toLoginEmail } from "../../lib/username";
 import { LEVELS, LEVEL_LABEL } from "../../lib/labels";
 import type { Role, StudentLevel } from "../../lib/types";
 
@@ -27,8 +27,8 @@ const EMPTY: RegData = {
 };
 
 /**
- * mode "signup": email → 6-digit code → details + password.
- * mode "complete": (already signed in via Google, e-mail verified) details only.
+ * mode "signup": name + password (+ role details). No e-mail, no code — the app generates
+ * a unique username. mode "complete": user already signed in (Google), collect details only.
  */
 export default function RegisterFlow({
   mode,
@@ -43,76 +43,80 @@ export default function RegisterFlow({
   const addRegistrationRequest = useData((s) => s.addRegistrationRequest);
   const { registerAccount, uid, email: authEmail } = useAuth();
 
-  const [step, setStep] = useState<"email" | "code" | "details">(
-    mode === "complete" ? "details" : "email"
-  );
-  const [email, setEmail] = useState(authEmail ?? "");
-  const [password, setPassword] = useState("");
-  const [sentCode, setSentCode] = useState("");
-  const [codeInput, setCodeInput] = useState("");
   const [v, setV] = useState<RegData>(EMPTY);
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
+  const [createdUsername, setCreatedUsername] = useState("");
 
   const set = <K extends keyof RegData>(k: K, val: RegData[K]) => setV((p) => ({ ...p, [k]: val }));
-
-  async function sendCode() {
-    setError("");
-    if (!/^\S+@\S+\.\S+$/.test(email)) return setError("E-mail invalide.");
-    setBusy(true);
-    const code = generateCode();
-    setSentCode(code);
-    const sent = await sendCodeEmail(email, code, v.name);
-    setBusy(false);
-    setStep("code");
-    setInfo(sent ? `Un code a été envoyé à ${email}.` : `Mode test : votre code est ${code}`);
-  }
-
-  function verifyCode() {
-    setError("");
-    if (codeInput.trim() === sentCode) {
-      setInfo("");
-      setStep("details");
-    } else {
-      setError("Code incorrect.");
-    }
-  }
-
   function toggleSubject(id: string) {
     set("subjects", v.subjects.includes(id) ? v.subjects.filter((x) => x !== id) : [...v.subjects, id]);
   }
 
-  const detailsValid =
+  const valid =
     v.name.trim() &&
     v.phone.trim() &&
     (v.role === "teacher" ? v.subjects.length > 0 : v.parentPhone.trim()) &&
     (mode === "complete" || password.length >= 6);
+
+  // Create the auth account, retrying with a numeric suffix until the username is unique.
+  async function createUnique(base: string): Promise<{ id: string; email: string; username: string }> {
+    for (let i = 0; i < 6; i++) {
+      const username = i === 0 ? base : `${base}${Math.floor(100 + Math.random() * 900)}`;
+      const email = toLoginEmail(username);
+      try {
+        const id = await registerAccount(email, password);
+        return { id, email, username };
+      } catch (e) {
+        const msg = String((e as { message?: string })?.message ?? "").toLowerCase();
+        if (msg.includes("registered") || msg.includes("already") || msg.includes("exists")) continue;
+        throw e;
+      }
+    }
+    throw new Error("Impossible de générer un identifiant unique, réessayez.");
+  }
 
   async function submit() {
     setError("");
     setBusy(true);
     try {
       let id: string;
-      let usedEmail = email;
+      let email: string;
+      let username: string;
+
       if (mode === "complete") {
         id = uid ?? crypto.randomUUID();
-        usedEmail = authEmail ?? email;
+        email = authEmail ?? "";
+        username = email.split("@")[0] || slugName(v.name);
       } else if (DEMO_MODE) {
+        username = slugName(v.name);
+        email = toLoginEmail(username);
         id = crypto.randomUUID();
       } else {
-        id = await registerAccount(email, password);
+        const res = await createUnique(slugName(v.name));
+        id = res.id;
+        email = res.email;
+        username = res.username;
       }
+
       addRegistrationRequest({
         id,
         role: v.role,
-        email: usedEmail,
+        email, // internal auth e-mail (username@horizon.app)
         name: v.name.trim(),
         phone: v.phone.trim(),
         ...(v.role === "student"
           ? { level: v.level, parentName: v.parentName.trim(), parentPhone: v.parentPhone.trim() }
           : { subjects: v.subjects }),
       });
+
+      setCreatedUsername(username);
+      if (DEMO_MODE) {
+        // In demo there's no session; just confirm and close.
+        setBusy(false);
+        return;
+      }
       onDone();
     } catch (err) {
       setError((err as { message?: string })?.message ?? "Erreur lors de l'inscription.");
@@ -121,101 +125,85 @@ export default function RegisterFlow({
     }
   }
 
+  // Demo confirmation screen showing the generated username.
+  if (createdUsername && DEMO_MODE) {
+    return (
+      <div className="stack center">
+        <div className="pending-icon">✅</div>
+        <h2 className="login-title">Demande envoyée</h2>
+        <p className="muted">Votre identifiant de connexion :</p>
+        <p className="username-badge">{createdUsername}</p>
+        <p className="muted small">Notez-le. L'administration doit valider votre compte.</p>
+        {onCancel && <button className="btn btn-ghost" onClick={onCancel}>Retour</button>}
+      </div>
+    );
+  }
+
   return (
     <div className="stack">
       <h2 className="login-title">Créer un compte</h2>
+      <p className="demo-hint">Pas d'e-mail nécessaire — un identifiant vous sera attribué.</p>
 
-      {step === "email" && (
-        <>
-          <p className="demo-hint">Confirmez d'abord votre e-mail par un code.</p>
-          <label className="field">
-            <span>E-mail</span>
-            <input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </label>
-          {error && <p className="error-text">{error}</p>}
-          <button className="btn btn-primary btn-lg" onClick={sendCode} disabled={busy}>
-            {busy ? "Envoi…" : "Envoyer le code"}
+      <div className="seg" style={{ alignSelf: "center" }}>
+        {(["student", "teacher"] as const).map((r) => (
+          <button key={r} className={"seg-btn " + (v.role === r ? "on pill-ok" : "")} onClick={() => set("role", r as Role as RegData["role"])}>
+            {r === "student" ? "Étudiant / Parent" : "Enseignant"}
           </button>
-          {onCancel && <button className="link-btn" onClick={onCancel}>Retour</button>}
-        </>
-      )}
+        ))}
+      </div>
 
-      {step === "code" && (
+      <label className="field">
+        <span>Nom et prénom</span>
+        <input className="input" value={v.name} onChange={(e) => set("name", e.target.value)} placeholder="ex : Rania Keghouche" />
+      </label>
+      <label className="field">
+        <span>Téléphone</span>
+        <input className="input" value={v.phone} onChange={(e) => set("phone", e.target.value)} />
+      </label>
+
+      {v.role === "student" ? (
         <>
-          {info && <p className="preview-box">{info}</p>}
           <label className="field">
-            <span>Code de confirmation (6 chiffres)</span>
-            <input className="input" inputMode="numeric" maxLength={6} value={codeInput} onChange={(e) => setCodeInput(e.target.value)} />
+            <span>Niveau</span>
+            <select className="input" value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
+              {LEVELS.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
+            </select>
           </label>
-          {error && <p className="error-text">{error}</p>}
-          <button className="btn btn-primary btn-lg" onClick={verifyCode}>Vérifier</button>
-          <button className="link-btn" onClick={sendCode} disabled={busy}>Renvoyer le code</button>
+          <label className="field">
+            <span>Nom du parent</span>
+            <input className="input" value={v.parentName} onChange={(e) => set("parentName", e.target.value)} />
+          </label>
+          <label className="field">
+            <span>Téléphone parent</span>
+            <input className="input" value={v.parentPhone} onChange={(e) => set("parentPhone", e.target.value)} />
+          </label>
         </>
-      )}
-
-      {step === "details" && (
-        <>
-          <div className="seg" style={{ alignSelf: "center" }}>
-            {(["student", "teacher"] as const).map((r) => (
-              <button key={r} className={"seg-btn " + (v.role === r ? "on pill-ok" : "")} onClick={() => set("role", r as Role as RegData["role"])}>
-                {r === "student" ? "Étudiant / Parent" : "Enseignant"}
-              </button>
+      ) : (
+        <div className="field">
+          <span>Matières enseignées</span>
+          <div className="checkbox-list">
+            {allSubjects.map((s) => (
+              <label key={s.id} className={"chip-toggle" + (v.subjects.includes(s.id) ? " on" : "")}>
+                <input type="checkbox" checked={v.subjects.includes(s.id)} onChange={() => toggleSubject(s.id)} />
+                {s.name}
+              </label>
             ))}
           </div>
-
-          <label className="field">
-            <span>Nom complet</span>
-            <input className="input" value={v.name} onChange={(e) => set("name", e.target.value)} />
-          </label>
-          <label className="field">
-            <span>Téléphone</span>
-            <input className="input" value={v.phone} onChange={(e) => set("phone", e.target.value)} />
-          </label>
-
-          {v.role === "student" ? (
-            <>
-              <label className="field">
-                <span>Niveau</span>
-                <select className="input" value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
-                  {LEVELS.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
-                </select>
-              </label>
-              <label className="field">
-                <span>Nom du parent</span>
-                <input className="input" value={v.parentName} onChange={(e) => set("parentName", e.target.value)} />
-              </label>
-              <label className="field">
-                <span>Téléphone parent</span>
-                <input className="input" value={v.parentPhone} onChange={(e) => set("parentPhone", e.target.value)} />
-              </label>
-            </>
-          ) : (
-            <div className="field">
-              <span>Matières enseignées</span>
-              <div className="checkbox-list">
-                {allSubjects.map((s) => (
-                  <label key={s.id} className={"chip-toggle" + (v.subjects.includes(s.id) ? " on" : "")}>
-                    <input type="checkbox" checked={v.subjects.includes(s.id)} onChange={() => toggleSubject(s.id)} />
-                    {s.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {mode !== "complete" && (
-            <label className="field">
-              <span>Mot de passe (6+ caractères)</span>
-              <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} />
-            </label>
-          )}
-
-          {error && <p className="error-text">{error}</p>}
-          <button className="btn btn-primary btn-lg" onClick={submit} disabled={!detailsValid || busy}>
-            {busy ? "Envoi…" : "Envoyer ma demande"}
-          </button>
-        </>
+        </div>
       )}
+
+      {mode !== "complete" && (
+        <label className="field">
+          <span>Mot de passe (6+ caractères)</span>
+          <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} autoComplete="new-password" />
+        </label>
+      )}
+
+      {error && <p className="error-text">{error}</p>}
+      <button className="btn btn-primary btn-lg" onClick={submit} disabled={!valid || busy}>
+        {busy ? "Envoi…" : "Envoyer ma demande"}
+      </button>
+      {onCancel && <button className="link-btn" onClick={onCancel}>Retour</button>}
     </div>
   );
 }

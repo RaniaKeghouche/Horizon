@@ -1,9 +1,11 @@
 import { useAuth } from "./AuthContext";
+import { usernameFromEmail } from "../../lib/username";
 import RegisterFlow from "./RegisterFlow";
 
-// Shown when a Firebase user is signed in but has no approved account yet.
+// Shown when a user is signed in but has no approved account yet.
 export default function PendingGate() {
   const { requestStatus, email, logout } = useAuth();
+  const username = usernameFromEmail(email);
 
   return (
     <div className="login-screen">
@@ -22,9 +24,15 @@ export default function PendingGate() {
           <div className="stack center">
             <div className="pending-icon">⏳</div>
             <h2 className="login-title">En attente de validation</h2>
-            <p className="muted">
-              Votre demande a bien été envoyée{email ? ` (${email})` : ""}. L'administration doit
-              l'accepter — vous recevrez un e-mail. Reconnectez-vous ensuite.
+            {username && (
+              <>
+                <p className="muted">Votre identifiant de connexion :</p>
+                <p className="username-badge">{username}</p>
+              </>
+            )}
+            <p className="muted small">
+              Votre demande a bien été envoyée. L'administration doit l'accepter — reconnectez-vous
+              ensuite avec cet identifiant.
             </p>
             <button className="btn btn-ghost" onClick={logout}>Se déconnecter</button>
           </div>

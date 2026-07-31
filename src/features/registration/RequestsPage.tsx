@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useData } from "../../data/store";
-import { sendDecisionEmail } from "../../lib/email";
+import { usernameFromEmail } from "../../lib/username";
 import { formatDate } from "../../lib/format";
 import { LEVEL_LABEL } from "../../lib/labels";
 
@@ -22,20 +22,13 @@ export default function RequestsPage() {
 
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? id;
 
-  async function onApprove(id: string) {
+  function onApprove(id: string) {
     const res = approve(id);
-    if (res) {
-      const sent = await sendDecisionEmail(res.email, res.name, true);
-      alert(sent ? "Accepté — e-mail envoyé ✅" : `Accepté ✅ (e-mail non configuré pour ${res.email})`);
-    }
+    if (res) alert(`Compte activé ✅ — ${res.name} peut maintenant se connecter.`);
   }
-  async function onReject(id: string) {
+  function onReject(id: string) {
     if (!confirm("Refuser cette demande ?")) return;
-    const res = reject(id);
-    if (res) {
-      const sent = await sendDecisionEmail(res.email, res.name, false);
-      alert(sent ? "Refusé — e-mail envoyé" : `Refusé (e-mail non configuré pour ${res.email})`);
-    }
+    reject(id);
   }
 
   return (
@@ -58,7 +51,7 @@ export default function RequestsPage() {
                 </div>
               </div>
               <div className="req-fields muted small">
-                📧 {r.email} · 📞 {r.phone}
+                🆔 {usernameFromEmail(r.email)} · 📞 {r.phone}
                 {r.role === "student" && <> · 🎓 {LEVEL_LABEL[r.level ?? "high"]} · 👪 {r.parentName} ({r.parentPhone})</>}
                 {r.role === "teacher" && <> · 📚 {(r.subjects ?? []).map(subjName).join(", ")}</>}
               </div>
@@ -76,13 +69,13 @@ export default function RequestsPage() {
           <h3 className="section-title">Historique</h3>
           <div className="card table-wrap">
             <table className="table">
-              <thead><tr><th>Nom</th><th>Rôle</th><th>E-mail</th><th>Décision</th></tr></thead>
+              <thead><tr><th>Nom</th><th>Rôle</th><th>Identifiant</th><th>Décision</th></tr></thead>
               <tbody>
                 {decided.map((r) => (
                   <tr key={r.id}>
                     <td>{r.name}</td>
                     <td>{r.role === "teacher" ? "Enseignant" : "Étudiant"}</td>
-                    <td className="muted">{r.email}</td>
+                    <td className="muted">{usernameFromEmail(r.email)}</td>
                     <td><span className={"pill " + (r.status === "approved" ? "pill-ok" : "pill-danger")}>{r.status === "approved" ? "Acceptée" : "Refusée"}</span></td>
                   </tr>
                 ))}
