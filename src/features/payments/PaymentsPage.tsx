@@ -4,7 +4,7 @@ import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { computeStudentBilling } from "../../lib/billing";
 import { printInvoice, printInvoices } from "../../lib/invoice";
-import { formatDA } from "../../lib/format";
+import { formatDA, billingMonth } from "../../lib/format";
 import PaymentManage from "./PaymentManage";
 import type { Student } from "../../lib/types";
 
@@ -18,8 +18,11 @@ export default function PaymentsPage() {
 function AdminPayments() {
   const { t } = useTranslation();
   const { students, subjects, teachers, enrollments, sessions, payments } = useData();
+  const markMonthPaid = useData((s) => s.markMonthPaid);
+  const markMonthUnpaid = useData((s) => s.markMonthUnpaid);
   const [manage, setManage] = useState<Student | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const month = billingMonth();
 
   const rows = students
     .map((s) => ({
@@ -67,23 +70,40 @@ function AdminPayments() {
           <thead>
             <tr>
               <th><input type="checkbox" checked={allSelected} onChange={toggleAll} title="Tout sélectionner" /></th>
-              <th>Étudiant</th><th>Matières</th><th>Payé</th><th>Dû</th><th></th>
+              <th>Étudiant</th><th>Matières</th><th>Payé</th><th>Dû</th>
+              <th title="Cocher = tout le mois encaissé">Mois {month} payé</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ student, billing }) => (
+            {rows.map(({ student, billing }) => {
+              const monthPayments = payments.filter((p) => p.studentId === student.id && p.month === month);
+              const hasMonth = monthPayments.length > 0;
+              const monthPaid = hasMonth && monthPayments.every((p) => p.status === "paid");
+              return (
               <tr key={student.id}>
                 <td><input type="checkbox" checked={selected.has(student.id)} onChange={() => toggle(student.id)} /></td>
                 <td><strong>{student.name}</strong></td>
                 <td>{billing.subjects.length}</td>
                 <td className="text-ok">{formatDA(billing.totalPaid)}</td>
                 <td>{billing.totalDue > 0 ? <span className="text-danger">{formatDA(billing.totalDue)}</span> : <span className="text-ok">À jour</span>}</td>
+                <td className="center">
+                  <input
+                    type="checkbox"
+                    className="month-check"
+                    disabled={!hasMonth}
+                    checked={monthPaid}
+                    title={hasMonth ? "Cocher = mois encaissé" : "Aucune séance ce mois"}
+                    onChange={() => (monthPaid ? markMonthUnpaid(student.id, month) : markMonthPaid(student.id, month))}
+                  />
+                </td>
                 <td className="row-actions">
                   <button className="btn btn-ghost sm" onClick={() => setManage(student)}>Gérer</button>
                   <button className="icon-btn" title="Facture PDF" onClick={() => printInvoice(billing)}>🧾</button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

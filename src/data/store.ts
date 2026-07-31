@@ -97,6 +97,7 @@ interface DataState {
   markPaid: (paymentId: string) => void;
   markUnpaid: (paymentId: string) => void;
   markMonthPaid: (studentId: string, month: string) => void;
+  markMonthUnpaid: (studentId: string, month: string) => void;
   sendReminder: (paymentId: string) => void;
 
   // Teacher payouts (school -> teacher)
@@ -430,6 +431,16 @@ export const useData = create<DataState>()(
         }));
         targets.forEach((p) => fbPatch(COLLECTIONS.payments, p.id, { status: "paid", paidAt }));
         get().log("u_admin", "payment.mark_month_paid", `Mois ${month} encaissé (${targets.length} séances)`);
+      },
+      // Revert a whole month back to unpaid (uncheck).
+      markMonthUnpaid: (studentId, month) => {
+        const targets = get().payments.filter((p) => p.studentId === studentId && p.month === month && p.status === "paid");
+        set((s) => ({
+          payments: s.payments.map((p) =>
+            p.studentId === studentId && p.month === month && p.status === "paid" ? { ...p, status: "unpaid", paidAt: undefined } : p
+          ),
+        }));
+        targets.forEach((p) => fbPatch(COLLECTIONS.payments, p.id, { status: "unpaid", paidAt: null }));
       },
       sendReminder: (paymentId) => {
         const state = get();

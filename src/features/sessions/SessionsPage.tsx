@@ -86,10 +86,23 @@ export default function SessionsPage() {
             {roster.length === 0 ? (
               <p className="muted">Aucun élève inscrit dans ce groupe.</p>
             ) : (
-              <div className="chip-row">
-                {roster.map((s) => (
-                  <span key={s.id} className="chip-selected">{s.name} · {LEVEL_LABEL[s.level]}</span>
-                ))}
+              <div className="table-wrap">
+                <table className="table">
+                  <thead><tr><th>Élève</th><th>Niveau</th><th>Paiement</th></tr></thead>
+                  <tbody>
+                    {roster.map((s) => {
+                      const enr = enrollments.find((e) => e.studentId === s.id && e.classId === classId);
+                      const due = payments.filter((p) => p.enrollmentId === enr?.id && p.status === "unpaid").reduce((a, p) => a + p.amount, 0);
+                      return (
+                        <tr key={s.id}>
+                          <td>{s.name}</td>
+                          <td>{LEVEL_LABEL[s.level]}</td>
+                          <td>{due > 0 ? <span className="pill pill-danger">Doit {formatDA(due)}</span> : <span className="pill pill-ok">✓ payé</span>}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
