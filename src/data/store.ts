@@ -10,6 +10,7 @@ import { fbWrite, fbPatch, fbDelete } from "./fb";
 import { DEMO_MODE } from "../lib/config";
 import { computeCut, isBillable, defaultPrice } from "../lib/payments";
 import { billingMonth } from "../lib/format";
+import { DAY_LABEL } from "../lib/labels";
 import {
   COLLECTIONS,
   type ActivityLog,
@@ -194,12 +195,36 @@ export const useData = create<DataState>()(
         const klass: ClassRoom = { id: uid(), createdAt: now(), currentStudents: 0, isLocked: false, ...data };
         set((s) => ({ classes: [...s.classes, klass] }));
         fbWrite(COLLECTIONS.classes, klass);
+        // Notify the assigned teacher of their new slot (schedule is admin-managed).
+        const account = get().users.find((u) => u.teacherId === data.teacherId);
+        if (account) {
+          const subj = get().subjects.find((s) => s.id === data.subjectId)?.name ?? "un cours";
+          get().addNotification(account.id, "teacher_request", `Nouveau créneau qui vous est assigné : ${subj} · ${DAY_LABEL[data.dayOfWeek]} ${data.timeSlot}.`);
+        }
         get().log("u_admin", "class.create", `Nouvelle classe ${data.timeSlot}`);
         return klass;
       },
       updateClass: (id, patch) => {
+        const old = get().classes.find((c) => c.id === id);
         set((s) => ({ classes: s.classes.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
         fbPatch(COLLECTIONS.classes, id, patch);
+        // Notify the teacher when they get (re)assigned or their slot time changes.
+        const newTeacherId = (patch.teacherId as string) ?? old?.teacherId;
+        const changedTeacher = !!patch.teacherId && patch.teacherId !== old?.teacherId;
+        const changedTime =
+          (!!patch.timeSlot && patch.timeSlot !== old?.timeSlot) ||
+          (!!patch.dayOfWeek && patch.dayOfWeek !== old?.dayOfWeek);
+        if ((changedTeacher || changedTime) && newTeacherId) {
+          const account = get().users.find((u) => u.teacherId === newTeacherId);
+          if (account) {
+            const merged = { ...old, ...patch } as ClassRoom;
+            const subj = get().subjects.find((s) => s.id === merged.subjectId)?.name ?? "un cours";
+            const msg = changedTeacher
+              ? `Un créneau vous a été assigné : ${subj} · ${DAY_LABEL[merged.dayOfWeek]} ${merged.timeSlot}.`
+              : `Votre créneau ${subj} a été modifié : ${DAY_LABEL[merged.dayOfWeek]} ${merged.timeSlot}.`;
+            get().addNotification(account.id, "teacher_request", msg);
+          }
+        }
       },
       deleteClass: (id) => {
         const removed = get().enrollments.filter((e) => e.classId === id);

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { formatDate, billingMonth, formatDA } from "../../lib/format";
-import { ATTENDANCE_LABEL, DAY_LABEL } from "../../lib/labels";
+import { ATTENDANCE_LABEL, DAY_LABEL, LEVEL_LABEL } from "../../lib/labels";
 import type { AttendanceState } from "../../lib/types";
 
 // Overview: every group → its sessions grouped by month → each student's attendance
@@ -10,7 +10,7 @@ import type { AttendanceState } from "../../lib/types";
 // only their own groups (cahier: prof consulte ses groupes, élèves, présences, paiement).
 export default function SessionsPage() {
   const { role, profile } = useAuth();
-  const { classes, subjects, teachers, students, sessions, payments } = useData();
+  const { classes, subjects, teachers, students, enrollments, sessions, payments } = useData();
 
   const myClasses = useMemo(
     () => (role === "teacher" && profile?.teacherId ? classes.filter((c) => c.teacherId === profile.teacherId) : classes),
@@ -73,6 +73,28 @@ export default function SessionsPage() {
           {totalUnpaid > 0 ? <span className="text-danger">impayé : {formatDA(totalUnpaid)}</span> : <span className="text-ok">tout payé</span>}
         </p>
       )}
+
+      {/* Roster: the students enrolled in this group (créneau). */}
+      {klass && (() => {
+        const roster = enrollments
+          .filter((e) => e.classId === classId)
+          .map((e) => students.find((s) => s.id === e.studentId))
+          .filter((s): s is NonNullable<typeof s> => !!s);
+        return (
+          <div className="card">
+            <h3 className="section-title" style={{ marginTop: 0 }}>Élèves du groupe ({roster.length})</h3>
+            {roster.length === 0 ? (
+              <p className="muted">Aucun élève inscrit dans ce groupe.</p>
+            ) : (
+              <div className="chip-row">
+                {roster.map((s) => (
+                  <span key={s.id} className="chip-selected">{s.name} · {LEVEL_LABEL[s.level]}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {byMonth.length === 0 && <p className="muted">Aucune séance pour ce groupe.</p>}
 
