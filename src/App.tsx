@@ -12,6 +12,7 @@ import RequestsPage from "./features/registration/RequestsPage";
 import SchedulePage from "./features/schedule/SchedulePage";
 import AttendancePage from "./features/attendance/AttendancePage";
 import PaymentsPage from "./features/payments/PaymentsPage";
+import PayrollPage from "./features/payroll/PayrollPage";
 import NotificationsPage from "./features/notifications/NotificationsPage";
 import AnalyticsPage from "./features/analytics/AnalyticsPage";
 import ActivityLogPage from "./features/activity/ActivityLogPage";
@@ -45,6 +46,7 @@ function Root() {
         <Route path="schedule" element={<ProtectedRoute allow={["admin", "teacher"]}><SchedulePage /></ProtectedRoute>} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="payments" element={<ProtectedRoute allow={["admin", "student"]}><PaymentsPage /></ProtectedRoute>} />
+        <Route path="payroll" element={<ProtectedRoute allow={["admin", "teacher"]}><PayrollPage /></ProtectedRoute>} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="analytics" element={<ProtectedRoute allow={["admin"]}><AnalyticsPage /></ProtectedRoute>} />
         <Route path="activity" element={<ProtectedRoute allow={["admin"]}><ActivityLogPage /></ProtectedRoute>} />

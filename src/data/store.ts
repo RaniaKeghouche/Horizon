@@ -23,6 +23,7 @@ import {
   type Student,
   type Subject,
   type Teacher,
+  type TeacherPayoutRecord,
   type TeacherSlotRequest,
 } from "../lib/types";
 
@@ -42,6 +43,7 @@ const EMPTY = () => ({
   activityLog: [] as ActivityLog[],
   slotRequests: [] as TeacherSlotRequest[],
   registrationRequests: [] as RegistrationRequest[],
+  teacherPayouts: [] as TeacherPayoutRecord[],
 });
 
 interface DataState {
@@ -57,10 +59,11 @@ interface DataState {
   activityLog: ActivityLog[];
   slotRequests: TeacherSlotRequest[];
   registrationRequests: RegistrationRequest[];
+  teacherPayouts: TeacherPayoutRecord[];
 
   log: (userId: string, action: string, details: string) => void;
 
-  addSubject: (name: string) => void;
+  addSubject: (name: string) => Subject;
   deleteSubject: (id: string) => void;
 
   addStudent: (data: Omit<Student, "id" | "createdAt" | "enrolledSubjects" | "status"> & { status?: Student["status"] }) => Student;
@@ -89,7 +92,12 @@ interface DataState {
 
   markPaid: (paymentId: string) => void;
   markUnpaid: (paymentId: string) => void;
+  markMonthPaid: (studentId: string, month: string) => void;
   sendReminder: (paymentId: string) => void;
+
+  // Teacher payouts (school -> teacher)
+  payTeacher: (teacherId: string, amount: number, month: string) => void;
+  confirmPayout: (payoutId: string) => void;
 
   addNotification: (userId: string, type: AppNotification["type"], message: string) => void;
   markNotificationRead: (id: string) => void;
@@ -126,6 +134,7 @@ export const useData = create<DataState>()(
         const subject: Subject = { id: uid(), name, isCustom: true, createdAt: now() };
         set((s) => ({ subjects: [...s.subjects, subject] }));
         fbWrite(COLLECTIONS.subjects, subject);
+        return subject;
       },
       deleteSubject: (id) => {
         set((s) => ({ subjects: s.subjects.filter((x) => x.id !== id) }));
@@ -335,6 +344,18 @@ export const useData = create<DataState>()(
         set((s) => ({ payments: s.payments.map((p) => (p.id === paymentId ? { ...p, status: "unpaid", paidAt: undefined } : p)) }));
         fbPatch(COLLECTIONS.payments, paymentId, { status: "unpaid", paidAt: null });
       },
+      // Mark every unpaid session of a student in a given month as paid at once (cahier UX).
+      markMonthPaid: (studentId, month) => {
+        const paidAt = now();
+        const targets = get().payments.filter((p) => p.studentId === studentId && p.month === month && p.status === "unpaid");
+        set((s) => ({
+          payments: s.payments.map((p) =>
+            p.studentId === studentId && p.month === month && p.status === "unpaid" ? { ...p, status: "paid", paidAt } : p
+          ),
+        }));
+        targets.forEach((p) => fbPatch(COLLECTIONS.payments, p.id, { status: "paid", paidAt }));
+        get().log("u_admin", "payment.mark_month_paid", `Mois ${month} encaissé (${targets.length} séances)`);
+      },
       sendReminder: (paymentId) => {
         const state = get();
         const payment = state.payments.find((p) => p.id === paymentId);
@@ -359,6 +380,31 @@ export const useData = create<DataState>()(
         }));
         fbPatch(COLLECTIONS.payments, paymentId, { reminderCount, lastReminderAt });
         if (notif) fbWrite(COLLECTIONS.notifications, notif);
+      },
+
+      // ---- Teacher payouts (school -> teacher) ----
+      payTeacher: (teacherId, amount, month) => {
+        const record: TeacherPayoutRecord = {
+          id: uid(),
+          teacherId,
+          amount,
+          month,
+          paidAt: now(),
+          confirmedByTeacher: false,
+        };
+        set((s) => ({ teacherPayouts: [record, ...s.teacherPayouts] }));
+        fbWrite(COLLECTIONS.teacherPayouts, record);
+        const teacher = get().teachers.find((t) => t.id === teacherId);
+        const account = get().users.find((u) => u.teacherId === teacherId);
+        if (account) {
+          get().addNotification(account.id, "payment_reminder", `Paie reçue : ${amount} DA (${month}). Merci de confirmer.`);
+        }
+        get().log("u_admin", "teacher.pay", `Paie versée à ${teacher?.name ?? teacherId} : ${amount} DA`);
+      },
+      confirmPayout: (payoutId) => {
+        const confirmedAt = now();
+        set((s) => ({ teacherPayouts: s.teacherPayouts.map((p) => (p.id === payoutId ? { ...p, confirmedByTeacher: true, confirmedAt } : p)) }));
+        fbPatch(COLLECTIONS.teacherPayouts, payoutId, { confirmedByTeacher: true, confirmedAt });
       },
 
       // ---- Notifications ----
@@ -486,6 +532,7 @@ export const useData = create<DataState>()(
         activityLog: s.activityLog,
         slotRequests: s.slotRequests,
         registrationRequests: s.registrationRequests,
+        teacherPayouts: s.teacherPayouts,
       }),
     }
   )

@@ -1,7 +1,15 @@
 // Billing views computed from enrollments + sessions + payments.
 // Pure functions over plain data so they work with the local store today and with
 // Firestore data later, unchanged.
-import type { Enrollment, Payment, Session, Student, Subject, Teacher } from "./types";
+import type {
+  Enrollment,
+  Payment,
+  Session,
+  Student,
+  Subject,
+  Teacher,
+  TeacherPayoutRecord,
+} from "./types";
 
 /** Assumed number of sessions in a monthly billing period (cahier examples: "3 of 4"). */
 export const SESSIONS_PER_PERIOD = 4;
@@ -109,4 +117,61 @@ export function teacherPayout(
     pending: unpaid.reduce((sum, p) => sum + p.teacherCut, 0),
     schoolEarned: paid.reduce((sum, p) => sum + p.schoolCut, 0),
   };
+}
+
+export interface TeacherFinance {
+  earned: number; // teacher cut of what students have already paid
+  pending: number; // teacher cut still owed by students (unpaid)
+  schoolEarned: number; // school cut of what students have paid
+  paidOut: number; // already paid to the teacher by the school
+  remaining: number; // earned - paidOut = what the school still owes the teacher
+}
+
+/** Full finance view for a teacher, including what the school still owes them. */
+export function teacherFinance(
+  teacherId: string,
+  enrollments: Enrollment[],
+  payments: Payment[],
+  payouts: TeacherPayoutRecord[]
+): TeacherFinance {
+  const p = teacherPayout(teacherId, enrollments, payments);
+  const paidOut = payouts.filter((x) => x.teacherId === teacherId).reduce((s, x) => s + x.amount, 0);
+  return {
+    earned: p.earned,
+    pending: p.pending,
+    schoolEarned: p.schoolEarned,
+    paidOut,
+    remaining: Math.max(0, p.earned - paidOut),
+  };
+}
+
+export interface TeacherStudentContribution {
+  student: Student;
+  subjectName: string;
+  paidToTeacher: number; // teacher cut of this student's paid sessions with this teacher
+  pendingToTeacher: number;
+}
+
+/** Which students feed a teacher's income, and how much each contributes. */
+export function teacherStudentBreakdown(
+  teacherId: string,
+  students: Student[],
+  enrollments: Enrollment[],
+  payments: Payment[],
+  subjects: Subject[]
+): TeacherStudentContribution[] {
+  const mine = enrollments.filter((e) => e.teacherId === teacherId);
+  return mine
+    .map((enr) => {
+      const student = students.find((s) => s.id === enr.studentId);
+      if (!student) return null;
+      const enrPayments = payments.filter((p) => p.enrollmentId === enr.id);
+      return {
+        student,
+        subjectName: subjects.find((s) => s.id === enr.subjectId)?.name ?? "—",
+        paidToTeacher: enrPayments.filter((p) => p.status === "paid").reduce((s, p) => s + p.teacherCut, 0),
+        pendingToTeacher: enrPayments.filter((p) => p.status === "unpaid").reduce((s, p) => s + p.teacherCut, 0),
+      };
+    })
+    .filter((x): x is TeacherStudentContribution => x !== null);
 }

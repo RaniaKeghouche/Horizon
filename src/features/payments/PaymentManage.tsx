@@ -10,6 +10,7 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
   const { subjects, teachers, enrollments, sessions, payments } = useData();
   const markPaid = useData((s) => s.markPaid);
   const markUnpaid = useData((s) => s.markUnpaid);
+  const markMonthPaid = useData((s) => s.markMonthPaid);
   const sendReminder = useData((s) => s.sendReminder);
 
   const billing = computeStudentBilling(student, enrollments, sessions, payments, { subjects, teachers });
@@ -41,6 +42,22 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
         <span>Total dû</span>
         <strong className={billing.totalDue > 0 ? "text-danger" : "text-ok"}>{formatDA(billing.totalDue)}</strong>
       </div>
+
+      {/* Quick "mark the whole month paid" for months that still have unpaid sessions. */}
+      {(() => {
+        const unpaidMonths = [...new Set(myPayments.filter((p) => p.status === "unpaid").map((p) => p.month))].sort();
+        if (unpaidMonths.length === 0) return null;
+        return (
+          <div className="month-pay-row">
+            <span className="muted small">Encaisser tout un mois :</span>
+            {unpaidMonths.map((m) => (
+              <button key={m} className="btn btn-primary sm" onClick={() => markMonthPaid(student.id, m)}>
+                ✓ {m} payé
+              </button>
+            ))}
+          </div>
+        );
+      })()}
 
       <div className="card table-wrap">
         <table className="table">

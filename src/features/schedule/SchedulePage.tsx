@@ -111,6 +111,30 @@ export default function SchedulePage() {
         </table>
       </div>
 
+      {/* Classes with custom (non-standard) times don't fit the grid rows — list them here. */}
+      {(() => {
+        const custom = visibleClasses.filter((c) => !TIME_SLOTS.includes(c.timeSlot));
+        if (custom.length === 0) return null;
+        return (
+          <>
+            <h3 className="section-title">Autres créneaux (heures personnalisées)</h3>
+            <div className="stack">
+              {custom.map((c) => (
+                <div key={c.id} className="card billing-row">
+                  <div>
+                    <strong>{subjName(c.subjectId)}</strong>
+                    <div className="muted small">
+                      {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} · {teacherName(c.teacherId)} · {c.currentStudents}/{c.maxStudents}
+                    </div>
+                  </div>
+                  {isAdmin && <button className="btn btn-ghost sm" onClick={() => setEditing(c)}>Modifier</button>}
+                </div>
+              ))}
+            </div>
+          </>
+        );
+      })()}
+
       {adding && (
         <ClassForm
           defaults={{ ...adding, teacherId }}

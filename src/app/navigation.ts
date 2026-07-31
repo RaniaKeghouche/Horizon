@@ -17,6 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: "/schedule", labelKey: "nav.schedule", icon: "🗓️", roles: ["admin", "teacher"] },
   { path: "/attendance", labelKey: "nav.attendance", icon: "✅", roles: ["admin", "teacher", "student"] },
   { path: "/payments", labelKey: "nav.payments", icon: "💰", roles: ["admin", "student"] },
+  { path: "/payroll", labelKey: "nav.payroll", icon: "💸", roles: ["admin", "teacher"] },
   { path: "/notifications", labelKey: "nav.notifications", icon: "🔔", roles: ["admin", "teacher", "student"] },
   { path: "/analytics", labelKey: "nav.analytics", icon: "📈", roles: ["admin"] },
   { path: "/activity", labelKey: "nav.activity", icon: "📜", roles: ["admin"] },

@@ -24,6 +24,8 @@ export default function TeacherForm({
   onClose: () => void;
 }) {
   const allSubjects = useData((s) => s.subjects);
+  const addSubject = useData((s) => s.addSubject);
+  const [newSubject, setNewSubject] = useState("");
   const [v, setV] = useState<TeacherFormValues>({
     name: initial?.name ?? "",
     phone: initial?.phone ?? "",
@@ -37,6 +39,15 @@ export default function TeacherForm({
 
   function toggleSubject(id: string) {
     set("subjects", v.subjects.includes(id) ? v.subjects.filter((x) => x !== id) : [...v.subjects, id]);
+  }
+
+  // Add a brand-new subject on the fly and auto-select it for this teacher.
+  function quickAddSubject() {
+    const name = newSubject.trim();
+    if (!name) return;
+    const s = addSubject(name);
+    set("subjects", [...v.subjects, s.id]);
+    setNewSubject("");
   }
 
   // Live preview of the split on a 10 000 DA example (cahier §3.2).
@@ -83,6 +94,16 @@ export default function TeacherForm({
               {s.name}
             </label>
           ))}
+        </div>
+        <div className="add-row" style={{ marginTop: "0.5rem" }}>
+          <input
+            className="input"
+            placeholder="Nouvelle matière (ex : Espagnol)"
+            value={newSubject}
+            onChange={(e) => setNewSubject(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), quickAddSubject())}
+          />
+          <button type="button" className="btn btn-ghost" onClick={quickAddSubject}>＋ Ajouter</button>
         </div>
       </div>
 

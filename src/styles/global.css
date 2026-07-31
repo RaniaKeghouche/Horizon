@@ -374,6 +374,8 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; }
 /* ---- Modal footer left group ---- */
 .foot-left { margin-inline-end: auto; display: flex; gap: 0.5rem; }
 
+.month-pay-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.25rem 0; }
+
 /* ---- Registration requests ---- */
 .req-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .req-info { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }

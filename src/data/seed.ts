@@ -15,6 +15,7 @@ import type {
   ActivityLog,
   TeacherSlotRequest,
   RegistrationRequest,
+  TeacherPayoutRecord,
 } from "../lib/types";
 
 const DAY = 86_400_000;
@@ -34,6 +35,7 @@ export interface SeedData {
   activityLog: ActivityLog[];
   slotRequests: TeacherSlotRequest[];
   registrationRequests: RegistrationRequest[];
+  teacherPayouts: TeacherPayoutRecord[];
 }
 
 // ---- Subjects (default set from cahier §7) ----
@@ -309,5 +311,6 @@ export function makeSeed(): SeedData {
     activityLog,
     slotRequests,
     registrationRequests,
+    teacherPayouts: [],
   };
 }

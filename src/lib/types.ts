@@ -160,6 +160,17 @@ export interface ActivityLog {
   createdAt: number;
 }
 
+// A payment made BY the school TO a teacher (their earned cut), confirmed by the teacher.
+export interface TeacherPayoutRecord {
+  id: string;
+  teacherId: string;
+  amount: number;
+  month: string; // "2026-07"
+  paidAt: number;
+  confirmedByTeacher: boolean;
+  confirmedAt?: number;
+}
+
 // Self-registration request for students/teachers, reviewed by the admin (cahier flow).
 export interface RegistrationRequest {
   id: string; // = Firebase Auth uid (or a uuid in demo)
@@ -202,4 +213,5 @@ export const COLLECTIONS = {
   activityLog: "activityLog",
   slotRequests: "slotRequests",
   registrationRequests: "registrationRequests",
+  teacherPayouts: "teacherPayouts",
 } as const;

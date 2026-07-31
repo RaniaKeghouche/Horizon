@@ -1,10 +1,20 @@
 import { useState } from "react";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
-import { checkSlot, DAYS, TIME_SLOTS } from "../../lib/schedule";
+import { checkSlot, DAYS } from "../../lib/schedule";
 import { defaultPrice } from "../../lib/payments";
 import { LEVELS, LEVEL_LABEL, SESSION_TYPES, SESSION_TYPE_LABEL, DAY_LABEL } from "../../lib/labels";
 import type { ClassRoom, DayOfWeek, SessionType, StudentLevel } from "../../lib/types";
+
+function splitSlot(s: string): { start: string; end: string } {
+  const [a, b] = s.split("-");
+  return { start: a ?? "08:00", end: b ?? "10:00" };
+}
+function addHours(t: string, h: number): string {
+  const [hh, mm] = t.split(":").map(Number);
+  const total = (hh * 60 + mm + h * 60) % (24 * 60);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
 
 export default function ClassForm({
   initial,
@@ -30,7 +40,10 @@ export default function ClassForm({
   const [level, setLevel] = useState<StudentLevel>(initial?.level ?? prefill?.level ?? "high");
   const [sessionType, setSessionType] = useState<SessionType>(initial?.sessionType ?? prefill?.sessionType ?? "group");
   const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(initial?.dayOfWeek ?? defaults?.dayOfWeek ?? "monday");
-  const [timeSlot, setTimeSlot] = useState(initial?.timeSlot ?? defaults?.timeSlot ?? TIME_SLOTS[0]);
+  const initSlot = splitSlot(initial?.timeSlot ?? defaults?.timeSlot ?? "08:00-10:00");
+  const [start, setStart] = useState(initSlot.start);
+  const [end, setEnd] = useState(initSlot.end);
+  const timeSlot = `${start}-${end}`;
   const [maxStudents, setMaxStudents] = useState(initial?.maxStudents ?? prefill?.maxStudents ?? 15);
   const [error, setError] = useState("");
 
@@ -106,10 +119,17 @@ export default function ClassForm({
           </select>
         </label>
         <label className="field">
-          <span>Créneau</span>
-          <select className="input" value={timeSlot} onChange={(e) => setTimeSlot(e.target.value)}>
-            {TIME_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <span>Début</span>
+          <input
+            type="time"
+            className="input"
+            value={start}
+            onChange={(e) => { setStart(e.target.value); setEnd(addHours(e.target.value, 2)); }}
+          />
+        </label>
+        <label className="field">
+          <span>Fin (2h par défaut, modifiable)</span>
+          <input type="time" className="input" value={end} onChange={(e) => setEnd(e.target.value)} />
         </label>
         <label className="field">
           <span>Capacité max (4–20)</span>
