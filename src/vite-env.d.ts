@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_EMAILJS_PUBLIC_KEY: string;
   readonly VITE_EMAILJS_TEMPLATE_CODE: string;
   readonly VITE_EMAILJS_TEMPLATE_DECISION: string;
+  readonly VITE_SHEET_WEBHOOK_URL: string;
 }
 
 interface ImportMeta {

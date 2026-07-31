@@ -14,6 +14,7 @@ import {
 import { DEMO_MODE } from "../../lib/config";
 import { useData } from "../../data/store";
 import { startSync, stopSync } from "../../data/firebaseSync";
+import { startSheetSync, stopSheetSync } from "../../data/sheetSync";
 import { provisionOwner, seedDefaultSubjects } from "../../data/bootstrap";
 import type { AppUser, Role } from "../../lib/types";
 
@@ -99,6 +100,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     : uid
     ? ((requests.find((r) => r.id === uid)?.status as RequestStatus) ?? "none")
     : null;
+
+  // Only the admin app pushes the Google Sheet backup (it sees all the data).
+  const currentRole = profile?.role ?? null;
+  useEffect(() => {
+    if (DEMO_MODE) return;
+    if (currentRole === "admin") startSheetSync();
+    else stopSheetSync();
+    return () => stopSheetSync();
+  }, [currentRole]);
 
   const loginAs = (role: Role) => {
     localStorage.setItem(DEMO_KEY, role);

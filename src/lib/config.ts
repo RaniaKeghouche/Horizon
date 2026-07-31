@@ -22,3 +22,6 @@ export const EMAILJS = {
   templateDecision: import.meta.env.VITE_EMAILJS_TEMPLATE_DECISION ?? "",
 };
 export const EMAIL_ENABLED = !!(EMAILJS.serviceId && EMAILJS.publicKey);
+
+// Google Sheet backup — Apps Script Web App URL (empty = disabled).
+export const SHEET_WEBHOOK_URL = import.meta.env.VITE_SHEET_WEBHOOK_URL ?? "";
