@@ -16,6 +16,13 @@
     "activity": "Journal",
     "logout": "Déconnexion"
   },
+  "navGroup": {
+    "home": "Accueil",
+    "people": "Gestion",
+    "teaching": "Pédagogie",
+    "finance": "Finances",
+    "follow": "Suivi"
+  },
   "auth": {
     "login": "Connexion",
     "email": "E-mail",
