@@ -45,7 +45,7 @@ function Root() {
         <Route path="requests" element={<ProtectedRoute allow={["admin"]}><RequestsPage /></ProtectedRoute>} />
         <Route path="subjects" element={<ProtectedRoute allow={["admin"]}><SubjectsPage /></ProtectedRoute>} />
         <Route path="schedule" element={<ProtectedRoute allow={["admin", "teacher"]}><SchedulePage /></ProtectedRoute>} />
-        <Route path="sessions" element={<ProtectedRoute allow={["admin"]}><SessionsPage /></ProtectedRoute>} />
+        <Route path="sessions" element={<ProtectedRoute allow={["admin", "teacher"]}><SessionsPage /></ProtectedRoute>} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="payments" element={<ProtectedRoute allow={["admin", "student"]}><PaymentsPage /></ProtectedRoute>} />
         <Route path="payroll" element={<ProtectedRoute allow={["admin", "teacher"]}><PayrollPage /></ProtectedRoute>} />

@@ -47,6 +47,11 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     ? classSessions.find((s) => s.id === editingId)?.sessionNumber ?? "?"
     : classSessions.length + 1;
 
+  // Avoid duplicates: a session already recorded for this group on the chosen date.
+  const existingForDate = classSessions.find(
+    (s) => new Date(s.date).toISOString().slice(0, 10) === date && s.id !== editingId
+  );
+
   // Reset the form to a fresh session for the current class (all students selected).
   function resetForm(nextClassId = classId) {
     const ros = enrollments.filter((e) => e.classId === nextClassId).map((e) => e.studentId);
@@ -118,6 +123,13 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
               <button className="btn btn-ghost sm" onClick={() => setSelected(new Set())}>Aucun</button>
             </div>
           </div>
+
+          {existingForDate && !editingId && (
+            <div className="dup-warn">
+              ⚠️ Une séance (n° {existingForDate.sessionNumber}) existe déjà pour ce groupe le {formatDate(existingForDate.date)}.
+              <button className="btn btn-ghost sm" onClick={() => loadSession(existingForDate.id)}>Modifier cette séance</button>
+            </div>
+          )}
 
           {roster.map((s) => {
             const on = selected.has(s.id);

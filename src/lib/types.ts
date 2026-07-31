@@ -184,6 +184,8 @@ export interface RegistrationRequest {
   parentPhone?: string;
   // teacher-specific
   subjects?: string[];
+  // student-chosen preferred group (class) — the admin assigns it officially on approval
+  preferredClassId?: string;
   status: "pending" | "approved" | "rejected";
   createdAt: number;
   reviewedAt?: number;

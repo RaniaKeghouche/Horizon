@@ -133,6 +133,7 @@ create table if not exists public."registrationRequests" (
   "parentName" text,
   "parentPhone" text,
   subjects jsonb default '[]',
+  "preferredClassId" text,
   status text default 'pending',
   "createdAt" double precision,
   "reviewedAt" double precision
@@ -226,6 +227,11 @@ create policy upd_reg on public."registrationRequests" for update to authenticat
   using (public.is_admin());
 create policy del_reg on public."registrationRequests" for delete to authenticated
   using (public.is_admin());
+
+-- Lecture publique du catalogue (pour l'écran d'inscription, avant connexion).
+create policy pub_subjects on public.subjects for select to anon using (true);
+create policy pub_classes on public.classes for select to anon using (true);
+create policy pub_teachers on public.teachers for select to anon using (true);
 
 -- ---------- Realtime (synchro temps réel) ----------
 do $$

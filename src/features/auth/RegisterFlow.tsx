@@ -3,7 +3,7 @@ import { useData } from "../../data/store";
 import { useAuth } from "./AuthContext";
 import { DEMO_MODE } from "../../lib/config";
 import { slugName, toLoginEmail } from "../../lib/username";
-import { LEVELS, LEVEL_LABEL } from "../../lib/labels";
+import { LEVELS, LEVEL_LABEL, DAY_LABEL } from "../../lib/labels";
 import type { Role, StudentLevel } from "../../lib/types";
 
 interface RegData {
@@ -14,6 +14,7 @@ interface RegData {
   parentName: string;
   parentPhone: string;
   subjects: string[];
+  preferredClassId: string;
 }
 
 const EMPTY: RegData = {
@@ -24,6 +25,7 @@ const EMPTY: RegData = {
   parentName: "",
   parentPhone: "",
   subjects: [],
+  preferredClassId: "",
 };
 
 /**
@@ -40,7 +42,11 @@ export default function RegisterFlow({
   onCancel?: () => void;
 }) {
   const allSubjects = useData((s) => s.subjects);
+  const allClasses = useData((s) => s.classes);
+  const allTeachers = useData((s) => s.teachers);
   const addRegistrationRequest = useData((s) => s.addRegistrationRequest);
+  const subjName = (id: string) => allSubjects.find((x) => x.id === id)?.name ?? "?";
+  const teacherName = (id: string) => allTeachers.find((x) => x.id === id)?.name ?? "?";
   const { registerAccount, uid, email: authEmail } = useAuth();
 
   const [v, setV] = useState<RegData>(EMPTY);
@@ -107,7 +113,7 @@ export default function RegisterFlow({
         name: v.name.trim(),
         phone: v.phone.trim(),
         ...(v.role === "student"
-          ? { level: v.level, parentName: v.parentName.trim(), parentPhone: v.parentPhone.trim() }
+          ? { level: v.level, parentName: v.parentName.trim(), parentPhone: v.parentPhone.trim(), preferredClassId: v.preferredClassId || undefined }
           : { subjects: v.subjects }),
       });
 
@@ -177,18 +183,44 @@ export default function RegisterFlow({
             <span>Téléphone parent</span>
             <input className="input" value={v.parentPhone} onChange={(e) => set("parentPhone", e.target.value)} />
           </label>
+          <label className="field">
+            <span>Groupe souhaité (optionnel — l'admin valide l'affectation)</span>
+            <select className="input" value={v.preferredClassId} onChange={(e) => set("preferredClassId", e.target.value)}>
+              <option value="">— Aucune préférence —</option>
+              {allClasses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {subjName(c.subjectId)} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} · {teacherName(c.teacherId)}
+                </option>
+              ))}
+            </select>
+          </label>
         </>
       ) : (
         <div className="field">
-          <span>Matières enseignées</span>
-          <div className="checkbox-list">
-            {allSubjects.map((s) => (
-              <label key={s.id} className={"chip-toggle" + (v.subjects.includes(s.id) ? " on" : "")}>
-                <input type="checkbox" checked={v.subjects.includes(s.id)} onChange={() => toggleSubject(s.id)} />
-                {s.name}
-              </label>
+          <span>Matière(s) enseignée(s) — à choisir dans la liste</span>
+          <select
+            className="input"
+            value=""
+            onChange={(e) => { const id = e.target.value; if (id && !v.subjects.includes(id)) set("subjects", [...v.subjects, id]); }}
+          >
+            <option value="">— Ajouter une matière —</option>
+            {allSubjects.filter((s) => !v.subjects.includes(s.id)).map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
-          </div>
+          </select>
+          {v.subjects.length > 0 && (
+            <div className="chip-row">
+              {v.subjects.map((id) => (
+                <span key={id} className="chip-selected">
+                  {subjName(id)}
+                  <button type="button" onClick={() => toggleSubject(id)} aria-label="retirer">✕</button>
+                </span>
+              ))}
+            </div>
+          )}
+          {allSubjects.length === 0 && (
+            <span className="muted small">Aucune matière disponible — l'administration doit d'abord en créer.</span>
+          )}
         </div>
       )}
 

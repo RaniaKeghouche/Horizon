@@ -13,7 +13,7 @@ import {
 } from "react";
 import { DEMO_MODE } from "../../lib/config";
 import { useData } from "../../data/store";
-import { startSync, stopSync } from "../../data/firebaseSync";
+import { startSync, stopSync, fetchPublicCatalog } from "../../data/firebaseSync";
 import { startSheetSync, stopSheetSync } from "../../data/sheetSync";
 import { provisionOwner, seedDefaultSubjects } from "../../data/bootstrap";
 import type { AppUser, Role } from "../../lib/types";
@@ -63,6 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let unsub = () => {};
     (async () => {
       const { supabase } = await import("../../lib/supabase");
+      // Load the public catalogue so the registration screen has its dropdowns pre-login.
+      fetchPublicCatalog().catch(() => {});
 
       async function handle(session: { user: { id: string; email?: string } } | null) {
         const user = session?.user ?? null;

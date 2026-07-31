@@ -7,9 +7,17 @@ import { LEVEL_LABEL } from "../../lib/labels";
 // Admin reviews student/teacher self-registration requests: accept (opens the account
 // + creates the record) or reject. In both cases an e-mail is sent to the applicant.
 export default function RequestsPage() {
-  const { registrationRequests, subjects } = useData();
+  const { registrationRequests, subjects, classes, teachers } = useData();
   const approve = useData((s) => s.approveRegistration);
   const reject = useData((s) => s.rejectRegistration);
+
+  const groupLabel = (classId?: string) => {
+    const c = classes.find((x) => x.id === classId);
+    if (!c) return null;
+    const subj = subjects.find((s) => s.id === c.subjectId)?.name ?? "?";
+    const teacher = teachers.find((t) => t.id === c.teacherId)?.name ?? "?";
+    return `${subj} · ${c.timeSlot} · ${teacher}`;
+  };
 
   const pending = useMemo(
     () => registrationRequests.filter((r) => r.status === "pending").sort((a, b) => a.createdAt - b.createdAt),
@@ -54,6 +62,9 @@ export default function RequestsPage() {
                 🆔 {usernameFromEmail(r.email)} · 📞 {r.phone}
                 {r.role === "student" && <> · 🎓 {LEVEL_LABEL[r.level ?? "high"]} · 👪 {r.parentName} ({r.parentPhone})</>}
                 {r.role === "teacher" && <> · 📚 {(r.subjects ?? []).map(subjName).join(", ")}</>}
+                {r.role === "student" && r.preferredClassId && groupLabel(r.preferredClassId) && (
+                  <div>🎯 Groupe souhaité : <strong>{groupLabel(r.preferredClassId)}</strong> (affecté auto à l'acceptation)</div>
+                )}
               </div>
             </div>
             <div className="row-actions">

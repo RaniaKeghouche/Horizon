@@ -8,7 +8,7 @@ import { persist, createJSONStorage, type StateStorage } from "zustand/middlewar
 import { makeSeed } from "./seed";
 import { fbWrite, fbPatch, fbDelete } from "./fb";
 import { DEMO_MODE } from "../lib/config";
-import { computeCut, isBillable } from "../lib/payments";
+import { computeCut, isBillable, defaultPrice } from "../lib/payments";
 import { billingMonth } from "../lib/format";
 import {
   COLLECTIONS,
@@ -492,6 +492,11 @@ export const useData = create<DataState>()(
           set((s) => ({ students: [...s.students, student], users: [...s.users.filter((u) => u.id !== req.id), user] }));
           fbWrite(COLLECTIONS.students, student);
           fbWrite(COLLECTIONS.users, user);
+          // Admin officially assigns the student to their chosen group (if any + space).
+          if (req.preferredClassId) {
+            const klass = get().classes.find((c) => c.id === req.preferredClassId);
+            if (klass) get().enroll(student.id, klass.id, defaultPrice(klass.sessionType, klass.level) ?? 2000);
+          }
         } else {
           const teacher: Teacher = { id: uid(), name: req.name, phone: req.phone, subjects: req.subjects ?? [], paymentMode: "percentage", schoolCutValue: 25, createdAt: now() };
           const user = { id: req.id, role: "teacher" as const, displayName: req.name, email: req.email, teacherId: teacher.id, createdAt: now() };

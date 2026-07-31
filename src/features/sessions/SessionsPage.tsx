@@ -1,14 +1,22 @@
 import { useMemo, useState } from "react";
 import { useData } from "../../data/store";
+import { useAuth } from "../auth/AuthContext";
 import { formatDate, billingMonth, formatDA } from "../../lib/format";
 import { ATTENDANCE_LABEL, DAY_LABEL } from "../../lib/labels";
 import type { AttendanceState } from "../../lib/types";
 
 // Overview: every group → its sessions grouped by month → each student's attendance
-// and paid/unpaid status for that exact session (cahier: "qui a payé / qui n'a pas payé").
+// and paid/unpaid status for that exact session. Admin sees all groups; a teacher sees
+// only their own groups (cahier: prof consulte ses groupes, élèves, présences, paiement).
 export default function SessionsPage() {
+  const { role, profile } = useAuth();
   const { classes, subjects, teachers, students, sessions, payments } = useData();
-  const [classId, setClassId] = useState(classes[0]?.id ?? "");
+
+  const myClasses = useMemo(
+    () => (role === "teacher" && profile?.teacherId ? classes.filter((c) => c.teacherId === profile.teacherId) : classes),
+    [classes, role, profile]
+  );
+  const [classId, setClassId] = useState(myClasses[0]?.id ?? "");
 
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
   const teacherName = (id: string) => teachers.find((t) => t.id === id)?.name ?? "?";
@@ -48,15 +56,16 @@ export default function SessionsPage() {
   return (
     <div className="stack">
       <div className="page-head">
-        <h1>Séances par groupe</h1>
+        <h1>{role === "teacher" ? "Mes groupes" : "Séances par groupe"}</h1>
         <select className="input" style={{ maxWidth: 320 }} value={classId} onChange={(e) => setClassId(e.target.value)}>
-          {classes.map((c) => (
+          {myClasses.map((c) => (
             <option key={c.id} value={c.id}>
               {subjName(c.subjectId)} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} · {teacherName(c.teacherId)}
             </option>
           ))}
         </select>
       </div>
+      {myClasses.length === 0 && <p className="muted">Aucun groupe pour l'instant.</p>}
 
       {klass && (
         <p className="muted">

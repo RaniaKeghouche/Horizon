@@ -281,6 +281,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; }
 .attend-name { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
 .attend-name input { accent-color: var(--primary); width: 18px; height: 18px; }
 .attend-row.dimmed { opacity: 0.5; }
+.dup-warn { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; background: color-mix(in srgb, var(--warning) 14%, transparent); color: var(--warning); border-radius: 12px; padding: 0.6rem 0.9rem; font-weight: 600; font-size: 0.9rem; }
 .history-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
 .history-marks { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
@@ -387,6 +388,9 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; }
 .req-fields { line-height: 1.6; }
 .pending-icon { font-size: 3rem; text-align: center; }
 .username-badge { align-self: center; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.02em; color: var(--primary); background: var(--primary-soft); padding: 0.5rem 1.1rem; border-radius: 12px; margin: 0; user-select: all; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+.chip-selected { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--primary-soft); color: var(--primary); border-radius: 999px; padding: 0.25rem 0.7rem; font-size: 0.85rem; font-weight: 600; }
+.chip-selected button { border: none; background: none; color: var(--primary); cursor: pointer; font-size: 0.9rem; padding: 0; }
 
 /* ---- Bar chart ---- */
 .bars { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.5rem; }
