@@ -1,10 +1,8 @@
-// First-run bootstrap for Firebase mode.
-// Only the OWNER e-mail is auto-provisioned as admin. Everyone else goes through the
-// registration-request flow (no users doc until the admin approves).
+// First-run bootstrap (Supabase). Only the OWNER e-mail becomes admin automatically;
+// everyone else goes through the registration-request flow.
 import { OWNER_EMAIL } from "../lib/config";
-import { COLLECTIONS, type Subject } from "../lib/types";
 
-const DEFAULT_SUBJECTS: Array<Pick<Subject, "id" | "name">> = [
+const DEFAULT_SUBJECTS = [
   { id: "sub_math", name: "Mathématiques" },
   { id: "sub_arabic", name: "العربية" },
   { id: "sub_english", name: "English" },
@@ -13,15 +11,14 @@ const DEFAULT_SUBJECTS: Array<Pick<Subject, "id" | "name">> = [
   { id: "sub_physics", name: "Physique" },
 ];
 
-/** If the signed-in user is the owner, ensure their admin users doc exists. Returns true if owner. */
+/** If the signed-in user is the owner, ensure their admin profile exists. Returns true if owner. */
 export async function provisionOwner(uid: string, email: string | null): Promise<boolean> {
   if (!email || email.toLowerCase().trim() !== OWNER_EMAIL) return false;
-  const { db } = await import("../lib/firebase");
-  const { doc, getDoc, setDoc } = await import("firebase/firestore");
-  const ref = doc(db, COLLECTIONS.users, uid);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, {
+  const { supabase } = await import("../lib/supabase");
+  const { data } = await supabase.from("users").select("id").eq("id", uid).maybeSingle();
+  if (!data) {
+    await supabase.from("users").upsert({
+      id: uid,
       role: "admin",
       displayName: email.split("@")[0],
       email,
@@ -33,13 +30,10 @@ export async function provisionOwner(uid: string, email: string | null): Promise
 
 /** Seed the default subjects the first time an admin signs in (if none exist). */
 export async function seedDefaultSubjects(): Promise<void> {
-  const { db } = await import("../lib/firebase");
-  const { collection, getDocs, writeBatch, doc } = await import("firebase/firestore");
-  const existing = await getDocs(collection(db, COLLECTIONS.subjects));
-  if (!existing.empty) return;
-  const batch = writeBatch(db);
-  for (const s of DEFAULT_SUBJECTS) {
-    batch.set(doc(db, COLLECTIONS.subjects, s.id), { name: s.name, isCustom: false, createdAt: Date.now() });
-  }
-  await batch.commit();
+  const { supabase } = await import("../lib/supabase");
+  const { data } = await supabase.from("subjects").select("id").limit(1);
+  if (data && data.length > 0) return;
+  await supabase.from("subjects").upsert(
+    DEFAULT_SUBJECTS.map((s) => ({ id: s.id, name: s.name, isCustom: false, createdAt: Date.now() }))
+  );
 }
