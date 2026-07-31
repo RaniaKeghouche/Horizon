@@ -52,7 +52,7 @@ export default function RequestsPage() {
               </div>
               <div className="req-fields muted small">
                 🆔 {usernameFromEmail(r.email)} · 📞 {r.phone}
-                {r.role === "student" && <> · 🎓 {LEVEL_LABEL[r.level ?? "high"]} · 👪 {r.parentName} ({r.parentPhone})</>}
+                {r.role === "student" && <> · 🎓 {LEVEL_LABEL[r.level ?? "1as"]} · 👪 {r.parentName} ({r.parentPhone})</>}
                 {r.role === "teacher" && <> · 📚 {(r.subjects ?? []).map(subjName).join(", ")}</>}
               </div>
             </div>

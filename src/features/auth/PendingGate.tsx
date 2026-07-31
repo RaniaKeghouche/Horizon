@@ -22,8 +22,8 @@ export default function PendingGate() {
           </div>
         ) : (
           <div className="stack center">
-            <div className="pending-icon">⏳</div>
-            <h2 className="login-title">En attente de validation</h2>
+            <div className="pending-icon">✅</div>
+            <h2 className="login-title">Votre demande a été envoyée</h2>
             {username && (
               <>
                 <p className="muted">Votre identifiant de connexion :</p>
@@ -31,8 +31,8 @@ export default function PendingGate() {
               </>
             )}
             <p className="muted small">
-              Votre demande a bien été envoyée. L'administration doit l'accepter — reconnectez-vous
-              ensuite avec cet identifiant.
+              ⏳ En attente de validation par l'administration. Une fois votre compte accepté,
+              reconnectez-vous avec cet identifiant.
             </p>
             <button className="btn btn-ghost" onClick={logout}>Se déconnecter</button>
           </div>

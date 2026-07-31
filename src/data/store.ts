@@ -525,7 +525,7 @@ export const useData = create<DataState>()(
           const student: Student = {
             id: uid(),
             name: req.name,
-            level: req.level ?? "high",
+            level: req.level ?? "1as",
             phone: req.phone,
             parentName: req.parentName ?? "",
             parentPhone: req.parentPhone ?? "",

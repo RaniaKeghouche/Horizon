@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Modal from "../../components/Modal";
-import { LEVELS, LEVEL_LABEL, STATUSES, STATUS_LABEL } from "../../lib/labels";
+import { LEVEL_LABEL, LEVEL_GROUPS, STATUSES, STATUS_LABEL } from "../../lib/labels";
 import type { Student, StudentLevel, StudentStatus } from "../../lib/types";
 
 export interface StudentFormValues {
@@ -23,7 +23,7 @@ export default function StudentForm({
 }) {
   const [v, setV] = useState<StudentFormValues>({
     name: initial?.name ?? "",
-    level: initial?.level ?? "high",
+    level: initial?.level ?? "1as",
     phone: initial?.phone ?? "",
     parentName: initial?.parentName ?? "",
     parentPhone: initial?.parentPhone ?? "",
@@ -63,10 +63,10 @@ export default function StudentForm({
         <label className="field">
           <span>Niveau</span>
           <select className="input" value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
-            {LEVELS.map((l) => (
-              <option key={l} value={l}>
-                {LEVEL_LABEL[l]}
-              </option>
+            {LEVEL_GROUPS.map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.levels.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
+              </optgroup>
             ))}
           </select>
         </label>

@@ -2,14 +2,23 @@
 // Implements the school-cut rules from the Cahier des Charges §3.2.
 import type { PaymentMode, AttendanceState, SessionType, StudentLevel } from "./types";
 
-/** Default per-session prices in DA (cahier §3.1). Admin can override any of these. */
-export const DEFAULT_PRICES: Partial<Record<`${SessionType}:${StudentLevel}`, number>> = {
-  "group:middle": 2000,
-  "group:high": 2700,
+/** School cycle of a grade: primaire / moyen (CEM) / secondaire (lycée). */
+export function levelCycle(level: StudentLevel): "primary" | "middle" | "high" {
+  if (level.endsWith("am")) return "middle";
+  if (level.endsWith("as")) return "high";
+  return "primary";
+}
+
+/** Default per-session prices in DA by cycle (cahier §3.1). Admin can override any of these. */
+export const DEFAULT_CYCLE_PRICES: Record<"primary" | "middle" | "high", number | null> = {
+  primary: null, // fixé par l'admin
+  middle: 2000, // Collège / CEM
+  high: 2700, // Lycée
 };
 
 export function defaultPrice(sessionType: SessionType, level: StudentLevel): number | null {
-  return DEFAULT_PRICES[`${sessionType}:${level}`] ?? null;
+  if (sessionType !== "group") return null; // 1-on-1 / spécial / été : prix fixé par l'admin
+  return DEFAULT_CYCLE_PRICES[levelCycle(level)];
 }
 
 export interface CutResult {

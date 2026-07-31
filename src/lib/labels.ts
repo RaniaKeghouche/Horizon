@@ -9,12 +9,17 @@ import type {
 } from "./types";
 
 export const LEVEL_LABEL: Record<StudentLevel, string> = {
-  primary: "Primaire",
-  middle: "Collège",
-  high: "Lycée",
-  level_based: "Par niveau",
-  summer: "École d'été",
+  "1ap": "1AP", "2ap": "2AP", "3ap": "3AP", "4ap": "4AP", "5ap": "5AP",
+  "1am": "1AM", "2am": "2AM", "3am": "3AM", "4am": "4AM",
+  "1as": "1AS", "2as": "2AS", "3as": "3AS",
 };
+
+// Niveaux regroupés par cycle (pour les menus déroulants avec optgroup).
+export const LEVEL_GROUPS: { label: string; levels: StudentLevel[] }[] = [
+  { label: "Primaire (5 ans)", levels: ["1ap", "2ap", "3ap", "4ap", "5ap"] },
+  { label: "CEM / Moyen (4 ans)", levels: ["1am", "2am", "3am", "4am"] },
+  { label: "Lycée / Secondaire (3 ans)", levels: ["1as", "2as", "3as"] },
+];
 
 export const STATUS_LABEL: Record<StudentStatus, string> = {
   active: "Actif",
@@ -50,6 +55,8 @@ export const DAY_LABEL: Record<DayOfWeek, string> = {
   friday: "Vendredi",
 };
 
-export const LEVELS: StudentLevel[] = ["primary", "middle", "high", "level_based", "summer"];
+export const LEVELS: StudentLevel[] = [
+  "1ap", "2ap", "3ap", "4ap", "5ap", "1am", "2am", "3am", "4am", "1as", "2as", "3as",
+];
 export const STATUSES: StudentStatus[] = ["active", "paused", "stopped"];
 export const SESSION_TYPES: SessionType[] = ["group", "one_on_one", "group_special", "summer"];

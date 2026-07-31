@@ -3,7 +3,7 @@ import { useData } from "../../data/store";
 import { useAuth } from "./AuthContext";
 import { DEMO_MODE } from "../../lib/config";
 import { slugName, toLoginEmail } from "../../lib/username";
-import { LEVELS, LEVEL_LABEL } from "../../lib/labels";
+import { LEVEL_LABEL, LEVEL_GROUPS } from "../../lib/labels";
 import type { Role, StudentLevel } from "../../lib/types";
 
 interface RegData {
@@ -20,7 +20,7 @@ const EMPTY: RegData = {
   role: "student",
   name: "",
   phone: "",
-  level: "high",
+  level: "1as",
   parentName: "",
   parentPhone: "",
   subjects: [],
@@ -131,7 +131,7 @@ export default function RegisterFlow({
     return (
       <div className="stack center">
         <div className="pending-icon">✅</div>
-        <h2 className="login-title">Demande envoyée</h2>
+        <h2 className="login-title">Votre demande a été envoyée</h2>
         <p className="muted">Votre identifiant de connexion :</p>
         <p className="username-badge">{createdUsername}</p>
         <p className="muted small">Notez-le. L'administration doit valider votre compte.</p>
@@ -167,7 +167,11 @@ export default function RegisterFlow({
           <label className="field">
             <span>Niveau</span>
             <select className="input" value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
-              {LEVELS.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
+              {LEVEL_GROUPS.map((g) => (
+                <optgroup key={g.label} label={g.label}>
+                  {g.levels.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
+                </optgroup>
+              ))}
             </select>
           </label>
           <label className="field">

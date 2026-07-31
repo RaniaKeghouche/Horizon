@@ -9,12 +9,11 @@
 
 export type Role = "admin" | "teacher" | "student";
 
+// Années scolaires algériennes : primaire (5), moyen/CEM (4), secondaire/lycée (3).
 export type StudentLevel =
-  | "primary"
-  | "middle"
-  | "high"
-  | "level_based"
-  | "summer";
+  | "1ap" | "2ap" | "3ap" | "4ap" | "5ap"
+  | "1am" | "2am" | "3am" | "4am"
+  | "1as" | "2as" | "3as";
 
 export type StudentStatus = "active" | "paused" | "stopped";
 

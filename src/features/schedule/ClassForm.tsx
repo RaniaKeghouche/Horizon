@@ -3,7 +3,7 @@ import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
 import { checkSlot, DAYS } from "../../lib/schedule";
 import { defaultPrice } from "../../lib/payments";
-import { LEVELS, LEVEL_LABEL, SESSION_TYPES, SESSION_TYPE_LABEL, DAY_LABEL } from "../../lib/labels";
+import { LEVEL_LABEL, LEVEL_GROUPS, SESSION_TYPES, SESSION_TYPE_LABEL, DAY_LABEL } from "../../lib/labels";
 import type { ClassRoom, DayOfWeek, SessionType, StudentLevel } from "../../lib/types";
 
 function splitSlot(s: string): { start: string; end: string } {
@@ -37,7 +37,7 @@ export default function ClassForm({
 
   const [subjectId, setSubjectId] = useState(initial?.subjectId ?? prefill?.subjectId ?? subjects[0]?.id ?? "");
   const [teacherId, setTeacherId] = useState(initial?.teacherId ?? prefill?.teacherId ?? defaults?.teacherId ?? teachers[0]?.id ?? "");
-  const [level, setLevel] = useState<StudentLevel>(initial?.level ?? prefill?.level ?? "high");
+  const [level, setLevel] = useState<StudentLevel>(initial?.level ?? prefill?.level ?? "1as");
   const [sessionType, setSessionType] = useState<SessionType>(initial?.sessionType ?? prefill?.sessionType ?? "group");
   const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(initial?.dayOfWeek ?? defaults?.dayOfWeek ?? "monday");
   const initSlot = splitSlot(initial?.timeSlot ?? defaults?.timeSlot ?? "08:00-10:00");
@@ -103,7 +103,11 @@ export default function ClassForm({
         <label className="field">
           <span>Niveau</span>
           <select className="input" value={level} onChange={(e) => setLevel(e.target.value as StudentLevel)}>
-            {LEVELS.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
+            {LEVEL_GROUPS.map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.levels.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
+              </optgroup>
+            ))}
           </select>
         </label>
         <label className="field">
