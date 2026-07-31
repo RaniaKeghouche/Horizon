@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useData } from "../../data/store";
 import { teacherPayout } from "../../lib/billing";
 import { formatDA } from "../../lib/format";
-import { PAYMENT_MODE_LABEL } from "../../lib/labels";
 import TeacherForm, { type TeacherFormValues } from "./TeacherForm";
 import type { Teacher } from "../../lib/types";
 
@@ -41,8 +40,7 @@ export default function TeachersPage() {
             <tr>
               <th>Nom</th>
               <th>Matières</th>
-              <th>Mode</th>
-              <th>Part école</th>
+              <th>Rémunération enseignant</th>
               <th>Encaissé (part prof)</th>
               <th>En attente</th>
               <th></th>
@@ -55,8 +53,11 @@ export default function TeachersPage() {
                 <tr key={teacher.id}>
                   <td><strong>{teacher.name}</strong><div className="muted small">📞 {teacher.phone}</div></td>
                   <td>{teacher.subjects.map(subjName).join(", ") || "—"}</td>
-                  <td>{PAYMENT_MODE_LABEL[teacher.paymentMode]}</td>
-                  <td>{teacher.paymentMode === "percentage" ? `${teacher.schoolCutValue} %` : formatDA(teacher.schoolCutValue)}</td>
+                  <td>
+                    {teacher.paymentMode === "percentage"
+                      ? `${100 - teacher.schoolCutValue}% du payé`
+                      : `reste après ${formatDA(teacher.schoolCutValue)}/séance (école)`}
+                  </td>
                   <td className="text-ok">{formatDA(payout.earned)}</td>
                   <td>{payout.pending > 0 ? <span className="text-danger">{formatDA(payout.pending)}</span> : "—"}</td>
                   <td className="row-actions">

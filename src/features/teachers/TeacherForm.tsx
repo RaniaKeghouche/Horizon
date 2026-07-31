@@ -109,28 +109,52 @@ export default function TeacherForm({
 
       <div className="form-grid">
         <label className="field">
-          <span>Mode de part de l'école</span>
-          <select className="input" value={v.paymentMode} onChange={(e) => set("paymentMode", e.target.value as PaymentMode)}>
+          <span>Mode de rémunération</span>
+          <select
+            className="input"
+            value={v.paymentMode}
+            onChange={(e) => {
+              const m = e.target.value as PaymentMode;
+              // Reset to a sensible default when switching mode.
+              setV((prev) => ({ ...prev, paymentMode: m, schoolCutValue: m === "percentage" ? 25 : 500 }));
+            }}
+          >
             {(["percentage", "fixed"] as PaymentMode[]).map((m) => (
               <option key={m} value={m}>{PAYMENT_MODE_LABEL[m]}</option>
             ))}
           </select>
         </label>
-        <label className="field">
-          <span>{v.paymentMode === "percentage" ? "Pourcentage école (%)" : "Montant fixe école (DA)"}</span>
-          <input
-            className="input"
-            type="number"
-            value={v.schoolCutValue}
-            onChange={(e) => set("schoolCutValue", Number(e.target.value))}
-          />
-        </label>
+        {v.paymentMode === "percentage" ? (
+          <label className="field">
+            <span>Pourcentage pour l'enseignant (%)</span>
+            <input
+              className="input"
+              type="number"
+              min={0}
+              max={100}
+              value={100 - v.schoolCutValue}
+              onChange={(e) => set("schoolCutValue", Math.min(100, Math.max(0, 100 - Number(e.target.value))))}
+            />
+            <span className="muted small">L'école garde {v.schoolCutValue}%.</span>
+          </label>
+        ) : (
+          <label className="field">
+            <span>Montant fixe pris par l'école (DA / séance)</span>
+            <input
+              className="input"
+              type="number"
+              value={v.schoolCutValue}
+              onChange={(e) => set("schoolCutValue", Number(e.target.value))}
+            />
+            <span className="muted small">L'enseignant garde le reste.</span>
+          </label>
+        )}
       </div>
 
       <div className="preview-box">
         Exemple sur une séance à 10 000 DA :
-        <strong> école {formatDA(preview.schoolCut)}</strong> ·
-        <strong> enseignant {formatDA(preview.teacherCut)}</strong>
+        <strong> enseignant {formatDA(preview.teacherCut)}</strong> ·
+        <strong> école {formatDA(preview.schoolCut)}</strong>
       </div>
     </Modal>
   );
