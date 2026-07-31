@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { ATTENDANCE_LABEL, DAY_LABEL } from "../../lib/labels";
@@ -26,6 +26,8 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState("");
   const [marks, setMarks] = useState<Record<string, AttendanceState>>({});
+  const [selected, setSelected] = useState<Set<string>>(new Set()); // students included in this session
+  const [editingId, setEditingId] = useState<string | null>(null); // editing an existing session
 
   const roster = useMemo(() => {
     return enrollments
@@ -34,33 +36,69 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
       .filter((s): s is NonNullable<typeof s> => !!s);
   }, [enrollments, students, classId]);
 
+  const classSessions = useMemo(
+    () => sessions.filter((s) => s.classId === classId).sort((a, b) => b.date - a.date),
+    [sessions, classId]
+  );
+
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
   const stateOf = (studentId: string) => marks[studentId] ?? "present";
+  const nextNumber = editingId
+    ? classSessions.find((s) => s.id === editingId)?.sessionNumber ?? "?"
+    : classSessions.length + 1;
 
+  // Reset the form to a fresh session for the current class (all students selected).
+  function resetForm(nextClassId = classId) {
+    const ros = enrollments.filter((e) => e.classId === nextClassId).map((e) => e.studentId);
+    setSelected(new Set(ros));
+    setMarks({});
+    setNote("");
+    setEditingId(null);
+    setDate(new Date().toISOString().slice(0, 10));
+  }
+  // Default: all enrolled students selected (unless editing a past session).
+  useEffect(() => {
+    if (!editingId) setSelected(new Set(roster.map((s) => s.id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classId, roster.length]);
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  }
   function setMark(studentId: string, state: AttendanceState) {
     setMarks((m) => ({ ...m, [studentId]: state }));
   }
 
-  function save() {
-    if (!klass || roster.length === 0) return;
-    const full: Record<string, AttendanceState> = {};
-    for (const s of roster) full[s.id] = stateOf(s.id);
-    saveAttendance(klass.id, klass.teacherId, new Date(date).getTime(), full, note.trim() || undefined);
-    setNote("");
-    setMarks({});
-    alert("Présence enregistrée. Parents notifiés.");
+  function loadSession(sessId: string) {
+    const sess = classSessions.find((s) => s.id === sessId);
+    if (!sess) return;
+    setEditingId(sess.id);
+    setDate(new Date(sess.date).toISOString().slice(0, 10));
+    setNote(sess.notes ?? "");
+    setMarks({ ...sess.attendance });
+    setSelected(new Set(Object.keys(sess.attendance)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const classSessions = sessions
-    .filter((s) => s.classId === classId)
-    .sort((a, b) => b.date - a.date);
+  function save() {
+    if (!klass || selected.size === 0) return;
+    const full: Record<string, AttendanceState> = {};
+    for (const s of roster) if (selected.has(s.id)) full[s.id] = stateOf(s.id);
+    saveAttendance(klass.id, klass.teacherId, new Date(date).getTime(), full, note.trim() || undefined, editingId ?? undefined);
+    alert(editingId ? "Séance modifiée." : "Présence enregistrée. Parents notifiés.");
+    resetForm();
+  }
 
   return (
     <div className="stack">
-      <h1>Présence</h1>
+      <h1>Présence — appel</h1>
 
       <div className="toolbar">
-        <select className="input" value={classId} onChange={(e) => { setClassId(e.target.value); setMarks({}); }}>
+        <select className="input" value={classId} onChange={(e) => { setClassId(e.target.value); resetForm(e.target.value); }}>
           {myClasses.map((c) => (
             <option key={c.id} value={c.id}>
               {subjName(c.subjectId)} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot}
@@ -71,51 +109,64 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
       </div>
 
       {klass && roster.length > 0 ? (
-        <>
-          <div className="card stack">
-            {roster.map((s) => (
-              <div key={s.id} className="attend-row">
-                <strong>{s.name}</strong>
-                <div className="seg">
-                  {STATES.map((st) => (
-                    <button
-                      key={st}
-                      className={"seg-btn " + (stateOf(s.id) === st ? "on " + segClass(st) : "")}
-                      onClick={() => setMark(s.id, st)}
-                    >
-                      {ATTENDANCE_LABEL[st]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <textarea
-              className="input"
-              placeholder="Note de séance (visible par le parent)…"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-            <button className="btn btn-primary btn-lg" onClick={save}>💾 Enregistrer la présence</button>
+        <div className="card stack">
+          <div className="attend-toolbar">
+            <span className="pill pill-soft">Séance n° {nextNumber}{editingId ? " (modification)" : ""}</span>
+            <span className="muted small">Créneau habituel : {DAY_LABEL[klass.dayOfWeek]} {klass.timeSlot}</span>
+            <div className="row-actions">
+              <button className="btn btn-ghost sm" onClick={() => setSelected(new Set(roster.map((s) => s.id)))}>Tout</button>
+              <button className="btn btn-ghost sm" onClick={() => setSelected(new Set())}>Aucun</button>
+            </div>
           </div>
-        </>
+
+          {roster.map((s) => {
+            const on = selected.has(s.id);
+            return (
+              <div key={s.id} className={"attend-row" + (on ? "" : " dimmed")}>
+                <label className="attend-name">
+                  <input type="checkbox" checked={on} onChange={() => toggleSelected(s.id)} />
+                  <strong>{s.name}</strong>
+                </label>
+                {on && (
+                  <div className="seg">
+                    {STATES.map((st) => (
+                      <button key={st} className={"seg-btn " + (stateOf(s.id) === st ? "on " + segClass(st) : "")} onClick={() => setMark(s.id, st)}>
+                        {ATTENDANCE_LABEL[st]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <textarea className="input" placeholder="Note de séance (visible par le parent)…" value={note} onChange={(e) => setNote(e.target.value)} />
+          <div className="row-actions">
+            {editingId && <button className="btn btn-ghost" onClick={() => resetForm()}>Annuler la modification</button>}
+            <button className="btn btn-primary btn-lg" onClick={save} disabled={selected.size === 0}>
+              💾 {editingId ? "Enregistrer les modifications" : `Enregistrer (${selected.size} élève${selected.size > 1 ? "s" : ""})`}
+            </button>
+          </div>
+        </div>
       ) : (
         <p className="muted">Aucun étudiant inscrit à cette classe.</p>
       )}
 
-      <h3 className="section-title">Historique</h3>
+      <h3 className="section-title">Historique des séances</h3>
       <div className="stack">
         {classSessions.map((sess) => (
           <div key={sess.id} className="card history-row">
             <div>
-              <strong>{formatDate(sess.date)}</strong>
+              <strong>Séance {sess.sessionNumber ?? "?"} · {formatDate(sess.date)}</strong>
               {sess.notes && <div className="muted small">📝 {sess.notes}</div>}
+              <div className="history-marks">
+                {Object.entries(sess.attendance).map(([sid, st]) => {
+                  const name = students.find((s) => s.id === sid)?.name ?? "?";
+                  return <span key={sid} className={"pill " + segClass(st)}>{name.split(" ")[0]}: {ATTENDANCE_LABEL[st]}</span>;
+                })}
+              </div>
             </div>
-            <div className="history-marks">
-              {Object.entries(sess.attendance).map(([sid, st]) => {
-                const name = students.find((s) => s.id === sid)?.name ?? "?";
-                return <span key={sid} className={"pill " + segClass(st)}>{name.split(" ")[0]}: {ATTENDANCE_LABEL[st]}</span>;
-              })}
-            </div>
+            <button className="btn btn-ghost sm" onClick={() => loadSession(sess.id)}>✏️ Modifier</button>
           </div>
         ))}
         {classSessions.length === 0 && <p className="muted">Pas encore de séance enregistrée.</p>}

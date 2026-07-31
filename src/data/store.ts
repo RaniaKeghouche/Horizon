@@ -277,7 +277,11 @@ export const useData = create<DataState>()(
         const teacher = state.teachers.find((t) => t.id === teacherId);
 
         const id = sessionId ?? uid();
-        const session: Session = { id, classId, teacherId, date, notes, attendance };
+        // Session number = its rank among this class's sessions (kept when editing).
+        const existing = state.sessions.find((s) => s.id === id);
+        const sessionNumber =
+          existing?.sessionNumber ?? state.sessions.filter((s) => s.classId === classId).length + 1;
+        const session: Session = { id, classId, teacherId, date, notes, attendance, sessionNumber };
 
         const newPayments: Payment[] = [];
         const newNotifs: AppNotification[] = [];

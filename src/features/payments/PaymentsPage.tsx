@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { computeStudentBilling } from "../../lib/billing";
-import { printInvoice } from "../../lib/invoice";
+import { printInvoice, printInvoices } from "../../lib/invoice";
 import { formatDA } from "../../lib/format";
 import PaymentManage from "./PaymentManage";
 import type { Student } from "../../lib/types";
@@ -19,6 +19,7 @@ function AdminPayments() {
   const { t } = useTranslation();
   const { students, subjects, teachers, enrollments, sessions, payments } = useData();
   const [manage, setManage] = useState<Student | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const rows = students
     .map((s) => ({
@@ -30,9 +31,25 @@ function AdminPayments() {
   const totalDebt = rows.reduce((sum, r) => sum + r.billing.totalDue, 0);
   const totalCollected = rows.reduce((sum, r) => sum + r.billing.totalPaid, 0);
 
+  const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.student.id));
+  function toggle(id: string) {
+    setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  }
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(rows.map((r) => r.student.id)));
+  }
+  function printSelected() {
+    printInvoices(rows.filter((r) => selected.has(r.student.id)).map((r) => r.billing));
+  }
+
   return (
     <div className="stack">
-      <h1>{t("nav.payments")}</h1>
+      <div className="page-head">
+        <h1>{t("nav.payments")}</h1>
+        {selected.size > 0 && (
+          <button className="btn btn-primary" onClick={printSelected}>🧾 Imprimer {selected.size} facture(s)</button>
+        )}
+      </div>
 
       <div className="grid-cards">
         <div className="card stat-card">
@@ -48,11 +65,15 @@ function AdminPayments() {
       <div className="card table-wrap">
         <table className="table">
           <thead>
-            <tr><th>Étudiant</th><th>Matières</th><th>Payé</th><th>Dû</th><th></th></tr>
+            <tr>
+              <th><input type="checkbox" checked={allSelected} onChange={toggleAll} title="Tout sélectionner" /></th>
+              <th>Étudiant</th><th>Matières</th><th>Payé</th><th>Dû</th><th></th>
+            </tr>
           </thead>
           <tbody>
             {rows.map(({ student, billing }) => (
               <tr key={student.id}>
+                <td><input type="checkbox" checked={selected.has(student.id)} onChange={() => toggle(student.id)} /></td>
                 <td><strong>{student.name}</strong></td>
                 <td>{billing.subjects.length}</td>
                 <td className="text-ok">{formatDA(billing.totalPaid)}</td>
