@@ -45,7 +45,8 @@ export type NotificationType =
   | "payment_reminder"
   | "daily_digest"
   | "teacher_request"
-  | "waiting_list";
+  | "waiting_list"
+  | "enrollment";
 
 // ---- Collections -------------------------------------------------------------
 

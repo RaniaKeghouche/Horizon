@@ -11,6 +11,7 @@ const ICON: Record<NotificationType, string> = {
   daily_digest: "📅",
   teacher_request: "🗓️",
   waiting_list: "🎟️",
+  enrollment: "📝",
 };
 
 export default function NotificationsPage() {

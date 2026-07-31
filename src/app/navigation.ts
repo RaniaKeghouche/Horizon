@@ -33,6 +33,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     titleKey: "navGroup.teaching",
     items: [
+      { path: "/courses", labelKey: "nav.courses", icon: "📘", roles: ["student"] },
       { path: "/schedule", labelKey: "nav.schedule", icon: "🗓️", roles: ["admin", "teacher"] },
       { path: "/sessions", labelKey: "nav.sessions", icon: "📋", roles: ["admin", "teacher"] },
       { path: "/attendance", labelKey: "nav.attendance", icon: "✅", roles: ["admin", "teacher", "student"] },

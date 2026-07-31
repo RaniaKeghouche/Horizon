@@ -80,6 +80,9 @@ interface DataState {
 
   enroll: (studentId: string, classId: string, pricePerSession: number) => void;
   unenroll: (enrollmentId: string) => void;
+  selfEnroll: (studentId: string, classId: string) => void; // student enrolls; admins notified
+  adminAssign: (studentId: string, classId: string, price: number) => void; // admin enrolls; student notified
+  moveStudent: (enrollmentId: string, newClassId: string) => void; // admin moves group; student notified
 
   saveAttendance: (
     classId: string,
@@ -266,6 +269,49 @@ export const useData = create<DataState>()(
           state.users
             .filter((u) => u.role === "admin")
             .forEach((admin) => get().addNotification(admin.id, "waiting_list", `Place libérée : ${waited?.name ?? "un élève"} peut être inscrit (liste d'attente).`));
+        }
+      },
+
+      // Student self-enrolls into a group → admins are notified.
+      selfEnroll: (studentId, classId) => {
+        const state = get();
+        const klass = state.classes.find((c) => c.id === classId);
+        const student = state.students.find((s) => s.id === studentId);
+        if (!klass || !student) return;
+        get().enroll(studentId, classId, defaultPrice(klass.sessionType, klass.level) ?? 2000);
+        if (get().enrollments.some((e) => e.studentId === studentId && e.classId === classId)) {
+          const subj = state.subjects.find((s) => s.id === klass.subjectId)?.name ?? "un cours";
+          state.users
+            .filter((u) => u.role === "admin")
+            .forEach((a) => get().addNotification(a.id, "enrollment", `${student.name} s'est inscrit(e) au groupe ${subj} (${klass.timeSlot}).`));
+        }
+      },
+
+      // Admin assigns a student to a group → the student is notified.
+      adminAssign: (studentId, classId, price) => {
+        get().enroll(studentId, classId, price);
+        const state = get();
+        const student = state.students.find((s) => s.id === studentId);
+        const klass = state.classes.find((c) => c.id === classId);
+        if (student?.linkedAccountId && klass && get().enrollments.some((e) => e.studentId === studentId && e.classId === classId)) {
+          const subj = state.subjects.find((s) => s.id === klass.subjectId)?.name ?? "un cours";
+          get().addNotification(student.linkedAccountId, "enrollment", `Vous avez été affecté(e) au groupe ${subj} (${klass.timeSlot}).`);
+        }
+      },
+
+      // Admin moves a student from one group to another → the student is notified.
+      moveStudent: (enrollmentId, newClassId) => {
+        const state = get();
+        const enr = state.enrollments.find((e) => e.id === enrollmentId);
+        const newClass = state.classes.find((c) => c.id === newClassId);
+        if (!enr || !newClass) return;
+        const student = state.students.find((s) => s.id === enr.studentId);
+        const price = defaultPrice(newClass.sessionType, newClass.level) ?? enr.pricePerSession;
+        get().unenroll(enrollmentId);
+        get().enroll(enr.studentId, newClassId, price);
+        if (student?.linkedAccountId && get().enrollments.some((e) => e.studentId === enr.studentId && e.classId === newClassId)) {
+          const subj = state.subjects.find((s) => s.id === newClass.subjectId)?.name ?? "un cours";
+          get().addNotification(student.linkedAccountId, "enrollment", `Vous avez été déplacé(e) vers le groupe ${subj} (${newClass.timeSlot}).`);
         }
       },
 
@@ -492,11 +538,6 @@ export const useData = create<DataState>()(
           set((s) => ({ students: [...s.students, student], users: [...s.users.filter((u) => u.id !== req.id), user] }));
           fbWrite(COLLECTIONS.students, student);
           fbWrite(COLLECTIONS.users, user);
-          // Admin officially assigns the student to their chosen group (if any + space).
-          if (req.preferredClassId) {
-            const klass = get().classes.find((c) => c.id === req.preferredClassId);
-            if (klass) get().enroll(student.id, klass.id, defaultPrice(klass.sessionType, klass.level) ?? 2000);
-          }
         } else {
           const teacher: Teacher = { id: uid(), name: req.name, phone: req.phone, subjects: req.subjects ?? [], paymentMode: "percentage", schoolCutValue: 25, createdAt: now() };
           const user = { id: req.id, role: "teacher" as const, displayName: req.name, email: req.email, teacherId: teacher.id, createdAt: now() };

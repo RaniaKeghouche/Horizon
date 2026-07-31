@@ -15,7 +15,8 @@ export default function StudentDetail({
   onClose: () => void;
 }) {
   const { subjects, teachers, classes, enrollments, sessions, payments } = useData();
-  const enroll = useData((s) => s.enroll);
+  const adminAssign = useData((s) => s.adminAssign);
+  const moveStudent = useData((s) => s.moveStudent);
   const unenroll = useData((s) => s.unenroll);
   const joinWaitlist = useData((s) => s.joinWaitlist);
   const leaveWaitlist = useData((s) => s.leaveWaitlist);
@@ -43,7 +44,7 @@ export default function StudentDetail({
 
   function doEnroll() {
     if (!classId || price <= 0) return;
-    enroll(student.id, classId, price);
+    adminAssign(student.id, classId, price); // notifies the student
     setClassId("");
     setPrice(0);
   }
@@ -83,6 +84,19 @@ export default function StudentDetail({
               {s.reminderCount > 0 && (
                 <span className="muted small">🔔 {s.reminderCount} rappel(s)</span>
               )}
+              <select
+                className="input move-select"
+                value=""
+                title="Changer de groupe"
+                onChange={(e) => e.target.value && moveStudent(s.enrollmentId, e.target.value)}
+              >
+                <option value="">↔ Changer de groupe…</option>
+                {enrollable.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {subjectName(c.subjectId)} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot}
+                  </option>
+                ))}
+              </select>
               <button className="icon-btn danger" title="Désinscrire" onClick={() => unenroll(s.enrollmentId)}>
                 ✕
               </button>

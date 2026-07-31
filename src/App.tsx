@@ -9,6 +9,7 @@ import StudentsPage from "./features/students/StudentsPage";
 import TeachersPage from "./features/teachers/TeachersPage";
 import SubjectsPage from "./features/subjects/SubjectsPage";
 import RequestsPage from "./features/registration/RequestsPage";
+import StudentCoursesPage from "./features/courses/StudentCoursesPage";
 import SchedulePage from "./features/schedule/SchedulePage";
 import SessionsPage from "./features/sessions/SessionsPage";
 import AttendancePage from "./features/attendance/AttendancePage";
@@ -44,6 +45,7 @@ function Root() {
         <Route path="teachers" element={<ProtectedRoute allow={["admin"]}><TeachersPage /></ProtectedRoute>} />
         <Route path="requests" element={<ProtectedRoute allow={["admin"]}><RequestsPage /></ProtectedRoute>} />
         <Route path="subjects" element={<ProtectedRoute allow={["admin"]}><SubjectsPage /></ProtectedRoute>} />
+        <Route path="courses" element={<ProtectedRoute allow={["student"]}><StudentCoursesPage /></ProtectedRoute>} />
         <Route path="schedule" element={<ProtectedRoute allow={["admin", "teacher"]}><SchedulePage /></ProtectedRoute>} />
         <Route path="sessions" element={<ProtectedRoute allow={["admin", "teacher"]}><SessionsPage /></ProtectedRoute>} />
         <Route path="attendance" element={<AttendancePage />} />
