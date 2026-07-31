@@ -22,7 +22,15 @@ service cloud.firestore {
     // Only admin can update/delete (change roles, link accounts).
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow create: if isSignedIn() && request.auth.uid == userId;
+      // Own doc (owner bootstrap) OR admin creating an account on approval.
+      allow create: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    // Self-registration requests: applicant creates/reads their own; admin reviews.
+    match /registrationRequests/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid;
       allow update, delete: if isAdmin();
     }
 

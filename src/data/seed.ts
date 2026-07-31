@@ -14,6 +14,7 @@ import type {
   AppNotification,
   ActivityLog,
   TeacherSlotRequest,
+  RegistrationRequest,
 } from "../lib/types";
 
 const DAY = 86_400_000;
@@ -32,6 +33,7 @@ export interface SeedData {
   notifications: AppNotification[];
   activityLog: ActivityLog[];
   slotRequests: TeacherSlotRequest[];
+  registrationRequests: RegistrationRequest[];
 }
 
 // ---- Subjects (default set from cahier §7) ----
@@ -267,6 +269,32 @@ const slotRequests: TeacherSlotRequest[] = [
   { id: "sr1", teacherId: "t1", subjectId: "sub_english", dayOfWeek: "thursday", timeSlot: "17:00-18:30", status: "pending", createdAt: now - 3 * DAY },
 ];
 
+// Two pending self-registration requests so the admin can test approve/reject.
+const registrationRequests: RegistrationRequest[] = [
+  {
+    id: "req_student_1",
+    role: "student",
+    email: "sofiane.parent@example.com",
+    name: "Sofiane Belarbi",
+    phone: "0773 55 66 77",
+    level: "middle",
+    parentName: "Nabil Belarbi",
+    parentPhone: "0773 11 22 33",
+    status: "pending",
+    createdAt: now - 1 * DAY,
+  },
+  {
+    id: "req_teacher_1",
+    role: "teacher",
+    email: "leila.prof@example.com",
+    name: "Leïla Bouzid",
+    phone: "0664 88 99 00",
+    subjects: ["sub_math", "sub_physics"],
+    status: "pending",
+    createdAt: now - 2 * DAY,
+  },
+];
+
 export function makeSeed(): SeedData {
   return {
     users,
@@ -280,5 +308,6 @@ export function makeSeed(): SeedData {
     notifications,
     activityLog,
     slotRequests,
+    registrationRequests,
   };
 }

@@ -12,6 +12,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: "/", labelKey: "nav.dashboard", icon: "🏠", roles: ["admin", "teacher", "student"] },
   { path: "/students", labelKey: "nav.students", icon: "🎓", roles: ["admin", "teacher"] },
   { path: "/teachers", labelKey: "nav.teachers", icon: "👨‍🏫", roles: ["admin"] },
+  { path: "/requests", labelKey: "nav.requests", icon: "📥", roles: ["admin"] },
   { path: "/subjects", labelKey: "nav.subjects", icon: "📚", roles: ["admin"] },
   { path: "/schedule", labelKey: "nav.schedule", icon: "🗓️", roles: ["admin", "teacher"] },
   { path: "/attendance", labelKey: "nav.attendance", icon: "✅", roles: ["admin", "teacher", "student"] },

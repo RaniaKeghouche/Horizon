@@ -374,6 +374,13 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; }
 /* ---- Modal footer left group ---- */
 .foot-left { margin-inline-end: auto; display: flex; gap: 0.5rem; }
 
+/* ---- Registration requests ---- */
+.req-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.req-info { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+.req-head { display: flex; align-items: center; gap: 0.7rem; }
+.req-fields { line-height: 1.6; }
+.pending-icon { font-size: 3rem; text-align: center; }
+
 /* ---- Bar chart ---- */
 .bars { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.5rem; }
 .bar-row { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 0.75rem; }

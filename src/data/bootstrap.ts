@@ -1,7 +1,8 @@
-// First-run bootstrap for Firebase mode: provision the signed-in user's profile doc,
-// and seed the default subjects once, by the owner/admin.
+// First-run bootstrap for Firebase mode.
+// Only the OWNER e-mail is auto-provisioned as admin. Everyone else goes through the
+// registration-request flow (no users doc until the admin approves).
 import { OWNER_EMAIL } from "../lib/config";
-import { COLLECTIONS, type AppUser, type Subject } from "../lib/types";
+import { COLLECTIONS, type Subject } from "../lib/types";
 
 const DEFAULT_SUBJECTS: Array<Pick<Subject, "id" | "name">> = [
   { id: "sub_math", name: "Mathématiques" },
@@ -12,23 +13,22 @@ const DEFAULT_SUBJECTS: Array<Pick<Subject, "id" | "name">> = [
   { id: "sub_physics", name: "Physique" },
 ];
 
-/** Read the user's profile doc; create it on first login (owner e-mail => admin). */
-export async function provisionUser(uid: string, email: string | null): Promise<AppUser> {
+/** If the signed-in user is the owner, ensure their admin users doc exists. Returns true if owner. */
+export async function provisionOwner(uid: string, email: string | null): Promise<boolean> {
+  if (!email || email.toLowerCase().trim() !== OWNER_EMAIL) return false;
   const { db } = await import("../lib/firebase");
   const { doc, getDoc, setDoc } = await import("firebase/firestore");
   const ref = doc(db, COLLECTIONS.users, uid);
   const snap = await getDoc(ref);
-  if (snap.exists()) return { id: uid, ...snap.data() } as AppUser;
-
-  const isOwner = !!email && email.toLowerCase().trim() === OWNER_EMAIL;
-  const profile: Omit<AppUser, "id"> = {
-    role: isOwner ? "admin" : "student",
-    displayName: email ? email.split("@")[0] : "Compte",
-    email: email ?? undefined,
-    createdAt: Date.now(),
-  };
-  await setDoc(ref, profile);
-  return { id: uid, ...profile };
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      role: "admin",
+      displayName: email.split("@")[0],
+      email,
+      createdAt: Date.now(),
+    });
+  }
+  return true;
 }
 
 /** Seed the default subjects the first time an admin signs in (if none exist). */
@@ -39,11 +39,7 @@ export async function seedDefaultSubjects(): Promise<void> {
   if (!existing.empty) return;
   const batch = writeBatch(db);
   for (const s of DEFAULT_SUBJECTS) {
-    batch.set(doc(db, COLLECTIONS.subjects, s.id), {
-      name: s.name,
-      isCustom: false,
-      createdAt: Date.now(),
-    });
+    batch.set(doc(db, COLLECTIONS.subjects, s.id), { name: s.name, isCustom: false, createdAt: Date.now() });
   }
   await batch.commit();
 }

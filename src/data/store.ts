@@ -19,6 +19,7 @@ import {
   type Payment,
   type Role,
   type Session,
+  type RegistrationRequest,
   type Student,
   type Subject,
   type Teacher,
@@ -40,6 +41,7 @@ const EMPTY = () => ({
   notifications: [] as AppNotification[],
   activityLog: [] as ActivityLog[],
   slotRequests: [] as TeacherSlotRequest[],
+  registrationRequests: [] as RegistrationRequest[],
 });
 
 interface DataState {
@@ -54,6 +56,7 @@ interface DataState {
   notifications: AppNotification[];
   activityLog: ActivityLog[];
   slotRequests: TeacherSlotRequest[];
+  registrationRequests: RegistrationRequest[];
 
   log: (userId: string, action: string, details: string) => void;
 
@@ -96,6 +99,11 @@ interface DataState {
 
   joinWaitlist: (classId: string, studentId: string) => void;
   leaveWaitlist: (classId: string, studentId: string) => void;
+
+  // Registration requests (student/teacher self-signup reviewed by admin)
+  addRegistrationRequest: (req: Omit<RegistrationRequest, "status" | "createdAt"> & { id: string }) => void;
+  approveRegistration: (requestId: string) => { email: string; name: string } | null;
+  rejectRegistration: (requestId: string) => { email: string; name: string } | null;
 
   resetToSeed: () => void;
 }
@@ -397,6 +405,67 @@ export const useData = create<DataState>()(
         fbPatch(COLLECTIONS.classes, classId, { waitingList });
       },
 
+      // ---- Registration requests (student/teacher signup reviewed by admin) ----
+      addRegistrationRequest: (req) => {
+        const request: RegistrationRequest = { ...req, status: "pending", createdAt: now() };
+        set((s) => ({ registrationRequests: [request, ...s.registrationRequests] }));
+        fbWrite(COLLECTIONS.registrationRequests, request);
+        get()
+          .users.filter((u) => u.role === "admin")
+          .forEach((a) =>
+            get().addNotification(
+              a.id,
+              "teacher_request",
+              `Nouvelle demande d'inscription : ${req.name} (${req.role === "teacher" ? "enseignant" : "étudiant"}).`
+            )
+          );
+      },
+      approveRegistration: (requestId) => {
+        const state = get();
+        const req = state.registrationRequests.find((r) => r.id === requestId);
+        if (!req) return null;
+
+        if (req.role === "student") {
+          const student: Student = {
+            id: uid(),
+            name: req.name,
+            level: req.level ?? "high",
+            phone: req.phone,
+            parentName: req.parentName ?? "",
+            parentPhone: req.parentPhone ?? "",
+            status: "active",
+            enrolledSubjects: [],
+            linkedAccountId: req.id,
+            createdAt: now(),
+          };
+          const user = { id: req.id, role: "student" as const, displayName: req.name, email: req.email, linkedStudentId: student.id, createdAt: now() };
+          set((s) => ({ students: [...s.students, student], users: [...s.users.filter((u) => u.id !== req.id), user] }));
+          fbWrite(COLLECTIONS.students, student);
+          fbWrite(COLLECTIONS.users, user);
+        } else {
+          const teacher: Teacher = { id: uid(), name: req.name, phone: req.phone, subjects: req.subjects ?? [], paymentMode: "percentage", schoolCutValue: 25, createdAt: now() };
+          const user = { id: req.id, role: "teacher" as const, displayName: req.name, email: req.email, teacherId: teacher.id, createdAt: now() };
+          set((s) => ({ teachers: [...s.teachers, teacher], users: [...s.users.filter((u) => u.id !== req.id), user] }));
+          fbWrite(COLLECTIONS.teachers, teacher);
+          fbWrite(COLLECTIONS.users, user);
+        }
+
+        const reviewedAt = now();
+        set((s) => ({ registrationRequests: s.registrationRequests.map((r) => (r.id === requestId ? { ...r, status: "approved", reviewedAt } : r)) }));
+        fbPatch(COLLECTIONS.registrationRequests, requestId, { status: "approved", reviewedAt });
+        get().log("u_admin", "registration.approve", `Inscription acceptée : ${req.name}`);
+        return { email: req.email, name: req.name };
+      },
+      rejectRegistration: (requestId) => {
+        const req = get().registrationRequests.find((r) => r.id === requestId);
+        if (!req) return null;
+        const reviewedAt = now();
+        set((s) => ({ registrationRequests: s.registrationRequests.map((r) => (r.id === requestId ? { ...r, status: "rejected", reviewedAt } : r)) }));
+        fbPatch(COLLECTIONS.registrationRequests, requestId, { status: "rejected", reviewedAt });
+        get().log("u_admin", "registration.reject", `Inscription refusée : ${req.name}`);
+        return { email: req.email, name: req.name };
+      },
+
       resetToSeed: () => set({ ...makeSeed() }),
     }),
     {
@@ -416,6 +485,7 @@ export const useData = create<DataState>()(
         notifications: s.notifications,
         activityLog: s.activityLog,
         slotRequests: s.slotRequests,
+        registrationRequests: s.registrationRequests,
       }),
     }
   )

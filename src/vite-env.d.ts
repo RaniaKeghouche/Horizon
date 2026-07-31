@@ -8,6 +8,10 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_MESSAGING_SENDER_ID: string;
   readonly VITE_FIREBASE_APP_ID: string;
   readonly VITE_OWNER_EMAIL: string;
+  readonly VITE_EMAILJS_SERVICE_ID: string;
+  readonly VITE_EMAILJS_PUBLIC_KEY: string;
+  readonly VITE_EMAILJS_TEMPLATE_CODE: string;
+  readonly VITE_EMAILJS_TEMPLATE_DECISION: string;
 }
 
 interface ImportMeta {

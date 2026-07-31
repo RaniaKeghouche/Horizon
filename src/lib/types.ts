@@ -160,6 +160,24 @@ export interface ActivityLog {
   createdAt: number;
 }
 
+// Self-registration request for students/teachers, reviewed by the admin (cahier flow).
+export interface RegistrationRequest {
+  id: string; // = Firebase Auth uid (or a uuid in demo)
+  role: "student" | "teacher";
+  email: string;
+  name: string;
+  phone: string;
+  // student-specific
+  level?: StudentLevel;
+  parentName?: string;
+  parentPhone?: string;
+  // teacher-specific
+  subjects?: string[];
+  status: "pending" | "approved" | "rejected";
+  createdAt: number;
+  reviewedAt?: number;
+}
+
 export interface TeacherSlotRequest {
   id: string;
   teacherId: string;
@@ -183,4 +201,5 @@ export const COLLECTIONS = {
   notifications: "notifications",
   activityLog: "activityLog",
   slotRequests: "slotRequests",
+  registrationRequests: "registrationRequests",
 } as const;

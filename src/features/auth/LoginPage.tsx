@@ -2,12 +2,13 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "./AuthContext";
 import { DEMO_MODE } from "../../lib/config";
+import RegisterFlow from "./RegisterFlow";
 import type { Role } from "../../lib/types";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
-  const { login, signup, loginWithGoogle, loginAs } = useAuth();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const { login, loginWithGoogle, loginAs } = useAuth();
+  const [register, setRegister] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,8 +19,7 @@ export default function LoginPage() {
     setError("");
     setBusy(true);
     try {
-      if (mode === "signup") await signup(email, password);
-      else await login(email, password);
+      await login(email, password);
     } catch (err) {
       setError((err as { message?: string })?.message ?? t("auth.error"));
     } finally {
@@ -108,7 +108,19 @@ export default function LoginPage() {
 
       <section className="landing-panel" id="login-panel">
         <div className="login-card2 card">
-          {DEMO_MODE ? (
+          {register ? (
+            <RegisterFlow
+              mode="signup"
+              onDone={() => {
+                if (DEMO_MODE) {
+                  alert("Demande d'inscription envoyée à l'administration ✅");
+                  setRegister(false);
+                }
+                // Firebase: the user is now signed in → the app shows the pending screen.
+              }}
+              onCancel={() => setRegister(false)}
+            />
+          ) : DEMO_MODE ? (
             <>
               <h2 className="login-title">{t("auth.login")}</h2>
               <p className="demo-hint">{t("login.demoHint")}</p>
@@ -120,16 +132,16 @@ export default function LoginPage() {
                   </button>
                 ))}
               </div>
+              <div className="or-divider"><span>{t("auth.or")}</span></div>
+              <button className="link-btn" onClick={() => setRegister(true)}>
+                {t("auth.noAccount")} (étudiant / enseignant)
+              </button>
             </>
           ) : (
             <>
-              <h2 className="login-title">{mode === "signup" ? t("auth.signup") : t("auth.login")}</h2>
-
-              <button className="btn btn-ghost btn-lg" onClick={onGoogle} disabled={busy}>
-                🔵 {t("auth.google")}
-              </button>
+              <h2 className="login-title">{t("auth.login")}</h2>
+              <button className="btn btn-ghost btn-lg" onClick={onGoogle} disabled={busy}>🔵 {t("auth.google")}</button>
               <div className="or-divider"><span>{t("auth.or")}</span></div>
-
               <form onSubmit={onSubmit} className="stack">
                 <label className="field">
                   <span>{t("auth.email")}</span>
@@ -137,17 +149,14 @@ export default function LoginPage() {
                 </label>
                 <label className="field">
                   <span>{t("auth.password")}</span>
-                  <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={6} />
+                  <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
                 </label>
                 {error && <p className="error-text">{error}</p>}
                 <button className="btn btn-primary btn-lg" type="submit" disabled={busy}>
-                  {busy ? t("auth.loading") : mode === "signup" ? t("auth.signup") : t("auth.login")}
+                  {busy ? t("auth.loading") : t("auth.login")}
                 </button>
               </form>
-
-              <button className="link-btn" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}>
-                {mode === "login" ? t("auth.noAccount") : t("auth.haveAccount")}
-              </button>
+              <button className="link-btn" onClick={() => setRegister(true)}>{t("auth.noAccount")}</button>
             </>
           )}
         </div>
