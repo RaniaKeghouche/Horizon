@@ -1,5 +1,8 @@
 {
-  "app": { "name": "Horizon Skills Academy", "tagline": "Système de gestion scolaire" },
+  "app": {
+    "name": "Horizon Skills Academy",
+    "tagline": "Système de gestion scolaire"
+  },
   "nav": {
     "dashboard": "Tableau de bord",
     "students": "Étudiants",
@@ -15,7 +18,11 @@
     "notifications": "Notifications",
     "analytics": "Analytique",
     "activity": "Journal",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "explore": "Explorer",
+    "legal": "Légal",
+    "home": "Accueil",
+    "contact": "Contact"
   },
   "navGroup": {
     "home": "Accueil",
@@ -26,14 +33,22 @@
   },
   "auth": {
     "login": "Connexion",
-    "email": "E-mail",
-    "password": "Mot de passe",
+    "signInTitle": "Connectez-vous à votre compte",
+    "emailLabel": "Identifiant de connexion",
+    "emailPlaceholder": "ex: rania.keghouche",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "signInBtn": "SE CONNECTER",
+    "notRegistered": "Pas encore inscrit ?",
+    "createAccount": "Créer un compte",
+    "error": "Nom d'utilisateur ou mot de passe incorrect.",
     "google": "Continuer avec Google",
     "signup": "Créer un compte",
     "or": "ou",
     "noAccount": "Pas de compte ? En créer un",
     "haveAccount": "Déjà un compte ? Se connecter",
-    "error": "Échec de la connexion",
     "loading": "Chargement..."
   },
   "login": {
@@ -47,7 +62,30 @@
       "schedule": "Emploi du temps intelligent"
     }
   },
-  "roles": { "admin": "Administrateur", "teacher": "Enseignant", "student": "Étudiant / Parent" },
+  "reg": {
+    "title": "Créer un compte",
+    "hint": "Pas d'e-mail nécessaire — un identifiant vous sera attribué.",
+    "studentBtn": "Étudiant / Parent",
+    "teacherBtn": "Enseignant",
+    "nameLabel": "Nom et prénom",
+    "namePlaceholder": "ex: Rania Keghouche",
+    "phoneLabel": "Téléphone",
+    "levelLabel": "Niveau",
+    "parentNameLabel": "Nom du parent",
+    "parentPhoneLabel": "Téléphone parent",
+    "subjectsLabel": "Matière(s) enseignée(s) — à choisir dans la liste",
+    "addSubjectOption": "— Ajouter une matière —",
+    "noSubjectsMsg": "Aucune matière disponible — l'administration doit d'abord en créer.",
+    "passwordHint": "Mot de passe (6+ caractères)",
+    "submitBtn": "Envoyer ma demande",
+    "sending": "Envoi...",
+    "backBtn": "Retour"
+  },
+  "roles": {
+    "admin": "Administrateur",
+    "teacher": "Enseignant",
+    "student": "Étudiant / Parent"
+  },
   "days": {
     "saturday": "Samedi",
     "sunday": "Dimanche",
@@ -79,5 +117,60 @@
     "language": "Langue",
     "hello": "Bonjour",
     "comingSoon": "Bientôt disponible"
+  },
+  "hero": {
+    "title_start": "Façonnez Leur ",
+    "title_dreams": "AVENIR",
+    "subtitle": "Accompagner les étudiants grâce à l'excellence structurée et à l'innovation créative.",
+    "stat1_label": "Expérience",
+    "stat1_val": "4+ Ans",
+    "stat2_label": "Étudiants",
+    "stat2_val": "100+",
+    "stat3_label": "Réussite",
+    "stat3_val": "90%",
+    "cta_btn": "Rejoindre l'Académie",
+    "trust_text1": "Rejoignez",
+    "trust_text2": "étudiants brillants"
+  },
+  "about": {
+    "title": "Qui est Horizon Skills Academy ?",
+    "c1_title": "Une École d'Excellence",
+    "c1_desc": "Une académie prestigieuse dédiée à libérer le plein potentiel de chaque étudiant grâce à un apprentissage innovant.",
+    "c2_title": "Enseignants Qualifiés",
+    "c2_desc": "Apprenez avec des éducateurs d'élite, passionnés et engagés à fournir le plus haut niveau d'encadrement académique.",
+    "c3_title": "Succès Prouvé",
+    "c3_desc": "Un historique constant de résultats de premier plan et de potentiel libéré.",
+    "c4_title": "Programme Innovant",
+    "c4_desc": "Des méthodes d'enseignement modernes qui dotent les étudiants de compétences d'avenir et d'esprit critique.",
+    "c5_title": "Infrastructures Modernes",
+    "c5_desc": "Un campus à la pointe de la technologie conçu pour favoriser la créativité, la collaboration et la croissance.",
+    "c6_title": "Communauté Bienveillante",
+    "c6_desc": "Un environnement inclusif et favorable où chaque étudiant est valorisé et encouragé à s'épanouir."
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "location": "Adresse",
+    "social": "Instagram",
+    "form_title": "Des Informations ? Envoyez-nous un Message",
+    "form_desc": "N'hésitez pas à nous contacter pour toute question concernant nos programmes, les admissions ou des informations générales. Nous sommes là pour vous aider !",
+    "follow": "Suivez-nous sur les réseaux sociaux :",
+    "submit": "Envoyer le message",
+    "lbl_email": "E-mail",
+    "lbl_name": "Nom",
+    "lbl_subject": "Sujet",
+    "lbl_message": "Message"
+  },
+  "cta_section": {
+    "title": "Prêt à rejoindre l'excellence ?",
+    "desc": "Inscrivez-vous dès aujourd'hui et commencez votre parcours avec Horizon Skills Academy.",
+    "btn": "Inscrivez-vous"
+  },
+  "footer": {
+    "desc": "Horizon Skills Academy est votre partenaire d'excellence à Constantine. Nous allions pédagogie innovante et encadrement sur-mesure pour révéler le potentiel de chaque élève et façonner les leaders de demain.",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité",
+    "legal": "Mentions légales"
   }
 }

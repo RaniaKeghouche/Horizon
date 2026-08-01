@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./features/auth/AuthContext";
 import ProtectedRoute from "./app/ProtectedRoute";
 import AppLayout from "./app/AppLayout";
 import LoginPage from "./features/auth/LoginPage";
+import AuthPage from "./features/auth/AuthPage";
 import PendingGate from "./features/auth/PendingGate";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import StudentsPage from "./features/students/StudentsPage";
@@ -33,6 +34,7 @@ function Root() {
   return (
     <Routes>
       <Route path="/login" element={authed ? <Navigate to="/" replace /> : <LoginRoute />} />
+      <Route path="/auth" element={authed ? <Navigate to="/" replace /> : <AuthPage />} />
       <Route
         element={
           <ProtectedRoute>

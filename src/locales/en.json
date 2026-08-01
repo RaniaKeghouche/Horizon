@@ -1,0 +1,159 @@
+{
+  "app": {
+    "name": "Horizon Skills Academy",
+    "tagline": "Système de gestion scolaire"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "schedule": "Schedule",
+    "payments": "Payments",
+    "notifications": "Notifications",
+    "analytics": "Analytics",
+    "activity": "Activity Log",
+    "logout": "Logout",
+    "explore": "Explore",
+    "legal": "Legal",
+    "home": "Home",
+    "contact": "Contact Us"
+  },
+  "navGroup": {
+    "home": "Accueil",
+    "people": "Gestion",
+    "teaching": "Pédagogie",
+    "finance": "Finances",
+    "follow": "Suivi"
+  },
+  "auth": {
+    "login": "Login",
+    "signInTitle": "Sign In to your Account",
+    "emailLabel": "Login ID / Username",
+    "emailPlaceholder": "e.g. rania.keghouche",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "signInBtn": "SIGN IN",
+    "notRegistered": "Not registered yet?",
+    "createAccount": "Create an account",
+    "error": "Login failed",
+    "google": "Continue with Google",
+    "or": "or",
+    "noAccount": "No account? Create one",
+    "haveAccount": "Already have an account? Sign in",
+    "loading": "Loading..."
+  },
+  "login": {
+    "cta": "Get Started"
+  },
+  "roles": {
+    "admin": "Administrateur",
+    "teacher": "Enseignant",
+    "student": "Étudiant / Parent"
+  },
+  "days": {
+    "saturday": "Samedi",
+    "sunday": "Dimanche",
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi"
+  },
+  "attendance": {
+    "present": "Présent",
+    "absent_paid": "Absent (facturé)",
+    "absent_free": "Absent (gratuit)"
+  },
+  "payments": {
+    "paid": "Payé",
+    "unpaid": "Non payé",
+    "totalDue": "Total dû",
+    "session": "Séance",
+    "of": "sur"
+  },
+  "common": {
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "search": "Rechercher",
+    "language": "Langue",
+    "hello": "Bonjour",
+    "comingSoon": "Bientôt disponible"
+  },
+  "hero": {
+    "title_start": "Shape Their ",
+    "title_dreams": "FUTURE",
+    "subtitle": "Empowering students through structured excellence and creative innovation.",
+    "stat1_label": "Experience",
+    "stat1_val": "4+ Years",
+    "stat2_label": "Students",
+    "stat2_val": "100+",
+    "stat3_label": "Success Rate",
+    "stat3_val": "90%",
+    "cta_btn": "Join the Academy",
+    "trust_text1": "Join",
+    "trust_text2": "brilliant students"
+  },
+  "about": {
+    "title": "Who is Horizon Skills Academy?",
+    "c1_title": "A School of Excellence",
+    "c1_desc": "A powerful and prestigious academy dedicated to unlocking every student's full potential through innovative learning.",
+    "c2_title": "Qualified Teachers",
+    "c2_desc": "Learn from elite, passionate educators who are committed to providing the highest standard of academic guidance.",
+    "c3_title": "Proven Success",
+    "c3_desc": "A consistent history of top-tier results and unleashed potential.",
+    "c4_title": "Innovative Curriculum",
+    "c4_desc": "Modern teaching methodologies that equip students with future-ready skills and critical thinking.",
+    "c5_title": "Modern Facilities",
+    "c5_desc": "A state-of-the-art campus designed to foster creativity, collaboration, and academic growth.",
+    "c6_title": "Nurturing Community",
+    "c6_desc": "A supportive and inclusive environment where every student is valued and encouraged to thrive."
+  },
+  "contact": {
+    "title": "Contact Us",
+    "phone": "Phone",
+    "email": "Email",
+    "location": "Location",
+    "social": "Instagram",
+    "form_title": "Information ? Send Us a Message",
+    "form_desc": "Feel free to reach out to us for any inquiries about our programs, admissions, or general information. We are here to help!",
+    "follow": "Follow Us On Social Media:",
+    "submit": "Submit Message",
+    "lbl_email": "Email",
+    "lbl_name": "Name",
+    "lbl_subject": "Subject",
+    "lbl_message": "Message"
+  },
+  "reg": {
+    "title": "Create an account",
+    "hint": "No email required — an ID will be assigned to you.",
+    "studentBtn": "Student / Parent",
+    "teacherBtn": "Teacher",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "e.g. John Doe",
+    "phoneLabel": "Phone",
+    "levelLabel": "Level",
+    "parentNameLabel": "Parent's Name",
+    "parentPhoneLabel": "Parent's Phone",
+    "subjectsLabel": "Taught subject(s) — choose from list",
+    "addSubjectOption": "— Add a subject —",
+    "noSubjectsMsg": "No subjects available — administration must create them first.",
+    "passwordHint": "Password (6+ characters)",
+    "submitBtn": "Send my request",
+    "sending": "Sending...",
+    "backBtn": "Back"
+  },
+  "cta_section": {
+    "title": "Ready to join excellence?",
+    "desc": "Sign up today and start your journey with Horizon Skills Academy.",
+    "btn": "Sign up"
+  },
+  "footer": {
+    "desc": "Horizon Skills Academy is your partner of excellence in Constantine. We combine innovative pedagogy and tailored support to unlock every student's potential and shape tomorrow's leaders.",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy",
+    "legal": "Legal Notice"
+  }
+}
