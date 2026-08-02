@@ -4,7 +4,7 @@ import { useAuth } from "./AuthContext";
 import { DEMO_MODE } from "../../lib/config";
 import { toLoginEmail } from "../../lib/username";
 import RegisterFlow from "./RegisterFlow";
-import { Mail, Lock, Eye, EyeOff, Shield, BookOpen, GraduationCap, User } from "lucide-react";
+import { Lock, Eye, EyeOff, Shield, BookOpen, GraduationCap, User } from "lucide-react";
 import type { Role } from "../../lib/types";
 
 export default function AuthPage() {

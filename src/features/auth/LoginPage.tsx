@@ -1,9 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { 
-  GraduationCap, Users, Award, Lightbulb, Library, HeartHandshake, 
-  Book, Telescope, Palette, Music, Trophy, Monitor, 
-  FlaskConical, Dna, Theater, Globe, Languages, Ruler,
+import {
+  GraduationCap, Users, Award, Lightbulb, Library, HeartHandshake,
   Phone, Mail, MapPin, User, Laptop
 } from "lucide-react";
 
