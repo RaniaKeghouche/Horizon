@@ -1,13 +1,47 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   GraduationCap, Users, Award, Lightbulb, Library, HeartHandshake,
-  Phone, Mail, MapPin, User, Laptop
+  Phone, Mail, MapPin, User, Laptop, Check,
+  UserPlus, ClipboardCheck, Rocket, Sparkles, X, Menu, Globe
 } from "lucide-react";
+
+const SECTIONS = ["hero", "features", "contact"] as const;
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState<(typeof SECTIONS)[number]>("hero");
+
+  // The nav is transparent over the hero art and gains a surface once past it.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Scroll-spy: mark the section currently filling the viewport so the nav
+  // always says where you are, not just where you can go.
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id as (typeof SECTIONS)[number]);
+      },
+      { threshold: [0.35, 0.6], rootMargin: "-15% 0px -35% 0px" }
+    );
+    SECTIONS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+    return () => obs.disconnect();
+  }, []);
 
   const cycleLang = () => {
     const nextLang = i18n.language === "ar" ? "fr" : i18n.language === "fr" ? "en" : "ar";
@@ -15,6 +49,12 @@ export default function LoginPage() {
   };
   function scrollToLogin() {
     navigate("/auth");
+  }
+  /** Smooth-scrolls to a section and closes the mobile menu. */
+  function goTo(e: React.MouseEvent, id: (typeof SECTIONS)[number]) {
+    e.preventDefault();
+    setMenuOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
@@ -27,306 +67,311 @@ export default function LoginPage() {
          <div className="bg-grid"></div>
       </div>
 
-      <header className="landing-nav">
-        <div className="auth-brand">
-          <img src="/horizon-logo.png" alt="Horizon" className="brand-logo-img" />
-          <span className="brand-text">HORIZON</span>
+      {/* --- MASTHEAD --- utility strip over a glass main bar; the strip
+          retracts on scroll leaving a single compact sticky bar. */}
+      <header className={"site-header" + (scrolled ? " is-stuck" : "")}>
+        <div className="topstrip">
+          <div className="topstrip-inner">
+            <div className="topstrip-contact">
+              <a href="tel:+213553366204"><Phone size={13} aria-hidden="true" /> 055 33 66 204</a>
+              <span className="ts-sep" aria-hidden="true" />
+              <a href="mailto:horizonskillsacademy@gmail.com" className="ts-mail">
+                <Mail size={13} aria-hidden="true" /> horizonskillsacademy@gmail.com
+              </a>
+            </div>
+
+            {/* Explicit 3-way switch beats a cycling button — you can see and
+                pick your language instead of clicking until it lands. */}
+            <div className="lang-switch" role="group" aria-label={t("nav.language")}>
+              <Globe size={13} aria-hidden="true" className="lang-globe" />
+              {(["fr", "en", "ar"] as const).map((lng) => (
+                <button
+                  key={lng}
+                  className={i18n.language === lng ? "on" : undefined}
+                  aria-pressed={i18n.language === lng}
+                  onClick={() => i18n.changeLanguage(lng)}
+                >
+                  {lng.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <nav className="landing-links">
-          <a href="#hero" className="nav-link" onClick={(e) => { e.preventDefault(); document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }); }}>Accueil</a>
-          <a href="#features" className="nav-link" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}>À propos</a>
-          <a href="#contact" className="nav-link" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>Contact</a>
-          <button className="link-btn" onClick={cycleLang}>
-            {i18n.language === "ar" ? "FR" : i18n.language === "fr" ? "EN" : "AR"}
-          </button>
-          <a href="/auth" className="nav-cta">
-            Connexion
-          </a>
-        </nav>
-        <button className="hamburger-btn">☰</button>
+
+        <div className="mainbar">
+          <div className="mainbar-inner">
+            <a href="#hero" className="auth-brand" onClick={(e) => goTo(e, "hero")}>
+              <img src="/horizon-logo.png" alt="Horizon" className="brand-logo-img" width={112} height={118} />
+              <span className="brand-text">HORIZON</span>
+            </a>
+
+            <nav className="landing-links">
+              {([
+                ["hero", "nav.home"],
+                ["features", "nav.about"],
+                ["contact", "nav.contact"],
+              ] as const).map(([id, key]) => (
+                <a
+                  key={id}
+                  href={"#" + id}
+                  className={"nav-link" + (active === id ? " is-active" : "")}
+                  aria-current={active === id ? "page" : undefined}
+                  onClick={(e) => goTo(e, id)}
+                >
+                  {t(key)}
+                </a>
+              ))}
+            </nav>
+
+            <div className="nav-actions">
+              <a href="/auth" className="nav-cta">{t("nav.login")}</a>
+              <button
+                className="hamburger-btn"
+                aria-label={t("nav.menu")}
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+              >
+                {menuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
+      {/* Mobile navigation — the desktop links are hidden below 900px. */}
+      {menuOpen && (
+        <>
+          <div className="mobile-nav-backdrop" onClick={() => setMenuOpen(false)} />
+          <nav className="mobile-nav">
+            <a href="#hero" onClick={(e) => goTo(e, "hero")}>{t("nav.home")}</a>
+            <a href="#features" onClick={(e) => goTo(e, "features")}>{t("nav.about")}</a>
+            <a href="#contact" onClick={(e) => goTo(e, "contact")}>{t("nav.contact")}</a>
+            <button className="link-btn" onClick={cycleLang}>
+              <Globe size={16} /> {i18n.language === "ar" ? "Français" : i18n.language === "fr" ? "English" : "العربية"}
+            </button>
+            <a href="/auth" className="nav-cta">{t("nav.login")}</a>
+          </nav>
+        </>
+      )}
+
+      {/* --- HERO --- artwork is a full-bleed background layer, copy sits clear of it */}
       <section className="landing-hero" id="hero">
+        {/* Only the pencil/ladder side of the artwork is shown — the right of
+            climb.png carries baked-in English text that would clash with the
+            localized headline. */}
+        <div className="hero-art" aria-hidden="true">
+          <img src="/climb.png" alt="" width={535} height={654} fetchPriority="high" decoding="async" />
+        </div>
+        <div className="hero-scrim" aria-hidden="true" />
+
         <div className="hero-copy">
-          <h1 className="hero-title">{t("hero.title_start")} <br/><span className="magic-text">{t("hero.title_dreams")}</span></h1>
-          <p className="hero-subtitle">
-            {t("hero.subtitle")}
-          </p>
-          
+          <span className="hero-eyebrow">
+            <i className="hero-eyebrow-dot" aria-hidden="true" />
+            {t("hero.badge")}
+          </span>
+
+          <h1 className="hero-title">
+            {t("hero.title_start")}
+            <span className="hero-title-em">{t("hero.title_dreams")}</span>
+          </h1>
+          <span className="hero-rule" aria-hidden="true" />
+
+          <p className="hero-subtitle">{t("hero.subtitle")}</p>
+
           <div className="hero-cta-block">
-            <a href="/auth" className="btn-hero-primary">
-              {t("hero.cta_btn")} <span style={{marginLeft: '0.5rem'}}>&rarr;</span>
+            <a href="/auth" className="btn-hero-primary">{t("hero.cta_btn")}</a>
+            <a href="#features" className="btn-hero-ghost" onClick={(e) => goTo(e, "features")}>
+              {t("hero.cta_secondary")}
             </a>
-            <div className="hero-trust">
-              <div className="avatar-group">
-                <div className="avatar bg-indigo"><GraduationCap size={20} color="white" /></div>
-                <div className="avatar bg-pink"><User size={20} color="white" /></div>
-                <div className="avatar bg-cyan"><Laptop size={20} color="white" /></div>
-              </div>
-              <span className="trust-text">{t("hero.trust_text1")} <strong>+500</strong> {t("hero.trust_text2")}</span>
-            </div>
           </div>
 
-          <div className="hero-benefits">
-            <div className="benefit-stat">
-              <span className="stat-val">{t("hero.stat1_val")}</span>
-              <span className="stat-label">{t("hero.stat1_label")}</span>
-            </div>
-            <div className="benefit-stat">
-              <span className="stat-val">{t("hero.stat2_val")}</span>
-              <span className="stat-label">{t("hero.stat2_label")}</span>
-            </div>
-            <div className="benefit-stat">
-              <span className="stat-val">{t("hero.stat3_val")}</span>
-              <span className="stat-label">{t("hero.stat3_label")}</span>
-            </div>
-          </div>
-        </div>
+          <figure className="hero-proof">
+            <span className="hero-proof-figure">{t("hero.proof_figure")}</span>
+            <figcaption className="hero-proof-body">
+              <strong>{t("hero.proof_label")}</strong>
+              <span className="hero-proof-quote">{t("hero.proof_quote")}</span>
+            </figcaption>
+          </figure>
 
-        <div className="hero-visual">
-          <div className="spark spark-1">✦</div>
-          <div className="spark spark-2">✦</div>
-          <img 
-            src="/dreams.png" 
-            alt="Education Dreams" 
-            className="dreams-image" 
-          />
-          {/* Premium Desktop Magic Spark - sweeps elegantly from behind the image */}
-          <svg className="desktop-spark" viewBox="0 0 400 200" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="sparkDesktopCore" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0" />
-                <stop offset="20%" stopColor="#0ea5e9" />
-                <stop offset="50%" stopColor="#4f46e5" />
-                <stop offset="80%" stopColor="#f02fc2" />
-                <stop offset="100%" stopColor="#f02fc2" stopOpacity="0" />
-              </linearGradient>
-              <filter id="glowHeavy" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="6" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <filter id="glowLight" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="2" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <path id="magic-star" d="M 0,-8 Q 0,0 8,0 Q 0,0 0,8 Q 0,0 -8,0 Q 0,0 0,-8" fill="#fff" />
-            </defs>
-            <path id="d-path-core" d="M 400,80 C 250,180 150,0 0,100" fill="none" stroke="url(#sparkDesktopCore)" strokeWidth="6" filter="url(#glowHeavy)" className="spark-line-thick" />
-            <path d="M 400,80 C 250,180 150,0 0,100" fill="none" stroke="#fff" strokeWidth="1.5" filter="url(#glowLight)" className="spark-line-thin" />
-            
-            {/* Lead Star */}
-            <g>
-              <animateMotion dur="4s" repeatCount="indefinite"><mpath href="#d-path-core" /></animateMotion>
-              <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="4s" repeatCount="indefinite" />
-              <g>
-                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="2s" repeatCount="indefinite" />
-                <use href="#magic-star" transform="scale(1.2)" filter="url(#glowLight)" />
-              </g>
-            </g>
-            
-            {/* Trailing Star 1 */}
-            <g>
-              <animateMotion dur="4s" begin="0.25s" repeatCount="indefinite"><mpath href="#d-path-core" /></animateMotion>
-              <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="4s" repeatCount="indefinite" />
-              <g>
-                <animateTransform attributeName="transform" type="rotate" values="360;0" dur="3s" repeatCount="indefinite" />
-                <use href="#magic-star" transform="scale(0.7)" fill="#0ea5e9" filter="url(#glowLight)" />
-              </g>
-            </g>
-
-            {/* Trailing Star 2 */}
-            <g>
-              <animateMotion dur="4s" begin="0.5s" repeatCount="indefinite"><mpath href="#d-path-core" /></animateMotion>
-              <animate attributeName="opacity" values="0;1;0.5;0" keyTimes="0;0.1;0.9;1" dur="4s" repeatCount="indefinite" />
-              <g>
-                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="1.5s" repeatCount="indefinite" />
-                <use href="#magic-star" transform="scale(0.4)" fill="#f02fc2" filter="url(#glowLight)" />
-              </g>
-            </g>
-          </svg>
-          <svg className="mobile-spark" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="sparkMobile" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f02fc2" />
-                <stop offset="50%" stopColor="#4f46e5" />
-                <stop offset="100%" stopColor="#0ea5e9" />
-              </linearGradient>
-              <filter id="sparkMobileGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="2" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <path id="m-path" className="mobile-spark-line" d="M 20,0 C 0,50 50,70 50,100" fill="none" stroke="url(#sparkMobile)" strokeWidth="3" filter="url(#sparkMobileGlow)" />
-            <circle r="4" fill="#0ea5e9" filter="url(#sparkMobileGlow)">
-              <animateMotion dur="2.5s" repeatCount="indefinite">
-                <mpath href="#m-path" />
-              </animateMotion>
-              <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2.5s" repeatCount="indefinite" />
-            </circle>
-          </svg>
-          
-          {/* Drifting magic stars that float across the screen */}
-          <div className="drifting-spark ds-1">✦</div>
-          <div className="drifting-spark ds-2">✦</div>
-          <div className="drifting-spark ds-3">★</div>
+          <dl className="hero-stats">
+            <div className="hero-stat">
+              <dt>{t("hero.stat1_val")}</dt>
+              <dd>{t("hero.stat1_label")}</dd>
+            </div>
+            <div className="hero-stat">
+              <dt>{t("hero.stat2_val")}</dt>
+              <dd>{t("hero.stat2_label")}</dd>
+            </div>
+            <div className="hero-stat">
+              <dt>{t("hero.stat3_val")}</dt>
+              <dd>{t("hero.stat3_label")}</dd>
+            </div>
+          </dl>
         </div>
       </section>
 
+      {/* --- WHO IS HORIZON --- gallery + copy, checkmarks, single CTA */}
       <section className="about-section" id="features">
-        <h2 className="section-title">{t("about.title")}</h2>
-        
-        <div className="landing-cards">
-          {/* Card 1 */}
-          <div className="info-card bg-pink">
-            <div className="card-floating-icon"><GraduationCap size={28} /></div>
-            <h4>{t("about.c1_title")}</h4>
-            <p>{t("about.c1_desc")}</p>
-          </div>
-          
-          {/* Card 2 (Middle - Pushed Down) */}
-          <div className="info-card bg-indigo">
-            <div className="card-floating-icon"><Users size={28} /></div>
-            <h4>{t("about.c2_title")}</h4>
-            <p>{t("about.c2_desc")}</p>
-          </div>
-
-          {/* Card 3 */}
-          <div className="info-card bg-cyan">
-            <div className="card-floating-icon"><Award size={28} /></div>
-            <h4>{t("about.c3_title")}</h4>
-            <p>{t("about.c3_desc")}</p>
-          </div>
-
-          {/* Card 4 */}
-          <div className="info-card bg-green">
-            <div className="card-floating-icon"><Lightbulb size={28} /></div>
-            <h4>{t("about.c4_title")}</h4>
-            <p>{t("about.c4_desc")}</p>
+        <div className="about-split">
+          <div className="about-gallery">
+            <img
+              className="ag-back"
+              src="/constantine_classy_classroom.jpg"
+              alt={t("about.photo_alt_classroom")}
+              width={1376}
+              height={768}
+              loading="lazy"
+              decoding="async"
+            />
+            <img
+              className="ag-front"
+              src="/caring_community.jpg"
+              alt={t("about.photo_alt_community")}
+              width={1376}
+              height={768}
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="ag-seal" aria-hidden="true">
+              <span className="ag-seal-num">{t("hero.stat1_val")}</span>
+              <span className="ag-seal-label">{t("about.seal_years")}</span>
+            </div>
           </div>
 
-          {/* Card 5 (Middle - Pushed Down) */}
-          <div className="info-card bg-yellow">
-            <div className="card-floating-icon"><Library size={28} /></div>
-            <h4>{t("about.c5_title")}</h4>
-            <p>{t("about.c5_desc")}</p>
-          </div>
+          <div className="about-copy">
+            <span className="about-eyebrow">
+              <Sparkles size={13} /> {t("about.eyebrow")}
+            </span>
+            <h2 className="about-headline">{t("about.headline")}</h2>
+            <p className="about-lead">{t("about.lead")}</p>
 
-          {/* Card 6 */}
-          <div className="info-card bg-purple">
-            <div className="card-floating-icon"><HeartHandshake size={28} /></div>
-            <h4>{t("about.c6_title")}</h4>
-            <p>{t("about.c6_desc")}</p>
+            <ul className="about-checks">
+              <li><span className="ac-box"><Check size={13} strokeWidth={3} /></span>{t("about.c1_title")}</li>
+              <li><span className="ac-box"><Check size={13} strokeWidth={3} /></span>{t("about.c2_title")}</li>
+              <li><span className="ac-box"><Check size={13} strokeWidth={3} /></span>{t("about.c3_title")}</li>
+            </ul>
+
           </div>
         </div>
 
+        {/* Enrolment: one slim bar under the About block rather than a card —
+            three inline steps, a divider between each, action at the end. */}
+        <div className="enrol-bar">
+          <span className="enrol-badge">{t("cta_section.badge")}</span>
+          <span className="enrol-sep" aria-hidden="true" />
 
+          <ol className="enrol-steps">
+            <li className="enrol-item">
+              <span className="enrol-icon"><UserPlus size={16} /></span>
+              <span className="enrol-text">
+                <strong>{t("cta_section.step1_t")}</strong>
+                <span>{t("cta_section.step1_s")}</span>
+              </span>
+            </li>
+            <li className="enrol-item">
+              <span className="enrol-icon"><ClipboardCheck size={16} /></span>
+              <span className="enrol-text">
+                <strong>{t("cta_section.step2_t")}</strong>
+                <span>{t("cta_section.step2_s")}</span>
+              </span>
+            </li>
+            <li className="enrol-item">
+              <span className="enrol-icon"><Rocket size={16} /></span>
+              <span className="enrol-text">
+                <strong>{t("cta_section.step3_t")}</strong>
+                <span>{t("cta_section.step3_s")}</span>
+              </span>
+            </li>
+          </ol>
 
-      </section>
-
-      {/* --- CTA SECTION --- */}
-      <section className="cta-section">
-        <div className="cta-container">
-          <h2>{t("cta_section.title")}</h2>
-          <p>{t("cta_section.desc")}</p>
-          <a href="/auth" className="btn-chic btn-large" onClick={(e) => { e.preventDefault(); scrollToLogin(); }}>
-            {t("cta_section.btn")} <span style={{marginLeft: '0.5rem'}}>&rarr;</span>
+          <a href="/auth" className="enrol-cta" onClick={(e) => { e.preventDefault(); scrollToLogin(); }}>
+            {t("cta_section.btn")} <span className="btn-arrow">&rarr;</span>
           </a>
         </div>
       </section>
 
-      {/* --- CONTACT SECTION --- */}
-      <section className="contact-section" id="contact">
-        <h2 className="contact-title">{t("contact.title")}</h2>
-        
-        <div className="contact-cloud-wrapper">
-          {/* Cloud SVG Divider behind cards */}
-          <svg className="contact-cloud-svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
-            <path fill="#eef2ff" fillOpacity="1" d="M0,192L48,176C96,160,192,128,288,138.7C384,149,480,203,576,218.7C672,235,768,213,864,186.7C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,0L0,0Z"></path>
-          </svg>
+      {/* --- NEW CONTACT SECTION --- */}
+      <section className="contact-section-new" id="contact">
+        <h2 className="section-title">{t("contact.section_label")}</h2>
+        <div className="contact-split-new">
           
-          <div className="contact-cards-row">
-            <a href="tel:0553366204" className="c-card bg-indigo">
-              <div className="c-icon"><Phone size={24} /></div>
-              <p>{t("contact.phone")}</p>
-              <span className="muted small">055 33 66 204</span>
-            </a>
+          {/* Left side: Info & Map */}
+          <div className="contact-info-new">
+            <h2 className="contact-title-new">{t("contact.title")}</h2>
+            <p className="contact-desc-new">{t("contact.desc")}</p>
             
-            <a href="mailto:horizonskillsacademy@gmail.com" className="c-card bg-indigo">
-              <div className="c-icon"><Mail size={24} /></div>
-              <p>{t("contact.email")}</p>
-              <span className="muted small">horizonskillsacademy@gmail.com</span>
-            </a>
-
-            <a href="https://www.google.com/maps?q=36.355332,6.637742" target="_blank" rel="noreferrer" className="c-card bg-indigo">
-              <div className="c-icon"><MapPin size={24} /></div>
-              <p>Horizon Academy</p>
-              <span className="muted small">Cité Daksi, Constantine</span>
-            </a>
-
-            <a href="https://www.instagram.com/horizon_academy_constantine/?hl=ar" target="_blank" rel="noreferrer" className="c-card bg-indigo">
-              <div className="c-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            <div className="contact-list-new">
+              <div className="c-item-new">
+                <div className="c-icon-new c-indigo"><Phone size={24} /></div>
+                <div>
+                  <strong>{t("contact.phone")}</strong>
+                  <span>055 33 66 204</span>
+                </div>
               </div>
-              <p>Instagram</p>
-              <span className="muted small">@horizon_academy_constantine</span>
-            </a>
-          </div>
-        </div>
+              <div className="c-item-new">
+                <div className="c-icon-new c-pink"><Mail size={24} /></div>
+                <div>
+                  <strong>{t("contact.email")}</strong>
+                  <span>horizonskillsacademy@gmail.com</span>
+                </div>
+              </div>
+              <div className="c-item-new">
+                <div className="c-icon-new c-cyan"><MapPin size={24} /></div>
+                <div>
+                  <strong>{t("contact.location")}</strong>
+                  <span>Horizon Academy, Cité Daksi, Constantine</span>
+                </div>
+              </div>
+            </div>
 
-        <div className="contact-split">
-          <div className="contact-form-side">
-            <form className="contact-form">
-              <label>
-                {t("contact.lbl_email")}
-                <input type="email" placeholder={t("contact.lbl_email")} />
-              </label>
-              <label>
-                {t("contact.lbl_name")}
-                <input type="text" placeholder={t("contact.lbl_name")} />
-              </label>
-              <label>
-                {t("contact.lbl_subject")}
-                <input type="text" placeholder={t("contact.lbl_subject")} />
-              </label>
-              <label>
-                {t("contact.lbl_message")}
-                <textarea placeholder={t("contact.lbl_message")} rows={4}></textarea>
-              </label>
-              <button type="button" className="btn-chic btn-submit-form">{t("contact.submit")}</button>
-            </form>
-          </div>
-          
-          <div className="contact-info-side">
-            <h3 className="c-info-title">{t("contact.form_title")}</h3>
-            <p className="c-info-desc">{t("contact.form_desc")}</p>
-            
-            <div className="c-map-container">
+            {/* Map embedded on the left, as requested */}
+            <div className="c-map-container-new">
               <iframe 
                 src="https://maps.google.com/maps?q=36.355332,6.637742&t=k&z=19&output=embed" 
                 width="100%" 
                 height="220" 
-                style={{border:0, borderRadius: '16px'}} 
+                style={{border:0}} 
                 allowFullScreen 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade">
               </iframe>
             </div>
-            
-            <div className="c-socials">
-              <span className="c-social-text">{t("contact.follow")}</span>
-              <div className="c-social-icons">
-                 <div className="c-social-btn">
-                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.53-4H14V7a1 1 0 0 1 1-1h3z"></path></svg>
-                 </div>
-                 <div className="c-social-btn">
-                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                 </div>
-                 <div className="c-social-btn">
-                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-                 </div>
-              </div>
-            </div>
           </div>
+          
+          {/* Right side: Form Card */}
+          <div className="contact-form-card-new">
+            <form onSubmit={(e) => e.preventDefault()}>
+              <div className="form-row-new">
+                <label>
+                  {t("contact.lbl_fname")}
+                  <input type="text" placeholder={t("contact.lbl_fname")} />
+                </label>
+                <label>
+                  {t("contact.lbl_lname")}
+                  <input type="text" placeholder={t("contact.lbl_lname")} />
+                </label>
+              </div>
+              <label>
+                {t("contact.lbl_email")}
+                <input type="email" placeholder="jean.dupont@email.com" />
+              </label>
+              <label>
+                {t("contact.lbl_program")}
+                <select>
+                  <option value="">{t("contact.program_placeholder")}</option>
+                  <option value="math">Mathématiques</option>
+                  <option value="physics">Physique</option>
+                  <option value="languages">Langues</option>
+                </select>
+              </label>
+              <label>
+                {t("contact.lbl_message")}
+                <textarea rows={4} placeholder={t("contact.message_placeholder")}></textarea>
+              </label>
+              <button type="submit" className="btn-contact-submit">{t("contact.submit")}</button>
+            </form>
+          </div>
+          
         </div>
       </section>
 
@@ -335,7 +380,7 @@ export default function LoginPage() {
         <div className="footer-content">
           <div className="footer-brand">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <img src="/horizon-logo.png" alt="Horizon" className="footer-logo" />
+              <img src="/horizon-logo.png" alt="Horizon" className="footer-logo" width={112} height={118} />
               <span className="footer-brand-text">HORIZON</span>
             </div>
             <p className="footer-desc">
@@ -344,33 +389,47 @@ export default function LoginPage() {
           </div>
           
           <div className="footer-links-group">
-            <h4>{t("nav.explore")}</h4>
-            <a href="#hero" onClick={(e) => { e.preventDefault(); document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }); }}>{t("nav.home")}</a>
-            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}>{t("nav.schedule")}</a>
-            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}>{t("nav.payments")}</a>
-            <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>{t("nav.contact")}</a>
+            <h3>{t("nav.explore")}</h3>
+            <a href="#hero" onClick={(e) => goTo(e, "hero")}>{t("nav.home")}</a>
+            <a href="#features" onClick={(e) => goTo(e, "features")}>{t("nav.about")}</a>
+            <a href="#contact" onClick={(e) => goTo(e, "contact")}>{t("nav.contact")}</a>
+            <a href="/auth">{t("nav.login")}</a>
           </div>
 
+          {/* Real, working destinations — these were dead href="#" placeholders. */}
           <div className="footer-links-group">
-            <h4>{t("nav.legal")}</h4>
-            <a href="#">{t("footer.terms")}</a>
-            <a href="#">{t("footer.privacy")}</a>
-            <a href="#">{t("footer.legal")}</a>
+            <h3>{t("footer.reach")}</h3>
+            <a href="tel:+213553366204">055 33 66 204</a>
+            <a href="mailto:horizonskillsacademy@gmail.com">horizonskillsacademy@gmail.com</a>
+            <a
+              href="https://maps.google.com/?q=36.355332,6.637742"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t("footer.directions")}
+            </a>
           </div>
 
           <div className="footer-socials">
-            <h4>{t("contact.follow") || "Suivez-nous"}</h4>
+            <h3>{t("contact.follow")}</h3>
             <div className="f-social-icons">
-               <a href="#" className="f-social-btn">
-                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.53-4H14V7a1 1 0 0 1 1-1h3z"></path></svg>
-               </a>
-               <a href="#" className="f-social-btn">
-                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-               </a>
-               <a href="#" className="f-social-btn">
-                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-               </a>
+              <a className="f-social-btn" href="mailto:horizonskillsacademy@gmail.com" aria-label={t("contact.email")}>
+                <Mail size={18} />
+              </a>
+              <a className="f-social-btn" href="tel:+213553366204" aria-label={t("contact.phone")}>
+                <Phone size={18} />
+              </a>
+              <a
+                className="f-social-btn"
+                href="https://maps.google.com/?q=36.355332,6.637742"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t("contact.location")}
+              >
+                <MapPin size={18} />
+              </a>
             </div>
+            <p className="footer-note">{t("footer.social_note")}</p>
           </div>
         </div>
         

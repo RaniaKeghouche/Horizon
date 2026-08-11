@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { School, Search, Bell, Globe, LogOut, ChevronDown, ChevronRight } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/AuthContext";
@@ -43,7 +44,7 @@ export default function AppLayout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">🏫</span>
+          <span className="brand-mark"><School size={20} /></span>
           <span className="brand-name">{t("app.name")}</span>
         </div>
 
@@ -54,7 +55,7 @@ export default function AppLayout() {
               <div className="nav-section" key={section.titleKey}>
                 <button className="nav-section-head" onClick={() => toggleSection(section.titleKey)}>
                   <span>{t(section.titleKey)}</span>
-                  <span className="chevron">{isCollapsed ? "▸" : "▾"}</span>
+                  <span className="chevron">{isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}</span>
                 </button>
                 {!isCollapsed &&
                   section.items.map((item) => (
@@ -64,7 +65,7 @@ export default function AppLayout() {
                       end={item.path === "/"}
                       className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
                     >
-                      <span className="nav-icon">{item.icon}</span>
+                      <span className="nav-icon"><item.icon size={18} aria-hidden="true" /></span>
                       <span>{t(item.labelKey)}</span>
                     </NavLink>
                   ))}
@@ -81,12 +82,16 @@ export default function AppLayout() {
           </div>
         </div>
 
+        {/* The labels sit in their own span so narrow/short layouts can hide the text
+            and keep the icon — collapsing the button to an icon-only square. */}
         <div className="sidebar-footer">
-          <button className="btn btn-ghost" onClick={toggleLang}>
-            🌐 {i18n.language === "ar" ? "Français" : "العربية"}
+          <button className="btn btn-ghost" onClick={toggleLang} title={i18n.language === "ar" ? "Français" : "العربية"}>
+            <span className="btn-icon"><Globe size={16} /></span>
+            <span className="btn-label">{i18n.language === "ar" ? "Français" : "العربية"}</span>
           </button>
-          <button className="btn btn-ghost" onClick={logout}>
-            🚪 {t("nav.logout")}
+          <button className="btn btn-ghost" onClick={logout} title={t("nav.logout")}>
+            <span className="btn-icon"><LogOut size={16} /></span>
+            <span className="btn-label">{t("nav.logout")}</span>
           </button>
         </div>
       </aside>
@@ -98,7 +103,7 @@ export default function AppLayout() {
           </div>
           <div className="topbar-right">
             <div className="search-box">
-              <span>🔎</span>
+              <Search size={16} aria-hidden="true" />
               <input
                 placeholder={t("common.search")}
                 value={searchTerm}
@@ -107,7 +112,7 @@ export default function AppLayout() {
               />
             </div>
             <button className="icon-btn bell" onClick={() => navigate("/notifications")} aria-label={t("nav.notifications")}>
-              🔔{unread > 0 && <span className="dot" />}
+              <Bell size={18} />{unread > 0 && <span className="dot" />}
             </button>
 
             {/* User menu — always-visible logout */}
@@ -124,10 +129,10 @@ export default function AppLayout() {
                       {role && <span className="muted small">{t(`roles.${role}`)}</span>}
                     </div>
                     <button className="menu-item" onClick={() => { toggleLang(); setMenuOpen(false); }}>
-                      🌐 {i18n.language === "ar" ? "Français" : "العربية"}
+                      <Globe size={16} /> {i18n.language === "ar" ? "Français" : "العربية"}
                     </button>
                     <button className="menu-item danger" onClick={() => { setMenuOpen(false); logout(); }}>
-                      🚪 {t("nav.logout")}
+                      <LogOut size={16} /> {t("nav.logout")}
                     </button>
                   </div>
                 </>

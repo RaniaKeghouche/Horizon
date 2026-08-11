@@ -6,7 +6,7 @@ import { DEMO_MODE } from "../../lib/config";
 import { slugName, toLoginEmail } from "../../lib/username";
 import { LEVEL_LABEL, LEVEL_GROUPS } from "../../lib/labels";
 import type { Role, StudentLevel } from "../../lib/types";
-import { User, Phone, BookOpen, KeyRound } from "lucide-react";
+import { User, Phone, BookOpen, KeyRound, Check } from "lucide-react";
 
 interface RegData {
   role: "student" | "teacher";
@@ -125,13 +125,17 @@ export default function RegisterFlow({
 
   if (createdUsername && DEMO_MODE) {
     return (
-      <div className="auth-form-content" style={{textAlign: 'center', marginTop: '2rem'}}>
-        <div style={{fontSize: '4rem', marginBottom: '1rem'}}>✅</div>
-        <h2 className="auth-title" style={{fontSize: '1.8rem'}}>Demande envoyée</h2>
-        <p style={{color: '#475569', marginBottom: '0.5rem'}}>Votre identifiant de connexion :</p>
-        <p style={{fontSize: '1.3rem', fontWeight: 800, color: '#4f46e5', background: '#eef2ff', padding: '0.75rem', borderRadius: '12px', userSelect: 'all'}}>{createdUsername}</p>
-        <p style={{color: '#64748b', fontSize: '0.85rem', marginTop: '1rem', marginBottom: '2rem'}}>Notez-le. L'administration doit valider votre compte.</p>
-        {onCancel && <button className="auth-register-text button" onClick={onCancel} style={{border:'none', background:'none', color:'#4f46e5', fontWeight:600, cursor:'pointer'}}>← {t("reg.backBtn")}</button>}
+      <div className="auth-form-content reg-done">
+        <div className="reg-done-mark"><Check size={34} strokeWidth={3} /></div>
+        <h2 className="auth-title" style={{ fontSize: "1.8rem", marginBottom: "0.75rem" }}>Demande envoyée</h2>
+        <p className="reg-muted" style={{ marginBottom: "0.25rem" }}>Votre identifiant de connexion :</p>
+        <p className="reg-username">{createdUsername}</p>
+        <p className="reg-muted small" style={{ marginTop: "1rem", marginBottom: "2rem" }}>
+          Notez-le. L'administration doit valider votre compte.
+        </p>
+        {onCancel && (
+          <button className="link-btn" onClick={onCancel}>← {t("reg.backBtn")}</button>
+        )}
       </div>
     );
   }
@@ -139,24 +143,13 @@ export default function RegisterFlow({
   return (
     <div className="auth-form-content" style={{marginTop: '1rem'}}>
       <h2 className="auth-title" style={{fontSize: '1.8rem', marginBottom: '1rem'}}>{t("reg.title")}</h2>
-      <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem'}}>{t("reg.hint")}</p>
+      <p className="reg-muted" style={{marginBottom: '1.5rem'}}>{t("reg.hint")}</p>
 
-      <div style={{display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: '999px'}}>
+      <div className="reg-role-switch">
         {(["student", "teacher"] as const).map((r) => (
-          <button 
-            key={r} 
-            style={{
-              flex: 1, 
-              border: 'none', 
-              background: v.role === r ? 'white' : 'transparent',
-              color: v.role === r ? '#0f172a' : '#64748b',
-              fontWeight: v.role === r ? 700 : 500,
-              padding: '0.6rem',
-              borderRadius: '999px',
-              cursor: 'pointer',
-              boxShadow: v.role === r ? '0 2px 10px rgba(0,0,0,0.05)' : 'none',
-              transition: 'all 0.2s'
-            }}
+          <button
+            key={r}
+            className={v.role === r ? "on" : undefined}
             onClick={() => set("role", r as Role as RegData["role"])}
           >
             {r === "student" ? t("reg.studentBtn") : t("reg.teacherBtn")}
@@ -186,7 +179,7 @@ export default function RegisterFlow({
             <label>{t("reg.levelLabel")}</label>
             <div className="auth-input-wrapper">
               <BookOpen size={18} className="auth-input-icon" />
-              <select style={{width:'100%', padding:'0.875rem 1rem 0.875rem 2.75rem', borderRadius:'12px', border:'1px solid #e2e8f0', background:'#f8fafc', fontSize:'1rem', appearance:'none'}} value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
+              <select className="reg-select" value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
                 {LEVEL_GROUPS.map((g) => (
                   <optgroup key={g.label} label={g.label}>
                     {g.levels.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
@@ -216,7 +209,7 @@ export default function RegisterFlow({
           <div className="auth-input-wrapper" style={{marginBottom: '0.5rem'}}>
             <BookOpen size={18} className="auth-input-icon" />
             <select
-              style={{width:'100%', padding:'0.875rem 1rem 0.875rem 2.75rem', borderRadius:'12px', border:'1px solid #e2e8f0', background:'#f8fafc', fontSize:'1rem', appearance:'none'}}
+              className="reg-select"
               value=""
               onChange={(e) => { const id = e.target.value; if (id && !v.subjects.includes(id)) set("subjects", [...v.subjects, id]); }}
             >
@@ -229,15 +222,15 @@ export default function RegisterFlow({
           {v.subjects.length > 0 && (
             <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem'}}>
               {v.subjects.map((id) => (
-                <span key={id} style={{display:'inline-flex', alignItems:'center', gap:'0.4rem', background:'#eef2ff', color:'#4f46e5', borderRadius:'999px', padding:'0.3rem 0.75rem', fontSize:'0.85rem', fontWeight:600}}>
+                <span key={id} className="reg-chip">
                   {subjName(id)}
-                  <button type="button" onClick={() => toggleSubject(id)} style={{background:'none', border:'none', color:'#4f46e5', cursor:'pointer', padding:0, fontSize:'1rem'}}>✕</button>
+                  <button type="button" onClick={() => toggleSubject(id)} className="reg-chip-x">✕</button>
                 </span>
               ))}
             </div>
           )}
           {allSubjects.length === 0 && (
-            <span style={{color: '#64748b', fontSize: '0.85rem'}}>{t("reg.noSubjectsMsg")}</span>
+            <span className="reg-muted small">{t("reg.noSubjectsMsg")}</span>
           )}
         </div>
       )}

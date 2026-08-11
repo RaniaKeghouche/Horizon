@@ -14,7 +14,19 @@
     "explore": "Explore",
     "legal": "Legal",
     "home": "Home",
-    "contact": "Contact Us"
+    "contact": "Contact Us",
+    "about": "About",
+    "login": "Sign In",
+    "menu": "Menu",
+    "students": "Students",
+    "teachers": "Teachers",
+    "requests": "Requests",
+    "subjects": "Subjects",
+    "courses": "Courses",
+    "sessions": "Groups",
+    "attendance": "Attendance",
+    "payroll": "Payroll",
+    "language": "Language"
   },
   "navGroup": {
     "home": "Accueil",
@@ -40,10 +52,24 @@
     "or": "or",
     "noAccount": "No account? Create one",
     "haveAccount": "Already have an account? Sign in",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "signup": "Create an account",
+    "email": "Email",
+    "password": "Password",
+    "welcome": "Welcome",
+    "welcomeSub": "Today will be a good day.",
+    "slogan": "Where ambition finds its method."
   },
   "login": {
-    "cta": "Get Started"
+    "cta": "Get Started",
+    "headline": "Run your school, simply",
+    "lead": "Attendance, payments, scheduling and notifications — everything you need to run your centre, together in one place, without the complexity.",
+    "demoHint": "Demo mode — pick a profile to enter:",
+    "features": {
+      "attendance": "One-tap attendance",
+      "payments": "Payments & invoices",
+      "schedule": "Smart scheduling"
+    }
   },
   "roles": {
     "admin": "Administrateur",
@@ -83,18 +109,23 @@
     "comingSoon": "Bientôt disponible"
   },
   "hero": {
-    "title_start": "Shape Their ",
-    "title_dreams": "FUTURE",
-    "subtitle": "Empowering students through structured excellence and creative innovation.",
-    "stat1_label": "Experience",
-    "stat1_val": "4+ Years",
-    "stat2_label": "Students",
-    "stat2_val": "100+",
-    "stat3_label": "Success Rate",
-    "stat3_val": "90%",
+    "title_start": "Helping you climb",
+    "title_dreams": "towards your future.",
+    "subtitle": "Every step counts. We guide students with demanding pedagogy and creative energy — from the first lesson to the first contract.",
+    "stat1_label": "Years of experience",
+    "stat1_val": "4+",
+    "stat2_label": "Students taught",
+    "stat2_val": "500+",
+    "stat3_label": "Programs",
+    "stat3_val": "12",
     "cta_btn": "Join the Academy",
     "trust_text1": "Join",
-    "trust_text2": "brilliant students"
+    "trust_text2": "brilliant students",
+    "badge": "Language & Skills Academy · Constantine",
+    "cta_secondary": "Our programs",
+    "proof_figure": "90%",
+    "proof_label": "Success rate",
+    "proof_quote": "\"Your journey deserves the best guide.\""
   },
   "about": {
     "title": "Who is Horizon Skills Academy?",
@@ -107,24 +138,33 @@
     "c4_title": "Innovative Curriculum",
     "c4_desc": "Modern teaching methodologies that equip students with future-ready skills and critical thinking.",
     "c5_title": "Modern Facilities",
-    "c5_desc": "A state-of-the-art campus designed to foster creativity, collaboration, and academic growth.",
+    "c5_desc": "State-of-the-art school environment designed to foster creativity, collaboration, and academic growth.",
     "c6_title": "Nurturing Community",
-    "c6_desc": "A supportive and inclusive environment where every student is valued and encouraged to thrive."
+    "c6_desc": "A supportive and inclusive environment where every student is valued and encouraged to thrive.",
+    "eyebrow": "Get to know about us",
+    "headline": "Step into real learning and ignite your potential.",
+    "lead": "Horizon Skills Academy pairs demanding teaching with genuine care. Small groups, teachers who know every student by name, and a method built for Algerian school years — so progress is something you can actually see.",
+    "cta": "Talk to us",
+    "photo_alt_classroom": "A Horizon Skills Academy classroom in Constantine, students taking part in a lesson",
+    "photo_alt_community": "Students and a teacher talking together around a study table",
+    "seal_years": "Years of experience"
   },
   "contact": {
-    "title": "Contact Us",
+    "section_label": "Contact Us",
+    "title": "Ready to shape your future?",
+    "desc": "Contact our admissions team to discover how Horizon Skills Academy can guide you to excellence.",
     "phone": "Phone",
     "email": "Email",
-    "location": "Location",
-    "social": "Instagram",
-    "form_title": "Information ? Send Us a Message",
-    "form_desc": "Feel free to reach out to us for any inquiries about our programs, admissions, or general information. We are here to help!",
-    "follow": "Follow Us On Social Media:",
-    "submit": "Submit Message",
+    "location": "Main Campus",
+    "lbl_fname": "First Name",
+    "lbl_lname": "Last Name",
     "lbl_email": "Email",
-    "lbl_name": "Name",
-    "lbl_subject": "Subject",
-    "lbl_message": "Message"
+    "lbl_program": "Program of interest",
+    "program_placeholder": "Select a program...",
+    "lbl_message": "Message",
+    "message_placeholder": "How can we help you?",
+    "submit": "Send request",
+    "follow": "Reach us"
   },
   "reg": {
     "title": "Create an account",
@@ -148,12 +188,27 @@
   "cta_section": {
     "title": "Ready to join excellence?",
     "desc": "Sign up today and start your journey with Horizon Skills Academy.",
-    "btn": "Sign up"
+    "btn": "Sign up",
+    "badge": "Enrolment open",
+    "secondary": "Talk to us",
+    "step1_t": "Create your account",
+    "step1_d": "A login ID is issued to you — no email needed.",
+    "step2_t": "We review it",
+    "step2_d": "Our team validates your request within 48 hours.",
+    "step3_t": "Start learning",
+    "step3_d": "Access your schedule, attendance and payments.",
+    "steps_title": "How enrolment works",
+    "step1_s": "No email needed",
+    "step2_s": "Within 48 hours",
+    "step3_s": "Schedule & payments"
   },
   "footer": {
     "desc": "Horizon Skills Academy is your partner of excellence in Constantine. We combine innovative pedagogy and tailored support to unlock every student's potential and shape tomorrow's leaders.",
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
-    "legal": "Legal Notice"
+    "legal": "Legal Notice",
+    "reach": "Get in touch",
+    "directions": "Get directions",
+    "social_note": "Social profiles coming soon."
   }
 }

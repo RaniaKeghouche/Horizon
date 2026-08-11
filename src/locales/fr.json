@@ -22,7 +22,11 @@
     "explore": "Explorer",
     "legal": "Légal",
     "home": "Accueil",
-    "contact": "Contact"
+    "contact": "Contact",
+    "about": "À propos",
+    "login": "Connexion",
+    "menu": "Menu",
+    "language": "Langue"
   },
   "navGroup": {
     "home": "Accueil",
@@ -49,7 +53,12 @@
     "or": "ou",
     "noAccount": "Pas de compte ? En créer un",
     "haveAccount": "Déjà un compte ? Se connecter",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "welcome": "Bienvenue",
+    "welcomeSub": "Aujourd'hui sera une belle journée.",
+    "slogan": "Là où l'ambition trouve sa méthode."
   },
   "login": {
     "headline": "Gérez votre école, simplement",
@@ -119,18 +128,23 @@
     "comingSoon": "Bientôt disponible"
   },
   "hero": {
-    "title_start": "Façonnez Leur ",
-    "title_dreams": "AVENIR",
-    "subtitle": "Accompagner les étudiants grâce à l'excellence structurée et à l'innovation créative.",
-    "stat1_label": "Expérience",
-    "stat1_val": "4+ Ans",
-    "stat2_label": "Étudiants",
-    "stat2_val": "100+",
-    "stat3_label": "Réussite",
-    "stat3_val": "90%",
+    "title_start": "Grimpez vers",
+    "title_dreams": "votre avenir.",
+    "subtitle": "Chaque marche compte. Nous accompagnons les étudiants avec une pédagogie exigeante et une énergie créative — du premier cours au premier contrat.",
+    "stat1_label": "Ans d'expérience",
+    "stat1_val": "4+",
+    "stat2_label": "Étudiants formés",
+    "stat2_val": "500+",
+    "stat3_label": "Programmes",
+    "stat3_val": "12",
     "cta_btn": "Rejoindre l'Académie",
     "trust_text1": "Rejoignez",
-    "trust_text2": "étudiants brillants"
+    "trust_text2": "étudiants brillants",
+    "badge": "Académie de langues et compétences · Constantine",
+    "cta_secondary": "Nos programmes",
+    "proof_figure": "90%",
+    "proof_label": "Taux de réussite",
+    "proof_quote": "« Votre parcours mérite le meilleur guide. »"
   },
   "about": {
     "title": "Qui est Horizon Skills Academy ?",
@@ -142,35 +156,59 @@
     "c3_desc": "Un historique constant de résultats de premier plan et de potentiel libéré.",
     "c4_title": "Programme Innovant",
     "c4_desc": "Des méthodes d'enseignement modernes qui dotent les étudiants de compétences d'avenir et d'esprit critique.",
-    "c5_title": "Infrastructures Modernes",
-    "c5_desc": "Un campus à la pointe de la technologie conçu pour favoriser la créativité, la collaboration et la croissance.",
-    "c6_title": "Communauté Bienveillante",
-    "c6_desc": "Un environnement inclusif et favorable où chaque étudiant est valorisé et encouragé à s'épanouir."
+    "c5_title": "Installations modernes",
+    "c5_desc": "Un environnement scolaire ultramoderne conçu pour favoriser la créativité, la collaboration et le développement académique.",
+    "c6_title": "Communauté bienveillante",
+    "c6_desc": "Un environnement inclusif et favorable où chaque étudiant est valorisé et encouragé à s'épanouir.",
+    "eyebrow": "Faites connaissance",
+    "headline": "Entrez dans un vrai apprentissage et révélez votre potentiel.",
+    "lead": "Horizon Skills Academy allie une pédagogie exigeante à un accompagnement sincère. Des groupes réduits, des enseignants qui connaissent chaque élève par son nom, et une méthode pensée pour les années scolaires algériennes — pour des progrès que l'on voit vraiment.",
+    "cta": "Nous contacter",
+    "photo_alt_classroom": "Une salle de classe Horizon Skills Academy à Constantine, des élèves participant au cours",
+    "photo_alt_community": "Des élèves et une enseignante échangeant autour d'une table de travail",
+    "seal_years": "Ans d'expérience"
   },
   "contact": {
-    "title": "Contactez-nous",
+    "section_label": "Contactez-nous",
+    "title": "Prêt à façonner votre avenir ?",
+    "desc": "Contactez notre équipe d'admission pour découvrir comment Horizon Skills Academy peut vous accompagner vers l'excellence.",
     "phone": "Téléphone",
-    "email": "E-mail",
-    "location": "Adresse",
-    "social": "Instagram",
-    "form_title": "Des Informations ? Envoyez-nous un Message",
-    "form_desc": "N'hésitez pas à nous contacter pour toute question concernant nos programmes, les admissions ou des informations générales. Nous sommes là pour vous aider !",
-    "follow": "Suivez-nous sur les réseaux sociaux :",
-    "submit": "Envoyer le message",
-    "lbl_email": "E-mail",
-    "lbl_name": "Nom",
-    "lbl_subject": "Sujet",
-    "lbl_message": "Message"
+    "email": "Email",
+    "location": "Campus Principal",
+    "lbl_fname": "Prénom",
+    "lbl_lname": "Nom",
+    "lbl_email": "Email",
+    "lbl_program": "Programme d'intérêt",
+    "program_placeholder": "Sélectionnez un programme...",
+    "lbl_message": "Message",
+    "message_placeholder": "Comment pouvons-nous vous aider ?",
+    "submit": "Envoyer la demande",
+    "follow": "Nous joindre"
   },
   "cta_section": {
     "title": "Prêt à rejoindre l'excellence ?",
     "desc": "Inscrivez-vous dès aujourd'hui et commencez votre parcours avec Horizon Skills Academy.",
-    "btn": "Inscrivez-vous"
+    "btn": "Inscrivez-vous",
+    "badge": "Inscriptions ouvertes",
+    "secondary": "Nous contacter",
+    "step1_t": "Créez votre compte",
+    "step1_d": "Un identifiant vous est attribué — sans e-mail.",
+    "step2_t": "Nous validons",
+    "step2_d": "Notre équipe étudie votre demande sous 48 h.",
+    "step3_t": "Commencez",
+    "step3_d": "Accédez à vos cours, présences et paiements.",
+    "steps_title": "Comment ça se passe",
+    "step1_s": "Sans e-mail",
+    "step2_s": "Sous 48 heures",
+    "step3_s": "Cours et paiements"
   },
   "footer": {
     "desc": "Horizon Skills Academy est votre partenaire d'excellence à Constantine. Nous allions pédagogie innovante et encadrement sur-mesure pour révéler le potentiel de chaque élève et façonner les leaders de demain.",
     "terms": "Conditions d'utilisation",
     "privacy": "Politique de confidentialité",
-    "legal": "Mentions légales"
+    "legal": "Mentions légales",
+    "reach": "Nous joindre",
+    "directions": "Itinéraire",
+    "social_note": "Réseaux sociaux bientôt disponibles."
   }
 }

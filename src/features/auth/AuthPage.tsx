@@ -46,10 +46,6 @@ export default function AuthPage() {
           <a href="/" className="auth-back-link">
             <span>←</span> {t("nav.home")}
           </a>
-          <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-            <img src="/horizon-logo.png" alt="Horizon" className="auth-logo" style={{width: '24px', height: '24px', filter: 'none'}} />
-            <span className="auth-brand-text" style={{fontSize: '1.1rem', letterSpacing: '0.5px'}}>HORIZON</span>
-          </div>
         </div>
 
           {register ? (
@@ -65,8 +61,9 @@ export default function AuthPage() {
             />
           ) : (
             <div className="auth-form-content">
-              <h1 className="auth-title">{t("auth.signInTitle")}</h1>
-              
+              <h1 className="auth-title">{t("auth.welcome")}</h1>
+              <p className="auth-subtitle-line">{t("auth.welcomeSub")}</p>
+
               {DEMO_MODE && (
                 <div className="demo-login-panel">
                   <p className="demo-hint">{t("login.demoHint")}</p>
@@ -142,9 +139,16 @@ export default function AuthPage() {
           )}
         </div>
 
-        {/* Right side: Premium 3D Illustration */}
+        {/* Right side: the classroom photo carries this half on its own */}
         <div className="auth-illustration-side">
-          <div className="auth-illustration-bg"></div>
+          <div className="auth-illustration-bg">
+            {/* Single centred brand statement: circular mark + slogan. */}
+            <div className="auth-emblem">
+              <img src="/horizon-logo.png" alt="Horizon Skills Academy" width={112} height={118} />
+              <span className="auth-emblem-rule" aria-hidden="true" />
+              <p className="auth-slogan">{t("auth.slogan")}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
