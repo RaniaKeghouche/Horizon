@@ -5,6 +5,13 @@ import { computeStudentBilling } from "../../lib/billing";
 import { buildDigest, dayEnum } from "../../lib/digest";
 import { formatDA } from "../../lib/format";
 import { DAY_LABEL } from "../../lib/labels";
+import { DEMO_MODE } from "../../lib/config";
+import { refetchAll } from "../../data/firebaseSync";
+import type { LucideIcon } from "lucide-react";
+import {
+  GraduationCap, Users, CalendarDays, Wallet, CalendarClock,
+  CircleCheck, BookOpen, Clock, CalendarRange, DatabaseZap, RefreshCw,
+} from "lucide-react";
 
 // Role-aware home. Each role lands here and sees the summary that matters to them.
 export default function DashboardPage() {
@@ -27,13 +34,13 @@ export default function DashboardPage() {
 }
 
 function StatCard({
-  icon,
+  icon: Icon,
   label,
   value,
   tone,
-  color = "violet",
+  color = "navy",
 }: {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   value: string;
   tone?: string;
@@ -41,7 +48,7 @@ function StatCard({
 }) {
   return (
     <div className="card stat-card">
-      <span className={"stat-icon badge-" + color}>{icon}</span>
+      <span className={"stat-icon badge-" + color} aria-hidden="true"><Icon size={22} /></span>
       <div className="stat-body">
         <span className={"stat-value " + (tone ?? "")}>{value}</span>
         <span className="stat-label">{label}</span>
@@ -53,6 +60,7 @@ function StatCard({
 function AdminHome() {
   const { t } = useTranslation();
   const { students, teachers, classes, subjects, enrollments, sessions, payments } = useData();
+  const loadDemoData = useData((s) => s.loadDemoData);
 
   const totalDebt = students.reduce(
     (sum, s) => sum + computeStudentBilling(s, enrollments, sessions, payments, { subjects, teachers }).totalDue,
@@ -63,13 +71,44 @@ function AdminHome() {
   return (
     <>
       <div className="grid-cards">
-        <StatCard icon="🎓" label={t("nav.students")} value={String(students.length)} color="blue" />
-        <StatCard icon="👨‍🏫" label={t("nav.teachers")} value={String(teachers.length)} color="violet" />
-        <StatCard icon="🗓️" label={t("nav.schedule")} value={`${classes.length} classes`} color="cyan" />
-        <StatCard icon="⚠️" label="Dette totale" value={formatDA(totalDebt)} tone="text-danger" color="amber" />
+        <StatCard icon={GraduationCap} label={t("nav.students")} value={String(students.length)} color="navy" />
+        <StatCard icon={Users} label={t("nav.teachers")} value={String(teachers.length)} color="sky" />
+        <StatCard icon={CalendarDays} label={t("nav.schedule")} value={`${classes.length} classes`} color="gold" />
+        <StatCard icon={Wallet} label="Dette totale" value={formatDA(totalDebt)} tone="text-danger" color="warn" />
       </div>
+      {/* Fresh Supabase projects start empty — this seeds recognisable demo rows
+          (ids t1, s1, rm_big, ...) that supabase/DELETE-DEMO-DATA.sql removes. */}
+      {students.length === 0 && (
+        <div className="card">
+          <strong>Aucune donnée</strong>
+          <p className="muted">
+            {DEMO_MODE
+              ? "Chargez un jeu de données de démonstration pour explorer l'application."
+              : "La base est vide, ou la synchronisation n'a rien reçu. Rechargez depuis Supabase, ou chargez des données de démo."}
+          </p>
+          <div className="add-row">
+            {!DEMO_MODE && (
+              <button className="btn btn-ghost" onClick={() => refetchAll()}>
+                <RefreshCw size={16} /> Recharger depuis Supabase
+              </button>
+            )}
+            <button className="btn btn-primary" onClick={() => loadDemoData()}>
+              <DatabaseZap size={16} /> Charger les données de démo
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Realtime can be off (table not published, or a missing table rejected the
+          channel). This pulls the current rows on demand. */}
+      {!DEMO_MODE && students.length > 0 && (
+        <button className="btn btn-ghost sm mr-auto" onClick={() => refetchAll()}>
+          <RefreshCw size={14} /> Recharger depuis Supabase
+        </button>
+      )}
+
       <div className="card promo-card">
-        <strong>📅 Programme</strong>
+        <strong><CalendarRange size={18} aria-hidden="true" /> Programme</strong>
         <p>{digest}</p>
       </div>
     </>
@@ -86,9 +125,9 @@ function TeacherHome({ teacherId }: { teacherId?: string }) {
   return (
     <>
       <div className="grid-cards">
-        <StatCard icon="🗓️" label="Mes classes" value={String(myClasses.length)} color="violet" />
-        <StatCard icon="📅" label="Aujourd'hui" value={String(todays.length)} color="blue" />
-        <StatCard icon="✅" label="Séances tenues" value={String(sessions.filter((s) => myClasses.some((c) => c.id === s.classId)).length)} color="green" />
+        <StatCard icon={CalendarDays} label="Mes classes" value={String(myClasses.length)} color="navy" />
+        <StatCard icon={CalendarClock} label="Aujourd'hui" value={String(todays.length)} color="sky" />
+        <StatCard icon={CircleCheck} label="Séances tenues" value={String(sessions.filter((s) => myClasses.some((c) => c.id === s.classId)).length)} color="green" />
       </div>
       <div className="card">
         <strong>Mes classes d'aujourd'hui</strong>
@@ -97,7 +136,7 @@ function TeacherHome({ teacherId }: { teacherId?: string }) {
         ) : (
           <ul className="clean-list">
             {todays.map((c) => (
-              <li key={c.id}>⏰ {c.timeSlot} — {subjName(c.subjectId)}</li>
+              <li key={c.id}><Clock size={14} aria-hidden="true" /> {c.timeSlot} — {subjName(c.subjectId)}</li>
             ))}
           </ul>
         )}
@@ -116,9 +155,9 @@ function StudentHome({ linkedStudentId }: { linkedStudentId?: string }) {
   return (
     <>
       <div className="grid-cards">
-        <StatCard icon="📚" label="Matières" value={String(billing.subjects.length)} color="violet" />
-        <StatCard icon="💰" label="Total dû" value={formatDA(billing.totalDue)} tone={billing.totalDue > 0 ? "text-danger" : "text-ok"} color={billing.totalDue > 0 ? "amber" : "green"} />
-        <StatCard icon="✅" label="Payé" value={formatDA(billing.totalPaid)} tone="text-ok" color="green" />
+        <StatCard icon={BookOpen} label="Matières" value={String(billing.subjects.length)} color="navy" />
+        <StatCard icon={Wallet} label="Total dû" value={formatDA(billing.totalDue)} tone={billing.totalDue > 0 ? "text-danger" : "text-ok"} color={billing.totalDue > 0 ? "warn" : "success"} />
+        <StatCard icon={CircleCheck} label="Payé" value={formatDA(billing.totalPaid)} tone="text-ok" color="success" />
       </div>
       <div className="card">
         <strong>Où en suis-je ?</strong>

@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Wallet, TriangleAlert, ReceiptText } from "lucide-react";
 import { useData } from "../../data/store";
+import GroupPicker, { EMPTY_FILTERS, filterClasses, type GroupFilters } from "../../components/GroupPicker";
 import { useAuth } from "../auth/AuthContext";
 import { computeStudentBilling } from "../../lib/billing";
 import { printInvoice, printInvoices } from "../../lib/invoice";
@@ -17,18 +19,31 @@ export default function PaymentsPage() {
 // ---- Admin: debt overview + per-student management ----
 function AdminPayments() {
   const { t } = useTranslation();
-  const { students, subjects, teachers, enrollments, sessions, payments } = useData();
+  const { students, subjects, teachers, classes, enrollments, sessions, payments } = useData();
   const markMonthPaid = useData((s) => s.markMonthPaid);
   const markMonthUnpaid = useData((s) => s.markMonthUnpaid);
   const [manage, setManage] = useState<Student | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Same teacher / level / subject narrowing as the attendance screens, so you
+  // collect a group's money without scrolling the whole school.
+  const [filters, setFilters] = useState<GroupFilters>(EMPTY_FILTERS);
+  const [debtOnly, setDebtOnly] = useState(false);
   const month = billingMonth();
 
-  const rows = students
+  // Keep only the students enrolled in a group that matches the filters.
+  const visibleStudents = useMemo(() => {
+    if (!filters.teacherId && !filters.level && !filters.subjectId) return students;
+    const ids = new Set(filterClasses(classes, filters).map((c) => c.id));
+    const enrolled = new Set(enrollments.filter((e) => ids.has(e.classId)).map((e) => e.studentId));
+    return students.filter((s) => enrolled.has(s.id));
+  }, [students, classes, enrollments, filters]);
+
+  const rows = visibleStudents
     .map((s) => ({
       student: s,
       billing: computeStudentBilling(s, enrollments, sessions, payments, { subjects, teachers }),
     }))
+    .filter((r) => !debtOnly || r.billing.totalDue > 0)
     .sort((a, b) => b.billing.totalDue - a.billing.totalDue);
 
   const totalDebt = rows.reduce((sum, r) => sum + r.billing.totalDue, 0);
@@ -50,19 +65,32 @@ function AdminPayments() {
       <div className="page-head">
         <h1>{t("nav.payments")}</h1>
         {selected.size > 0 && (
-          <button className="btn btn-primary" onClick={printSelected}>🧾 Imprimer {selected.size} facture(s)</button>
+          <button className="btn btn-primary" onClick={printSelected}>
+            <ReceiptText size={16} aria-hidden /> Imprimer {selected.size} facture(s)
+          </button>
         )}
       </div>
 
       <div className="grid-cards">
         <div className="card stat-card">
-          <span className="stat-icon badge-green">💰</span>
+          <span className="stat-icon badge-green"><Wallet size={20} aria-hidden /></span>
           <div className="stat-body"><span className="stat-value text-ok">{formatDA(totalCollected)}</span><span className="stat-label">Encaissé</span></div>
         </div>
         <div className="card stat-card">
-          <span className="stat-icon badge-amber">⚠️</span>
+          <span className="stat-icon badge-amber"><TriangleAlert size={20} aria-hidden /></span>
           <div className="stat-body"><span className="stat-value text-danger">{formatDA(totalDebt)}</span><span className="stat-label">Dette totale</span></div>
         </div>
+      </div>
+
+      {/* Groups are the unit you collect in — filter the list down to one. */}
+      <GroupPicker classes={classes} filters={filters} onFilters={setFilters} showGroups={false} />
+
+      <div className="toolbar">
+        <label className="check-inline">
+          <input type="checkbox" checked={debtOnly} onChange={(e) => setDebtOnly(e.target.checked)} />
+          <span>Impayés seulement</span>
+        </label>
+        <span className="muted small">{rows.length} étudiant(s)</span>
       </div>
 
       <div className="card table-wrap">
@@ -99,11 +127,16 @@ function AdminPayments() {
                 </td>
                 <td className="row-actions">
                   <button className="btn btn-ghost sm" onClick={() => setManage(student)}>Gérer</button>
-                  <button className="icon-btn" title="Facture PDF" onClick={() => printInvoice(billing)}>🧾</button>
+                  <button className="icon-btn" title="Facture PDF" onClick={() => printInvoice(billing)}>
+                    <ReceiptText size={16} aria-hidden />
+                  </button>
                 </td>
               </tr>
               );
             })}
+            {rows.length === 0 && (
+              <tr><td colSpan={7} className="muted center">Aucun étudiant avec ces filtres.</td></tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { School, Search, Bell, Globe, LogOut, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Bell, Globe, LogOut, ChevronDown, ChevronRight } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/AuthContext";
 import { useData } from "../data/store";
 import { sectionsForRole } from "./navigation";
+import SyncBanner from "../components/SyncBanner";
 
 function initials(name?: string): string {
   if (!name) return "?";
@@ -44,7 +45,7 @@ export default function AppLayout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark"><School size={20} /></span>
+          <img src="/horizon-logo.png" alt="" className="brand-mark" width={112} height={118} />
           <span className="brand-name">{t("app.name")}</span>
         </div>
 
@@ -99,7 +100,7 @@ export default function AppLayout() {
       <main className="content">
         <header className="topbar">
           <div className="topbar-greeting">
-            {t("common.hello")}, {firstName} 👋
+            {t("common.hello")}, {firstName}
           </div>
           <div className="topbar-right">
             <div className="search-box">
@@ -141,6 +142,9 @@ export default function AppLayout() {
           </div>
         </header>
         <div className="page">
+          {/* Above every page: if the database cannot answer, say so here rather
+              than letting each screen render as merely "empty". */}
+          <SyncBanner />
           <Outlet />
         </div>
       </main>

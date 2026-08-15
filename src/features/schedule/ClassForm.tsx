@@ -31,7 +31,7 @@ export default function ClassForm({
   onDelete?: () => void;
   onDuplicate?: () => void;
 }) {
-  const { subjects, teachers, classes } = useData();
+  const { subjects, teachers, classes, rooms } = useData();
   const addClass = useData((s) => s.addClass);
   const updateClass = useData((s) => s.updateClass);
 
@@ -45,23 +45,38 @@ export default function ClassForm({
   const [end, setEnd] = useState(initSlot.end);
   const timeSlot = `${start}-${end}`;
   const [maxStudents, setMaxStudents] = useState(initial?.maxStudents ?? prefill?.maxStudents ?? 15);
+  const [roomId, setRoomId] = useState(initial?.roomId ?? prefill?.roomId ?? rooms[0]?.id ?? "");
   const [error, setError] = useState("");
 
   function save() {
     // Two-part free-slot check (§5.2), excluding this class when editing.
-    const check = checkSlot(classes, dayOfWeek, timeSlot, teacherId, initial?.id);
+    const check = checkSlot(classes, dayOfWeek, timeSlot, teacherId, roomId, initial?.id);
     if (!check.ok) {
       setError(
-        check.reason === "slot_taken"
-          ? "Ce créneau est déjà occupé par une autre classe."
+        check.reason === "room_taken"
+          ? "Cette salle est déjà occupée à ce créneau."
           : "Cet enseignant a déjà une classe à ce créneau."
       );
       return;
     }
     if (initial) {
-      updateClass(initial.id, { subjectId, teacherId, level, sessionType, dayOfWeek, timeSlot, maxStudents });
+      updateClass(initial.id, { subjectId, teacherId, roomId, level, sessionType, dayOfWeek, timeSlot, maxStudents });
     } else {
-      addClass({ subjectId, teacherId, level, sessionType, dayOfWeek, timeSlot, maxStudents });
+      // Price and school cut now live on the group. Fall back to the cycle
+      // default; the admin can adjust either when forming a group from تسجيلات.
+      addClass({
+        subjectId,
+        teacherId,
+        level,
+        sessionType,
+        dayOfWeek,
+        timeSlot,
+        maxStudents,
+        roomId,
+        pricePerSession: defaultPrice(sessionType, level) ?? 0,
+        schoolCutMode: "percentage",
+        schoolCutValue: 25,
+      });
     }
     onClose();
   }
@@ -81,7 +96,7 @@ export default function ClassForm({
             </div>
           )}
           <button className="btn btn-ghost" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={save} disabled={!subjectId || !teacherId}>
+          <button className="btn btn-primary" onClick={save} disabled={!subjectId || !teacherId || !roomId}>
             Enregistrer
           </button>
         </>
@@ -134,6 +149,29 @@ export default function ClassForm({
         <label className="field">
           <span>Fin (2h par défaut, modifiable)</span>
           <input type="time" className="input" value={end} onChange={(e) => setEnd(e.target.value)} />
+        </label>
+        <label className="field">
+          <span>Salle</span>
+          <select
+            className="input"
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+            disabled={rooms.length === 0}
+          >
+            {/* A fresh database has no rooms, which rendered an empty, unusable
+                dropdown — say so instead. */}
+            {rooms.length === 0 && <option value="">Aucune salle enregistrée</option>}
+            {rooms.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} ({r.capacity})
+              </option>
+            ))}
+          </select>
+          {rooms.length === 0 && (
+            <span className="muted small">
+              Chargez les données de démo depuis le tableau de bord.
+            </span>
+          )}
         </label>
         <label className="field">
           <span>Capacité max (4–20)</span>

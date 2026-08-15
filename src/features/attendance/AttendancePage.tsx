@@ -4,6 +4,8 @@ import { useAuth } from "../auth/AuthContext";
 import { ATTENDANCE_LABEL, DAY_LABEL } from "../../lib/labels";
 import { formatDate } from "../../lib/format";
 import type { AttendanceState } from "../../lib/types";
+import AttendanceGrid from "./AttendanceGrid";
+import GroupPicker, { EMPTY_FILTERS, type GroupFilters } from "../../components/GroupPicker";
 
 const STATES: AttendanceState[] = ["present", "absent_paid", "absent_free"];
 
@@ -16,11 +18,15 @@ export default function AttendancePage() {
 
 // ---- Teacher / admin: mark attendance ----
 function TeacherAttendance({ teacherId }: { teacherId?: string }) {
-  const { classes, subjects, students, enrollments, sessions } = useData();
+  const { classes, students, enrollments, sessions } = useData();
   const saveAttendance = useData((s) => s.saveAttendance);
 
   const myClasses = teacherId ? classes.filter((c) => c.teacherId === teacherId) : classes;
   const [classId, setClassId] = useState(myClasses[0]?.id ?? "");
+  const [filters, setFilters] = useState<GroupFilters>(EMPTY_FILTERS);
+  // Three distinct jobs, three tabs — marking a session, reading the whole
+  // register, and revisiting past sessions were all stacked on one screen.
+  const [tab, setTab] = useState<"mark" | "register" | "history">("mark");
   const klass = classes.find((c) => c.id === classId);
 
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -41,7 +47,6 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     [sessions, classId]
   );
 
-  const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
   const stateOf = (studentId: string) => marks[studentId] ?? "present";
   const nextNumber = editingId
     ? classSessions.find((s) => s.id === editingId)?.sessionNumber ?? "?"
@@ -86,6 +91,7 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     setNote(sess.notes ?? "");
     setMarks({ ...sess.attendance });
     setSelected(new Set(Object.keys(sess.attendance)));
+    setTab("mark");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -102,15 +108,33 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     <div className="stack">
       <h1>Présence — appel</h1>
 
+      {/* Narrow by teacher / level / subject, then pick the group. */}
+      <GroupPicker
+        classes={myClasses}
+        filters={filters}
+        onFilters={setFilters}
+        value={classId}
+        onChange={(id) => { setClassId(id); resetForm(id); }}
+      />
+      <nav className="tabs" role="tablist">
+        <button role="tab" aria-selected={tab === "mark"} className={"tab" + (tab === "mark" ? " on" : "")} onClick={() => setTab("mark")}>
+          Appel
+        </button>
+        <button role="tab" aria-selected={tab === "register"} className={"tab" + (tab === "register" ? " on" : "")} onClick={() => setTab("register")}>
+          Registre
+        </button>
+        <button role="tab" aria-selected={tab === "history"} className={"tab" + (tab === "history" ? " on" : "")} onClick={() => setTab("history")}>
+          Historique ({classSessions.length})
+        </button>
+      </nav>
+
+      {tab === "mark" && (
+      <>
       <div className="toolbar">
-        <select className="input" value={classId} onChange={(e) => { setClassId(e.target.value); resetForm(e.target.value); }}>
-          {myClasses.map((c) => (
-            <option key={c.id} value={c.id}>
-              {subjName(c.subjectId)} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot}
-            </option>
-          ))}
-        </select>
-        <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <label className="field">
+          <span className="muted small">Date de la séance</span>
+          <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </label>
       </div>
 
       {klass && roster.length > 0 ? (
@@ -163,8 +187,13 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
       ) : (
         <p className="muted">Aucun étudiant inscrit à cette classe.</p>
       )}
+      </>
+      )}
 
-      <h3 className="section-title">Historique des séances</h3>
+      {/* Whole register at a glance — the shape the centre already works in. */}
+      {tab === "register" && <AttendanceGrid classId={classId} />}
+
+      {tab === "history" && (
       <div className="stack">
         {classSessions.map((sess) => (
           <div key={sess.id} className="card history-row">
@@ -183,6 +212,7 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
         ))}
         {classSessions.length === 0 && <p className="muted">Pas encore de séance enregistrée.</p>}
       </div>
+      )}
     </div>
   );
 }

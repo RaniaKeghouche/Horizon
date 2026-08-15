@@ -233,12 +233,15 @@ h2 { font-size: 1.25rem; margin: 0; }
 .stat-label { color: var(--muted); font-weight: 600; font-size: 0.9rem; }
 
 /* Badge colour variants */
-.badge-blue { background: linear-gradient(135deg, #5b93ff, #3b6ef0); box-shadow: 0 8px 20px rgba(59,110,240,0.35); }
-.badge-violet { background: linear-gradient(135deg, #2d5490, #0f2547); box-shadow: 0 8px 20px rgba(15,37,71,0.35); }
-.badge-green { background: linear-gradient(135deg, #34d17f, #12b76a); box-shadow: 0 8px 20px rgba(18,183,106,0.35); }
-.badge-amber { background: linear-gradient(135deg, #ffc24d, #f79009); box-shadow: 0 8px 20px rgba(247,144,9,0.35); }
-.badge-cyan { background: linear-gradient(135deg, #4fe3f5, #22b8d3); box-shadow: 0 8px 20px rgba(34,211,238,0.35); }
-.badge-red { background: linear-gradient(135deg, #f97066, #f04438); box-shadow: 0 8px 20px rgba(240,68,56,0.35); }
+/* Stat badges on the navy/gold system. Old names kept so other pages that use
+   them (requests, courses) keep working; semantic green/red stay for
+   success/danger meaning. */
+.badge-navy, .badge-violet { background: linear-gradient(135deg, #2d5490, #0f2547); box-shadow: 0 8px 18px rgba(15,37,71,0.30); }
+.badge-sky, .badge-blue, .badge-cyan { background: linear-gradient(135deg, #9fd2ea, #4a86b8); box-shadow: 0 8px 18px rgba(74,134,184,0.28); color: #0b1a33; }
+.badge-gold, .badge-amber { background: linear-gradient(135deg, #f2c86a, #e0a83c); box-shadow: 0 8px 18px rgba(200,146,42,0.30); color: #0b1a33; }
+.badge-warn { background: linear-gradient(135deg, #e8b04b, #b54708); box-shadow: 0 8px 18px rgba(181,71,8,0.28); }
+.badge-success, .badge-green { background: linear-gradient(135deg, #34d17f, #076c3d); box-shadow: 0 8px 18px rgba(7,108,61,0.28); }
+.badge-danger, .badge-red { background: linear-gradient(135deg, #f97066, #b42318); box-shadow: 0 8px 18px rgba(180,35,24,0.28); }
 
 /* ---- Promo / highlight card ---- */
 .promo-card { background: var(--hero-grad); color: #fff; border: none; position: relative; overflow: hidden; }
@@ -4083,4 +4086,846 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; }
   .auth-emblem { gap: 0.7rem; padding: 1rem; }
   .auth-emblem img { width: 68px; height: 68px; padding: 7px; }
   .auth-slogan { font-size: 1rem; }
+}
+
+/* ============================================================
+   APP SHELL — match the landing's register
+   Softer cards, real logo in the sidebar, calmer stat tiles.
+   ============================================================ */
+/* Sidebar wordmark: the supplied PNG is an opaque rounded square, so it gets
+   the same circular plate treatment used on the public site. */
+img.brand-mark {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+  padding: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 4px 12px rgba(0, 0, 0, 0.28);
+}
+
+/* Cards: less shadow, more edge — the landing's calmer surface treatment. */
+.card {
+  border-radius: 18px;
+  border: 1px solid var(--color-border, rgba(15, 37, 71, 0.1));
+  box-shadow: 0 8px 24px rgba(15, 37, 71, 0.06);
+}
+
+.grid-cards { gap: 0.9rem; }
+.stat-card {
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(15, 37, 71, 0.12); }
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Digest panel: gold rule + inline icon, matching the landing's cards. */
+.promo-card { border-radius: 18px; }
+.promo-card strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+}
+.promo-card strong::after {
+  content: "";
+  flex: none;
+  width: 34px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold-400), var(--gold-300));
+  margin-inline-start: 0.35rem;
+}
+.clean-list li { display: flex; align-items: center; gap: 0.45rem; }
+
+/* Topbar: search reads as a control, greeting in the display face. */
+.topbar-greeting { font-family: 'Playfair Display', serif; font-weight: 700; }
+.search-box { border-radius: 10px; }
+.search-box:focus-within { border-color: var(--gold-400); box-shadow: 0 0 0 3px rgba(224, 168, 60, 0.18); }
+
+/* Icon glyph colour per badge. The generic `.stat-icon { color:#fff }` above wins
+   on equal specificity, so light badges need an explicit override — white on
+   gold measured 1.59:1 against the 3:1 required for graphical objects. */
+.stat-icon.badge-sky, .stat-icon.badge-blue, .stat-icon.badge-cyan,
+.stat-icon.badge-gold, .stat-icon.badge-amber,
+.stat-icon.badge-warn { color: var(--navy-900); }
+/* Semantic badges keep white glyphs, so their light stop is deepened to carry it. */
+.badge-success, .badge-green { background: linear-gradient(135deg, #12905a, #076c3d); }
+.badge-danger, .badge-red { background: linear-gradient(135deg, #d9503f, #b42318); }
+
+/* ============================================================
+   AUTH — landing backdrop + the hero artwork centred
+   Page now uses the landing's light ambient wash instead of a photo, and the
+   right panel carries climb.png in the same arched crop as the hero.
+   ============================================================ */
+.auth-page-wrapper {
+  background:
+    radial-gradient(50vw 50vw at -8% -10%, rgba(30, 63, 117, 0.16), transparent 60%),
+    radial-gradient(55vw 55vw at 108% 108%, rgba(200, 146, 42, 0.14), transparent 60%),
+    radial-gradient(42vw 42vw at 62% 38%, rgba(159, 210, 234, 0.20), transparent 60%),
+    #f6f9fc;
+}
+/* Faint grid, same as the landing backdrop. */
+.auth-page-wrapper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(15, 37, 71, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 37, 71, 0.035) 1px, transparent 1px);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+}
+.auth-split-layout { position: relative; z-index: 1; }
+
+/* Sky panel rather than a dark photo. */
+.auth-illustration-bg {
+  background: linear-gradient(170deg, var(--sky-500) 0%, var(--sky-300) 45%, var(--sky-100) 100%);
+  border-radius: 18px;
+}
+
+.auth-emblem { gap: clamp(0.7rem, 1.8vh, 1.1rem); }
+
+/* climb.png keeps the hero's crop discipline: the burned-in English headline
+   starts at 44% of the source, so the window stays under 34% of its height. */
+.auth-art {
+  height: min(46vh, 340px);
+  aspect-ratio: 34 / 100;
+  width: auto;
+  overflow: hidden;
+  border-radius: 999px 999px 16px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 20px 44px rgba(15, 37, 71, 0.20);
+}
+.auth-art img { width: 100%; height: 100%; object-fit: cover; object-position: 0% 50%; display: block; }
+
+.auth-emblem-logo {
+  width: clamp(52px, 7vh, 66px);
+  height: clamp(52px, 7vh, 66px);
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+  padding: 6px;
+  box-shadow: 0 0 0 1px rgba(15, 37, 71, 0.10), 0 8px 20px rgba(15, 37, 71, 0.18);
+}
+/* Dark type now that the panel is light. */
+.auth-slogan { color: var(--color-fg); text-shadow: none; }
+
+@media (max-height: 720px) { .auth-art { display: none; } }
+@media (max-width: 900px) {
+  .auth-art { display: none; }
+  .auth-emblem-logo { width: 48px; height: 48px; }
+}
+
+/* Subject offerings: a level row with its teacher chips. */
+.subject-card { display: flex; flex-direction: column; gap: 0.75rem; }
+.subject-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.level-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.35rem 0;
+}
+.level-cycle {
+  flex: none;
+  min-width: 9rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.offer-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.offer-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+@media (max-width: 700px) {
+  .level-cycle { min-width: 0; width: 100%; }
+}
+
+/* Subjects from other levels read as informational, not actionable. */
+.course-card.is-other-level { opacity: 0.82; }
+.course-card.is-other-level .chip-row { margin-top: 0.25rem; }
+
+/* ============================================================
+   ATTENDANCE REGISTER
+   Students down, sessions across — the shape the centre already keeps by hand.
+   The name/phone columns stay frozen while the dates scroll.
+   ============================================================ */
+.att-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.att-key {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-inline-start: 0.5rem;
+}
+
+.att-wrap { overflow: auto; max-height: 62vh; }
+.att-grid { border-collapse: separate; border-spacing: 0; }
+.att-grid th,
+.att-grid td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.4rem 0.5rem;
+  white-space: nowrap;
+}
+.att-grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--surface-2);
+  font-size: 0.72rem;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+/* Frozen identity columns. */
+.att-sticky { position: sticky; z-index: 2; background: var(--surface); }
+.att-name-col { inset-inline-start: 0; min-width: 11rem; text-align: start; font-weight: 600; }
+.att-phone-col { inset-inline-start: 11rem; min-width: 7.5rem; text-align: start; }
+.att-grid thead .att-sticky { z-index: 4; background: var(--surface-2); }
+.att-grid tbody tr:hover .att-sticky { background: var(--primary-soft); }
+
+.att-date-col { min-width: 3.1rem; }
+.att-date-n {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* Cells: one glance tells you present / billed absence / excused absence. */
+.att-cell {
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  width: 3.1rem;
+}
+.att-present { background: #d6f0e0; color: #076c3d; }
+.att-absent-paid { background: #fdf0c8; color: #8a5a06; }
+.att-absent-free { background: #e6e9ee; color: #5b6b80; }
+.att-none { background: repeating-linear-gradient(45deg, #f6f8fa, #f6f8fa 5px, #eef1f5 5px, #eef1f5 10px); }
+
+.att-total-col {
+  position: sticky;
+  inset-inline-end: 0;
+  z-index: 2;
+  background: var(--surface);
+  text-align: center;
+  min-width: 5rem;
+}
+.att-grid thead .att-total-col { z-index: 4; background: var(--surface-2); }
+.att-total-col span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.25rem;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-inline-end: 0.15rem;
+}
+.att-total-p { background: #d6f0e0; color: #076c3d; }
+.att-total-a { background: #fdf0c8; color: #8a5a06; }
+.att-total-f { background: #e6e9ee; color: #5b6b80; }
+
+@media (max-width: 700px) {
+  .att-name-col { min-width: 8rem; }
+  .att-phone-col { display: none; }
+}
+
+/* Payment table: month banners separating each billing period. */
+.pay-month-row td { background: var(--surface-2); padding: 0.5rem 0.75rem; }
+.pay-month {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+.pay-month > strong {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   GROUP PICKER — teacher / level / subject, then the group
+   The same control on every "per group" screen, so navigating is identical
+   whichever page you are on.
+   ============================================================ */
+.gp {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.gp-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+.gp-clear { align-self: end; white-space: nowrap; }
+
+.gp-groups { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+/* Chips rather than a dropdown: with many groups you see them all at once. */
+.gp-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  text-align: start;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.gp-chip:hover { transform: translateY(-2px); border-color: var(--primary); }
+.gp-chip strong { font-size: 0.92rem; color: var(--text); }
+.gp-chip span { font-size: 0.75rem; color: var(--muted); }
+.gp-chip-teacher { font-weight: 600; }
+.gp-chip.on {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+.gp-chip.on strong { color: var(--primary); }
+
+/* Collapsed state: once a group is chosen the picker becomes a one-line
+   summary, so the page below it is what you actually look at. */
+.gp-collapsed {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  flex-wrap: wrap;
+}
+.gp-current {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.gp-current-subject {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+/* ============================================================
+   TABS — one screen, one job at a time
+   ============================================================ */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.tab:hover { color: var(--text); }
+.tab.on {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   SESSION CARDS — collapsed until you ask for the detail
+   ============================================================ */
+.sess-card { padding: 0; }
+.sess-card > .table-wrap { padding: 0 1rem 1rem; }
+.sess-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  border-radius: inherit;
+}
+.sess-summary::-webkit-details-marker { display: none; }
+.sess-summary:hover { background: var(--surface-2); }
+.sess-caret {
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.18s ease;
+}
+/* RTL: the caret points the other way, and opening turns it downward. */
+[dir="rtl"] .sess-caret { transform: rotate(180deg); }
+.sess-card[open] .sess-caret,
+[dir="rtl"] .sess-card[open] .sess-caret { transform: rotate(90deg); }
+.sess-tags {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}
+
+/* ============================================================
+   SYNC BANNER — why this page is empty
+   ============================================================ */
+.sync-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #f0b429;
+  border-inline-start: 4px solid #f0b429;
+  border-radius: 14px;
+  background: #fff8e6;
+  color: #4a3208;
+}
+.sync-banner-icon { flex: none; color: #b45309; margin-top: 2px; }
+.sync-banner-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.sync-banner-body p { margin: 0; }
+.sync-banner code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.84rem;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0.1rem 0.35rem;
+  border-radius: 5px;
+}
+.sync-banner-toggle { align-self: flex-start; padding-inline: 0; }
+.sync-banner-toggle .rot { transform: rotate(180deg); }
+.sync-banner-list {
+  margin: 0.25rem 0 0;
+  padding-inline-start: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.sync-banner-list li { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: baseline; }
+.spin { animation: sync-spin 0.9s linear infinite; }
+@keyframes sync-spin { to { transform: rotate(360deg); } }
+
+/* Checkbox + label on one line, for filter toolbars. */
+.check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ---- REGISTRATION MANAGEMENT REDESIGN ---- */
+.reg-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reg-page-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reg-page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.reg-page-subtitle {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.reg-grid-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .reg-grid-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reg-panel-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+}
+
+.reg-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reg-panel-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.reg-panel-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 1rem 0;
+}
+
+.reg-panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.reg-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.reg-empty-icon-box {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: grid;
+  place-items: center;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+}
+
+.reg-empty-text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+}
+
+.reg-pending-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.reg-pending-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.reg-pending-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.reg-role-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.reg-role-avatar.avatar-student {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.reg-role-avatar.avatar-teacher {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.reg-pending-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.reg-pending-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.reg-pending-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.reg-pending-fields {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.reg-pending-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-accept {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-accept:hover {
+  background: #059669;
+}
+
+.btn-reject {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-reject:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Historique Table Card */
+.reg-history-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  padding: 0;
+}
+
+.reg-history-header {
+  background: #f0f4ff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.reg-history-title-group h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.reg-history-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reg-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  color: #64748b;
+}
+
+.reg-search-input-wrapper input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  color: #0f172a;
+  width: 140px;
+}
+
+.reg-role-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  color: #64748b;
+}
+
+.reg-role-filter select {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.reg-history-table th {
+  background: #ffffff;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.reg-history-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.role-pill.role-student {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.role-pill.role-teacher {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.decision-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.decision-badge.approved {
+  color: #059669;
+}
+
+.decision-badge.rejected {
+  color: #dc2626;
 }

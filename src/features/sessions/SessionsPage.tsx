@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { CalendarDays, ChevronRight } from "lucide-react";
 import { useData } from "../../data/store";
+import GroupPicker, { EMPTY_FILTERS, type GroupFilters } from "../../components/GroupPicker";
 import { useAuth } from "../auth/AuthContext";
 import { formatDate, billingMonth, formatDA } from "../../lib/format";
-import { ATTENDANCE_LABEL, DAY_LABEL, LEVEL_LABEL } from "../../lib/labels";
+import { ATTENDANCE_LABEL, LEVEL_LABEL } from "../../lib/labels";
 import type { AttendanceState } from "../../lib/types";
 
 // Overview: every group → its sessions grouped by month → each student's attendance
@@ -10,16 +12,18 @@ import type { AttendanceState } from "../../lib/types";
 // only their own groups (cahier: prof consulte ses groupes, élèves, présences, paiement).
 export default function SessionsPage() {
   const { role, profile } = useAuth();
-  const { classes, subjects, teachers, students, enrollments, sessions, payments } = useData();
+  const { classes, students, enrollments, sessions, payments } = useData();
 
   const myClasses = useMemo(
     () => (role === "teacher" && profile?.teacherId ? classes.filter((c) => c.teacherId === profile.teacherId) : classes),
     [classes, role, profile]
   );
   const [classId, setClassId] = useState(myClasses[0]?.id ?? "");
+  const [filters, setFilters] = useState<GroupFilters>(EMPTY_FILTERS);
+  // Roster and session history are two different questions — don't answer both
+  // at once on one very long page.
+  const [tab, setTab] = useState<"roster" | "sessions">("roster");
 
-  const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
-  const teacherName = (id: string) => teachers.find((t) => t.id === id)?.name ?? "?";
   const studentName = (id: string) => students.find((s) => s.id === id)?.name ?? "?";
 
   const klass = classes.find((c) => c.id === classId);
@@ -57,14 +61,16 @@ export default function SessionsPage() {
     <div className="stack">
       <div className="page-head">
         <h1>{role === "teacher" ? "Mes groupes" : "Séances par groupe"}</h1>
-        <select className="input" style={{ maxWidth: 320 }} value={classId} onChange={(e) => setClassId(e.target.value)}>
-          {myClasses.map((c) => (
-            <option key={c.id} value={c.id}>
-              {subjName(c.subjectId)} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} · {teacherName(c.teacherId)}
-            </option>
-          ))}
-        </select>
       </div>
+
+      {/* Same picker as the attendance screen: teacher / level / subject, then group. */}
+      <GroupPicker
+        classes={myClasses}
+        filters={filters}
+        onFilters={setFilters}
+        value={classId}
+        onChange={setClassId}
+      />
       {myClasses.length === 0 && <p className="muted">Aucun groupe pour l'instant.</p>}
 
       {klass && (
@@ -74,8 +80,29 @@ export default function SessionsPage() {
         </p>
       )}
 
+      {klass && (
+        <nav className="tabs" role="tablist">
+          <button
+            role="tab"
+            aria-selected={tab === "roster"}
+            className={"tab" + (tab === "roster" ? " on" : "")}
+            onClick={() => setTab("roster")}
+          >
+            Élèves ({klass.currentStudents})
+          </button>
+          <button
+            role="tab"
+            aria-selected={tab === "sessions"}
+            className={"tab" + (tab === "sessions" ? " on" : "")}
+            onClick={() => setTab("sessions")}
+          >
+            Séances ({sessions.filter((s) => s.classId === classId).length})
+          </button>
+        </nav>
+      )}
+
       {/* Roster: the students enrolled in this group (créneau). */}
-      {klass && (() => {
+      {tab === "roster" && klass && (() => {
         const roster = enrollments
           .filter((e) => e.classId === classId)
           .map((e) => students.find((s) => s.id === e.studentId))
@@ -109,17 +136,31 @@ export default function SessionsPage() {
         );
       })()}
 
-      {byMonth.length === 0 && <p className="muted">Aucune séance pour ce groupe.</p>}
+      {tab === "sessions" && byMonth.length === 0 && <p className="muted">Aucune séance pour ce groupe.</p>}
 
-      {byMonth.map(([month, monthSessions]) => (
+      {tab === "sessions" && byMonth.map(([month, monthSessions]) => (
         <div key={month} className="stack">
-          <h3 className="section-title">📅 {month}</h3>
-          {monthSessions.map((sess) => (
-            <div key={sess.id} className="card">
-              <div className="req-head" style={{ marginBottom: "0.5rem" }}>
+          <h3 className="section-title">
+            <CalendarDays size={16} aria-hidden /> {month}
+          </h3>
+          {monthSessions.map((sess) => {
+            // Collapsed by default: the summary answers "who was missing / who
+            // still owes" without unrolling a table per session.
+            const marks = Object.entries(sess.attendance);
+            const absent = marks.filter(([, st]) => st !== "present").length;
+            const unpaid = marks.filter(([sid]) => payStatus(sess.id, sid) === "unpaid").length;
+            return (
+            <details key={sess.id} className="card sess-card">
+              <summary className="sess-summary">
+                <ChevronRight size={16} className="sess-caret" aria-hidden />
                 <strong>Séance {sess.sessionNumber ?? "?"}</strong>
                 <span className="muted small">{formatDate(sess.date)}</span>
-              </div>
+                <span className="sess-tags">
+                  <span className="pill pill-soft">{marks.length} présent(s) noté(s)</span>
+                  {absent > 0 && <span className="pill pill-warn">{absent} absent(s)</span>}
+                  {unpaid > 0 && <span className="pill pill-danger">{unpaid} non payé(s)</span>}
+                </span>
+              </summary>
               <div className="table-wrap">
                 <table className="table">
                   <thead><tr><th>Élève</th><th>Présence</th><th>Paiement</th></tr></thead>
@@ -143,8 +184,9 @@ export default function SessionsPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
-          ))}
+            </details>
+            );
+          })}
         </div>
       ))}
     </div>

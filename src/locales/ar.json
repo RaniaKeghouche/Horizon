@@ -106,7 +106,8 @@
     "search": "بحث",
     "language": "اللغة",
     "hello": "مرحبًا",
-    "comingSoon": "قيد الإنجاز"
+    "comingSoon": "قيد الإنجاز",
+    "reject": "رفض"
   },
   "hero": {
     "title_start": "ارتقِ نحو",
@@ -210,5 +211,49 @@
     "reach": "تواصل معنا",
     "directions": "الاتجاهات",
     "social_note": "حسابات التواصل الاجتماعي قريبًا."
+  },
+  "subjects": {
+    "pickTeachers": "الأساتذة حسب المستوى",
+    "noTeachers": "أضف أستاذًا أولًا.",
+    "noneAssigned": "لا يوجد أستاذ",
+    "editTeachers": "تعديل الأساتذة",
+    "pickLevels": "المستويات التي تُدرَّس فيها المادة",
+    "noLevels": "لا يوجد مستوى بعد",
+    "editLevels": "تعديل المستويات والأساتذة"
+  },
+  "courses": {
+    "title": "المواد المتاحة",
+    "lead": "اختر مادة وأستاذًا، وستضعك المدرسة في مجموعة.",
+    "enrolled": "مسجَّل",
+    "pending": "في انتظار المجموعة",
+    "pendingWith": "طُلب مع",
+    "noTeacherYet": "لا يوجد أستاذ حاليًا.",
+    "chooseTeacher": "اختر أستاذًا",
+    "enrol": "تسجيل",
+    "perSession": "حصة",
+    "rejected": "طلبات مرفوضة",
+    "myLevel": "لمستواك",
+    "otherLevels": "مستويات أخرى",
+    "otherLevelsHint": "تُدرَّس في مستويات أخرى — اسأل الإدارة للالتحاق بها.",
+    "otherLevelNote": "غير متاحة لمستواك"
+  },
+  "enrolQueue": {
+    "title": "التسجيلات",
+    "accountRequests": "طلبات الحسابات",
+    "empty": "لا توجد تسجيلات في الانتظار.",
+    "requests": "طلب",
+    "formGroup": "تكوين مجموعة",
+    "day": "اليوم",
+    "time": "التوقيت",
+    "price": "سعر الحصة (دج)",
+    "cutMode": "حصة المدرسة",
+    "percentage": "نسبة مئوية",
+    "fixed": "مبلغ ثابت",
+    "perSession": "لكل حصة",
+    "school": "المدرسة",
+    "teacher": "الأستاذ",
+    "create": "إنشاء المجموعة",
+    "room": "القاعة",
+    "noRoom": "لا توجد قاعة متاحة في هذا التوقيت"
   }
 }

@@ -8,6 +8,7 @@ import type {
   Teacher,
   Subject,
   ClassRoom,
+  Room,
   Enrollment,
   Session,
   Payment,
@@ -15,6 +16,7 @@ import type {
   ActivityLog,
   TeacherSlotRequest,
   RegistrationRequest,
+  EnrollmentRequest,
   TeacherPayoutRecord,
 } from "../lib/types";
 
@@ -27,6 +29,7 @@ export interface SeedData {
   students: Student[];
   teachers: Teacher[];
   subjects: Subject[];
+  rooms: Room[];
   classes: ClassRoom[];
   enrollments: Enrollment[];
   sessions: Session[];
@@ -36,16 +39,17 @@ export interface SeedData {
   slotRequests: TeacherSlotRequest[];
   registrationRequests: RegistrationRequest[];
   teacherPayouts: TeacherPayoutRecord[];
+  enrollmentRequests: EnrollmentRequest[];
 }
 
 // ---- Subjects (default set from cahier §7) ----
 const subjects: Subject[] = [
-  { id: "sub_math", name: "Mathématiques", isCustom: false, createdAt: now },
-  { id: "sub_arabic", name: "العربية", isCustom: false, createdAt: now },
-  { id: "sub_english", name: "English", isCustom: false, createdAt: now },
-  { id: "sub_french", name: "Français", isCustom: false, createdAt: now },
-  { id: "sub_science", name: "Sciences", isCustom: false, createdAt: now },
-  { id: "sub_physics", name: "Physique", isCustom: false, createdAt: now },
+  { id: "sub_math", name: "Mathématiques", isCustom: false, teachersByLevel: { "5ap": ["t3"], "4am": ["t2", "t4"], "3as": ["t2"] }, createdAt: now },
+  { id: "sub_arabic", name: "العربية", isCustom: false, teachersByLevel: { "5ap": ["t3"], "4am": ["t3"] }, createdAt: now },
+  { id: "sub_english", name: "English", isCustom: false, teachersByLevel: { "4am": ["t1"], "1as": ["t1", "t4"], "3as": ["t1"] }, createdAt: now },
+  { id: "sub_french", name: "Français", isCustom: false, teachersByLevel: { "5ap": ["t3"], "3as": ["t1"] }, createdAt: now },
+  { id: "sub_science", name: "Sciences", isCustom: false, teachersByLevel: { "4am": ["t4"] }, createdAt: now },
+  { id: "sub_physics", name: "Physique", isCustom: false, teachersByLevel: { "1as": ["t2"], "3as": ["t2", "t4"] }, createdAt: now },
 ];
 
 // ---- Teachers ----
@@ -68,6 +72,34 @@ const teachers: Teacher[] = [
     schoolCutValue: 1500, // school takes 1500 DA / session
     createdAt: now,
   },
+  {
+    id: "t3",
+    name: "Yacine Cherif",
+    phone: "0555 77 88 99",
+    subjects: ["sub_arabic", "sub_french", "sub_math"],
+    paymentMode: "percentage",
+    schoolCutValue: 30,
+    createdAt: now,
+  },
+  {
+    id: "t4",
+    name: "Nawal Bensalem",
+    phone: "0669 12 34 56",
+    subjects: ["sub_science", "sub_physics", "sub_english", "sub_math"],
+    paymentMode: "percentage",
+    schoolCutValue: 25,
+    createdAt: now,
+  },
+];
+
+// ---- Rooms ----
+// The centre has five physical rooms; classes only clash when they share one.
+const rooms: Room[] = [
+  { id: "rm_big", name: "Grande salle", capacity: 20, kind: "large" },
+  { id: "rm_1", name: "Salle 1", capacity: 12, kind: "standard" },
+  { id: "rm_2", name: "Salle 2", capacity: 12, kind: "standard" },
+  { id: "rm_indiv", name: "Salle individuelle", capacity: 2, kind: "individual" },
+  { id: "rm_office", name: "Bureau", capacity: 4, kind: "office" },
 ];
 
 // ---- Students ----
@@ -106,6 +138,61 @@ const students: Student[] = [
     enrolledSubjects: ["sub_english", "sub_french"],
     createdAt: now - 20 * DAY,
   },
+  {
+    id: "s4",
+    name: "Yasmine Torki",
+    level: "4am",
+    phone: "0772 12 22 32",
+    parentName: "Samir Torki",
+    parentPhone: "0772 92 82 72",
+    status: "active",
+    enrolledSubjects: [],
+    createdAt: now - 20 * DAY,
+  },
+  {
+    id: "s5",
+    name: "Rayan Belhadj",
+    level: "4am",
+    phone: "0773 13 23 33",
+    parentName: "Hakim Belhadj",
+    parentPhone: "0773 93 83 73",
+    status: "active",
+    enrolledSubjects: [],
+    createdAt: now - 18 * DAY,
+  },
+  {
+    id: "s6",
+    name: "Imane Cherifi",
+    level: "4am",
+    phone: "0774 14 24 34",
+    parentName: "Leila Cherifi",
+    parentPhone: "0774 94 84 74",
+    status: "active",
+    enrolledSubjects: [],
+    createdAt: now - 15 * DAY,
+  },
+  {
+    id: "s7",
+    name: "Mehdi Larbi",
+    level: "5ap",
+    phone: "0775 15 25 35",
+    parentName: "Omar Larbi",
+    parentPhone: "0775 95 85 75",
+    status: "active",
+    enrolledSubjects: [],
+    createdAt: now - 12 * DAY,
+  },
+  {
+    id: "s8",
+    name: "Sirine Amrani",
+    level: "1as",
+    phone: "0776 16 26 36",
+    parentName: "Fatima Amrani",
+    parentPhone: "0776 96 86 76",
+    status: "active",
+    enrolledSubjects: [],
+    createdAt: now - 10 * DAY,
+  },
 ];
 
 // ---- Classes ----
@@ -114,11 +201,15 @@ const classes: ClassRoom[] = [
     id: "c1",
     subjectId: "sub_english",
     teacherId: "t1",
+    roomId: "rm_big",
     level: "3as",
     sessionType: "group",
     dayOfWeek: "monday",
     timeSlot: "17:00-18:30",
     maxStudents: 15,
+    pricePerSession: 2700,
+    schoolCutMode: "percentage",
+    schoolCutValue: 25,
     currentStudents: 2,
     isLocked: false,
     createdAt: now - 45 * DAY,
@@ -127,11 +218,15 @@ const classes: ClassRoom[] = [
     id: "c2",
     subjectId: "sub_french",
     teacherId: "t1",
+    roomId: "rm_1",
     level: "3as",
     sessionType: "group_special",
     dayOfWeek: "wednesday",
     timeSlot: "18:30-20:00",
     maxStudents: 12,
+    pricePerSession: 2700,
+    schoolCutMode: "percentage",
+    schoolCutValue: 25,
     currentStudents: 1,
     isLocked: false,
     createdAt: now - 45 * DAY,
@@ -140,11 +235,15 @@ const classes: ClassRoom[] = [
     id: "c3",
     subjectId: "sub_math",
     teacherId: "t2",
+    roomId: "rm_indiv",
     level: "3as",
     sessionType: "one_on_one",
     dayOfWeek: "tuesday",
     timeSlot: "15:30-17:00",
     maxStudents: 4,
+    pricePerSession: 2700,
+    schoolCutMode: "percentage",
+    schoolCutValue: 25,
     currentStudents: 1,
     isLocked: false,
     createdAt: now - 45 * DAY,
@@ -297,12 +396,25 @@ const registrationRequests: RegistrationRequest[] = [
   },
 ];
 
+// ---- Enrolment requests (تسجيلات) waiting to be grouped ----
+const enrollmentRequests: EnrollmentRequest[] = [
+  { id: "er1", studentId: "s4", subjectId: "sub_math", teacherId: "t2", status: "pending", createdAt: now - 6 * DAY },
+  { id: "er2", studentId: "s5", subjectId: "sub_math", teacherId: "t2", status: "pending", createdAt: now - 5 * DAY },
+  { id: "er3", studentId: "s6", subjectId: "sub_math", teacherId: "t2", status: "pending", createdAt: now - 5 * DAY },
+  // a second bucket: same subject, the other teacher
+  { id: "er4", studentId: "s6", subjectId: "sub_science", teacherId: "t4", status: "pending", createdAt: now - 4 * DAY },
+  // primary-school pair
+  { id: "er5", studentId: "s7", subjectId: "sub_arabic", teacherId: "t3", status: "pending", createdAt: now - 3 * DAY },
+  { id: "er6", studentId: "s8", subjectId: "sub_english", teacherId: "t4", status: "pending", createdAt: now - 2 * DAY },
+];
+
 export function makeSeed(): SeedData {
   return {
     users,
     students,
     teachers,
     subjects,
+    rooms,
     classes,
     enrollments,
     sessions,
@@ -312,5 +424,6 @@ export function makeSeed(): SeedData {
     slotRequests,
     registrationRequests,
     teacherPayouts: [],
+    enrollmentRequests,
   };
 }

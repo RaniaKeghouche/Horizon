@@ -12,7 +12,7 @@ import type { ClassRoom, DayOfWeek } from "../../lib/types";
 export default function SchedulePage() {
   const { t } = useTranslation();
   const { role, profile } = useAuth();
-  const { classes, teachers, subjects } = useData();
+  const { classes, teachers, subjects, rooms } = useData();
   const deleteClass = useData((s) => s.deleteClass);
   const addSlotRequest = useData((s) => s.addSlotRequest);
 
@@ -21,6 +21,9 @@ export default function SchedulePage() {
   const [teacherId, setTeacherId] = useState(
     role === "teacher" ? profile?.teacherId ?? teachers[0]?.id ?? "" : teachers[0]?.id ?? ""
   );
+
+  // The grid shows one room at a time — a slot is only busy for the room it is in.
+  const [roomId, setRoomId] = useState(rooms[0]?.id ?? "");
 
   const [adding, setAdding] = useState<{ dayOfWeek: DayOfWeek; timeSlot: string } | null>(null);
   const [editing, setEditing] = useState<ClassRoom | null>(null);
@@ -33,10 +36,12 @@ export default function SchedulePage() {
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
   const teacherName = (id: string) => teachers.find((x) => x.id === id)?.name ?? "?";
 
+  // The grid shows one room at a time — a slot is only busy for its own room.
+  const inRoom = classes.filter((c) => !roomId || c.roomId === roomId);
   // For teachers, show only their own classes on the grid.
   const visibleClasses = role === "teacher"
-    ? classes.filter((c) => c.teacherId === teacherId)
-    : classes;
+    ? inRoom.filter((c) => c.teacherId === teacherId)
+    : inRoom;
 
   const grid = useMemo(() => {
     const map = new Map<string, ClassRoom>();
@@ -56,6 +61,18 @@ export default function SchedulePage() {
             </select>
           </div>
         )}
+        {/* One room at a time: the centre runs several classes in parallel, so a
+            slot is only occupied for the room it belongs to. */}
+        <div className="teacher-pick">
+          <span className="muted small">Salle :</span>
+          <select className="input" value={roomId} onChange={(e) => setRoomId(e.target.value)}>
+            {rooms.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} ({r.capacity})
+              </option>
+            ))}
+          </select>
+        </div>
         {role === "teacher" && (
           <button className="btn btn-primary" onClick={() => setRequesting(true)}>🗓️ Demander un créneau</button>
         )}
@@ -94,7 +111,7 @@ export default function SchedulePage() {
                     );
                   }
                   if (!isAdmin) return <td key={day} className="cell" />;
-                  const free = checkSlot(classes, day, slot, teacherId).ok;
+                  const free = checkSlot(classes, day, slot, teacherId, roomId).ok;
                   return (
                     <td
                       key={day}

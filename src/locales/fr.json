@@ -125,7 +125,8 @@
     "search": "Rechercher",
     "language": "Langue",
     "hello": "Bonjour",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "reject": "Refuser"
   },
   "hero": {
     "title_start": "Grimpez vers",
@@ -210,5 +211,49 @@
     "reach": "Nous joindre",
     "directions": "Itinéraire",
     "social_note": "Réseaux sociaux bientôt disponibles."
+  },
+  "subjects": {
+    "pickTeachers": "Enseignants par niveau",
+    "noTeachers": "Ajoutez d abord un enseignant.",
+    "noneAssigned": "Aucun enseignant",
+    "editTeachers": "Modifier les enseignants",
+    "pickLevels": "Niveaux où la matière est proposée",
+    "noLevels": "Aucun niveau proposé",
+    "editLevels": "Modifier niveaux et enseignants"
+  },
+  "courses": {
+    "title": "Matières disponibles",
+    "lead": "Choisissez une matière et un enseignant. L école vous placera dans un groupe.",
+    "enrolled": "Inscrit(e)",
+    "pending": "En attente de groupe",
+    "pendingWith": "Demandé avec",
+    "noTeacherYet": "Aucun enseignant pour l instant.",
+    "chooseTeacher": "Choisir un enseignant",
+    "enrol": "S inscrire",
+    "perSession": "séance",
+    "rejected": "Demandes refusées",
+    "myLevel": "Pour votre niveau",
+    "otherLevels": "Autres niveaux",
+    "otherLevelsHint": "Proposées à d autres niveaux — demandez à l école pour y accéder.",
+    "otherLevelNote": "Non proposée à votre niveau"
+  },
+  "enrolQueue": {
+    "title": "Inscriptions (تسجيلات)",
+    "accountRequests": "Demandes de compte",
+    "empty": "Aucune inscription en attente.",
+    "requests": "demande(s)",
+    "formGroup": "Former un groupe",
+    "day": "Jour",
+    "time": "Horaire",
+    "price": "Prix par séance (DA)",
+    "cutMode": "Part de l école",
+    "percentage": "Pourcentage",
+    "fixed": "Montant fixe",
+    "perSession": "Par séance",
+    "school": "École",
+    "teacher": "Enseignant",
+    "create": "Créer le groupe",
+    "room": "Salle",
+    "noRoom": "Aucune salle libre à ce créneau"
   }
 }

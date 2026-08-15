@@ -6,7 +6,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { makeSeed } from "./seed";
-import { fbWrite, fbPatch, fbDelete } from "./fb";
+import { fbWrite, fbPatch, fbDelete, fbWriteMany } from "./fb";
 import { DEMO_MODE } from "../lib/config";
 import { computeCut, isBillable, defaultPrice } from "../lib/payments";
 import { billingMonth } from "../lib/format";
@@ -19,8 +19,10 @@ import {
   type Enrollment,
   type Payment,
   type Role,
+  type Room,
   type Session,
   type RegistrationRequest,
+  type EnrollmentRequest,
   type Student,
   type Subject,
   type Teacher,
@@ -36,6 +38,7 @@ const EMPTY = () => ({
   students: [] as Student[],
   teachers: [] as Teacher[],
   subjects: [] as Subject[],
+  rooms: [] as Room[],
   classes: [] as ClassRoom[],
   enrollments: [] as Enrollment[],
   sessions: [] as Session[],
@@ -45,6 +48,7 @@ const EMPTY = () => ({
   slotRequests: [] as TeacherSlotRequest[],
   registrationRequests: [] as RegistrationRequest[],
   teacherPayouts: [] as TeacherPayoutRecord[],
+  enrollmentRequests: [] as EnrollmentRequest[],
 });
 
 interface DataState {
@@ -52,6 +56,7 @@ interface DataState {
   students: Student[];
   teachers: Teacher[];
   subjects: Subject[];
+  rooms: Room[];
   classes: ClassRoom[];
   enrollments: Enrollment[];
   sessions: Session[];
@@ -61,10 +66,12 @@ interface DataState {
   slotRequests: TeacherSlotRequest[];
   registrationRequests: RegistrationRequest[];
   teacherPayouts: TeacherPayoutRecord[];
+  enrollmentRequests: EnrollmentRequest[];
 
   log: (userId: string, action: string, details: string) => void;
 
-  addSubject: (name: string) => Subject;
+  addSubject: (name: string, teachersByLevel?: Subject["teachersByLevel"]) => Subject;
+  updateSubject: (id: string, patch: Partial<Subject>) => void;
   deleteSubject: (id: string) => void;
 
   addStudent: (data: Omit<Student, "id" | "createdAt" | "enrolledSubjects" | "status"> & { status?: Student["status"] }) => Student;
@@ -113,12 +120,33 @@ interface DataState {
   joinWaitlist: (classId: string, studentId: string) => void;
   leaveWaitlist: (classId: string, studentId: string) => void;
 
+  // Enrolment requests (تسجيل): student picks subject + teacher, admin groups them
+  requestEnrollment: (studentId: string, subjectId: string, teacherId: string) => EnrollmentRequest | null;
+  cancelEnrollmentRequest: (id: string) => void;
+  rejectEnrollmentRequest: (id: string) => void;
+  /** Turn a set of pending requests into a real group. */
+  formGroupFromRequests: (
+    requestIds: string[],
+    opts: {
+      dayOfWeek: ClassRoom["dayOfWeek"];
+      timeSlot: string;
+      roomId: string;
+      pricePerSession: number;
+      schoolCutMode: ClassRoom["schoolCutMode"];
+      schoolCutValue: number;
+      maxStudents?: number;
+    }
+  ) => ClassRoom | null;
+
   // Registration requests (student/teacher self-signup reviewed by admin)
   addRegistrationRequest: (req: Omit<RegistrationRequest, "status" | "createdAt"> & { id: string }) => void;
   approveRegistration: (requestId: string) => { email: string; name: string } | null;
   rejectRegistration: (requestId: string) => { email: string; name: string } | null;
 
   resetToSeed: () => void;
+  /** Push the demo dataset into the store AND (in Supabase mode) into the
+   *  database, so a fresh project has something to look at. */
+  loadDemoData: () => void;
 }
 
 const noopStorage: StateStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
@@ -135,11 +163,15 @@ export const useData = create<DataState>()(
       },
 
       // ---- Subjects ----
-      addSubject: (name) => {
-        const subject: Subject = { id: uid(), name, isCustom: true, createdAt: now() };
+      addSubject: (name, teachersByLevel = {}) => {
+        const subject: Subject = { id: uid(), name, isCustom: true, teachersByLevel, createdAt: now() };
         set((s) => ({ subjects: [...s.subjects, subject] }));
         fbWrite(COLLECTIONS.subjects, subject);
         return subject;
+      },
+      updateSubject: (id, patch) => {
+        set((s) => ({ subjects: s.subjects.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+        fbPatch(COLLECTIONS.subjects, id, patch);
       },
       deleteSubject: (id) => {
         set((s) => ({ subjects: s.subjects.filter((x) => x.id !== id) }));
@@ -537,6 +569,156 @@ export const useData = create<DataState>()(
         fbPatch(COLLECTIONS.classes, classId, { waitingList });
       },
 
+      // ---- Enrolment requests (تسجيل) ----
+      // A student asks to study a subject with a chosen teacher. The request sits
+      // in the admin's queue until several are grouped into one class.
+      requestEnrollment: (studentId, subjectId, teacherId) => {
+        const st = get();
+        // Don't queue a duplicate, and don't queue if already enrolled with that pair.
+        const dup = st.enrollmentRequests.some(
+          (r) =>
+            r.studentId === studentId &&
+            r.subjectId === subjectId &&
+            r.teacherId === teacherId &&
+            r.status === "pending"
+        );
+        const already = st.enrollments.some(
+          (e) => e.studentId === studentId && e.subjectId === subjectId && e.status === "active"
+        );
+        if (dup || already) return null;
+
+        const req: EnrollmentRequest = {
+          id: uid(),
+          studentId,
+          subjectId,
+          teacherId,
+          status: "pending",
+          createdAt: now(),
+        };
+        set((s) => ({ enrollmentRequests: [req, ...s.enrollmentRequests] }));
+        fbWrite(COLLECTIONS.enrollmentRequests, req);
+
+        const student = st.students.find((x) => x.id === studentId);
+        const subject = st.subjects.find((x) => x.id === subjectId);
+        const teacher = st.teachers.find((x) => x.id === teacherId);
+        // Tell every admin there is a new تسجيل waiting.
+        st.users
+          .filter((u) => u.role === "admin")
+          .forEach((u) =>
+            get().addNotification(
+              u.id,
+              "enrollment",
+              `Nouvelle inscription : ${student?.name ?? "—"} — ${subject?.name ?? "—"} avec ${teacher?.name ?? "—"}`
+            )
+          );
+        get().log(studentId, "enrollment_request", `${subject?.name ?? "—"} / ${teacher?.name ?? "—"}`);
+        return req;
+      },
+
+      cancelEnrollmentRequest: (id) => {
+        set((s) => ({ enrollmentRequests: s.enrollmentRequests.filter((r) => r.id !== id) }));
+        fbDelete(COLLECTIONS.enrollmentRequests, id);
+      },
+
+      rejectEnrollmentRequest: (id) => {
+        const req = get().enrollmentRequests.find((r) => r.id === id);
+        if (!req) return;
+        const patch = { status: "rejected" as const, reviewedAt: now() };
+        set((s) => ({
+          enrollmentRequests: s.enrollmentRequests.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        }));
+        fbPatch(COLLECTIONS.enrollmentRequests, id, patch);
+        const student = get().students.find((x) => x.id === req.studentId);
+        if (student?.linkedAccountId) {
+          get().addNotification(student.linkedAccountId, "enrollment", "Votre demande d'inscription a été refusée.");
+        }
+      },
+
+      // Turn pending requests into a real group: creates the class, enrols every
+      // student in it, and stamps the price + school cut on the group itself.
+      formGroupFromRequests: (requestIds, opts) => {
+        const st = get();
+        const reqs = st.enrollmentRequests.filter(
+          (r) => requestIds.includes(r.id) && r.status === "pending"
+        );
+        if (reqs.length === 0) return null;
+
+        // Every request in a group must share the same subject and teacher.
+        const { subjectId, teacherId } = reqs[0];
+        if (reqs.some((r) => r.subjectId !== subjectId || r.teacherId !== teacherId)) return null;
+
+        const firstStudent = st.students.find((x) => x.id === reqs[0].studentId);
+        const klass: ClassRoom = {
+          id: uid(),
+          subjectId,
+          teacherId,
+          roomId: opts.roomId,
+          level: firstStudent?.level ?? "1am",
+          sessionType: reqs.length > 1 ? "group" : "one_on_one",
+          dayOfWeek: opts.dayOfWeek,
+          timeSlot: opts.timeSlot,
+          maxStudents: opts.maxStudents ?? Math.max(reqs.length, 8),
+          currentStudents: reqs.length,
+          isLocked: false,
+          pricePerSession: opts.pricePerSession,
+          schoolCutMode: opts.schoolCutMode,
+          schoolCutValue: opts.schoolCutValue,
+          createdAt: now(),
+        };
+        set((s) => ({ classes: [...s.classes, klass] }));
+        fbWrite(COLLECTIONS.classes, klass);
+
+        const enrolments: Enrollment[] = reqs.map((r) => ({
+          id: uid(),
+          studentId: r.studentId,
+          classId: klass.id,
+          subjectId,
+          teacherId,
+          pricePerSession: opts.pricePerSession,
+          startDate: now(),
+          status: "active",
+        }));
+        set((s) => ({ enrollments: [...s.enrollments, ...enrolments] }));
+        enrolments.forEach((e) => fbWrite(COLLECTIONS.enrollments, e));
+
+        const patch = { status: "grouped" as const, classId: klass.id, reviewedAt: now() };
+        set((s) => ({
+          enrollmentRequests: s.enrollmentRequests.map((r) =>
+            requestIds.includes(r.id) ? { ...r, ...patch } : r
+          ),
+        }));
+        reqs.forEach((r) => fbPatch(COLLECTIONS.enrollmentRequests, r.id, patch));
+
+        // Keep the student's subject list in sync.
+        reqs.forEach((r) => {
+          const student = get().students.find((x) => x.id === r.studentId);
+          if (student && !student.enrolledSubjects.includes(subjectId)) {
+            get().updateStudent(student.id, {
+              enrolledSubjects: [...student.enrolledSubjects, subjectId],
+            });
+          }
+          if (student?.linkedAccountId) {
+            get().addNotification(
+              student.linkedAccountId,
+              "enrollment",
+              `Vous êtes inscrit(e) : ${opts.dayOfWeek} ${opts.timeSlot}`
+            );
+          }
+        });
+
+        const teacher = get().teachers.find((x) => x.id === teacherId);
+        const teacherAccount = get().users.find((u) => u.teacherId === teacherId);
+        if (teacherAccount) {
+          get().addNotification(
+            teacherAccount.id,
+            "enrollment",
+            `Nouveau groupe : ${reqs.length} élève(s), ${opts.dayOfWeek} ${opts.timeSlot}`
+          );
+        }
+        get().log("admin", "form_group", `${teacher?.name ?? "—"} — ${reqs.length} élève(s)`);
+        return klass;
+      },
+
       // ---- Registration requests (student/teacher signup reviewed by admin) ----
       addRegistrationRequest: (req) => {
         const request: RegistrationRequest = { ...req, status: "pending", createdAt: now() };
@@ -599,6 +781,28 @@ export const useData = create<DataState>()(
       },
 
       resetToSeed: () => set({ ...makeSeed() }),
+
+      loadDemoData: () => {
+        const seed = makeSeed();
+        set({ ...seed });
+        // In Supabase mode these upserts flow through the offline outbox, so the
+        // rows land in the database as well as the local store. Ids are fixed
+        // (t1, s1, rm_big, ...) which is what DELETE-DEMO-DATA.sql keys off.
+        fbWriteMany(COLLECTIONS.users, seed.users);
+        fbWriteMany(COLLECTIONS.teachers, seed.teachers);
+        fbWriteMany(COLLECTIONS.students, seed.students);
+        fbWriteMany(COLLECTIONS.subjects, seed.subjects);
+        fbWriteMany(COLLECTIONS.rooms, seed.rooms);
+        fbWriteMany(COLLECTIONS.classes, seed.classes);
+        fbWriteMany(COLLECTIONS.enrollments, seed.enrollments);
+        fbWriteMany(COLLECTIONS.sessions, seed.sessions);
+        fbWriteMany(COLLECTIONS.payments, seed.payments);
+        fbWriteMany(COLLECTIONS.notifications, seed.notifications);
+        fbWriteMany(COLLECTIONS.activityLog, seed.activityLog);
+        fbWriteMany(COLLECTIONS.slotRequests, seed.slotRequests);
+        fbWriteMany(COLLECTIONS.registrationRequests, seed.registrationRequests);
+        fbWriteMany(COLLECTIONS.enrollmentRequests, seed.enrollmentRequests);
+      },
     }),
     {
       name: "horizon-store",
@@ -610,6 +814,7 @@ export const useData = create<DataState>()(
         students: s.students,
         teachers: s.teachers,
         subjects: s.subjects,
+        rooms: s.rooms,
         classes: s.classes,
         enrollments: s.enrollments,
         sessions: s.sessions,
@@ -619,6 +824,7 @@ export const useData = create<DataState>()(
         slotRequests: s.slotRequests,
         registrationRequests: s.registrationRequests,
         teacherPayouts: s.teacherPayouts,
+        enrollmentRequests: s.enrollmentRequests,
       }),
     }
   )

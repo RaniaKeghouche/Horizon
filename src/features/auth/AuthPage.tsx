@@ -142,9 +142,18 @@ export default function AuthPage() {
         {/* Right side: the classroom photo carries this half on its own */}
         <div className="auth-illustration-side">
           <div className="auth-illustration-bg">
-            {/* Single centred brand statement: circular mark + slogan. */}
+            {/* Same artwork as the landing hero, centred, with the brand below. */}
             <div className="auth-emblem">
-              <img src="/horizon-logo.png" alt="Horizon Skills Academy" width={112} height={118} />
+              <div className="auth-art" aria-hidden="true">
+                <img src="/climb.png" alt="" width={535} height={654} />
+              </div>
+              <img
+                src="/horizon-logo.png"
+                alt="Horizon Skills Academy"
+                className="auth-emblem-logo"
+                width={112}
+                height={118}
+              />
               <span className="auth-emblem-rule" aria-hidden="true" />
               <p className="auth-slogan">{t("auth.slogan")}</p>
             </div>

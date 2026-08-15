@@ -106,7 +106,8 @@
     "search": "Rechercher",
     "language": "Langue",
     "hello": "Bonjour",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "reject": "Reject"
   },
   "hero": {
     "title_start": "Helping you climb",
@@ -210,5 +211,49 @@
     "reach": "Get in touch",
     "directions": "Get directions",
     "social_note": "Social profiles coming soon."
+  },
+  "subjects": {
+    "pickTeachers": "Teachers per level",
+    "noTeachers": "Add a teacher first.",
+    "noneAssigned": "No teacher assigned",
+    "editTeachers": "Edit teachers",
+    "pickLevels": "Levels this subject is offered at",
+    "noLevels": "No level offered yet",
+    "editLevels": "Edit levels and teachers"
+  },
+  "courses": {
+    "title": "Available subjects",
+    "lead": "Choose a subject and a teacher. The school will place you in a group.",
+    "enrolled": "Enrolled",
+    "pending": "Awaiting grouping",
+    "pendingWith": "Requested with",
+    "noTeacherYet": "No teacher offers this yet.",
+    "chooseTeacher": "Choose a teacher",
+    "enrol": "Enrol",
+    "perSession": "session",
+    "rejected": "Declined requests",
+    "myLevel": "For your level",
+    "otherLevels": "Other levels",
+    "otherLevelsHint": "Offered at other levels — ask the school if you want to join one.",
+    "otherLevelNote": "Not offered at your level"
+  },
+  "enrolQueue": {
+    "title": "Enrolment requests",
+    "accountRequests": "Account requests",
+    "empty": "No enrolment requests waiting.",
+    "requests": "request(s)",
+    "formGroup": "Form a group",
+    "day": "Day",
+    "time": "Time",
+    "price": "Price per session (DA)",
+    "cutMode": "School share",
+    "percentage": "Percentage",
+    "fixed": "Fixed amount",
+    "perSession": "Per session",
+    "school": "School",
+    "teacher": "Teacher",
+    "create": "Create the group",
+    "room": "Room",
+    "noRoom": "No room free at this slot"
   }
 }
