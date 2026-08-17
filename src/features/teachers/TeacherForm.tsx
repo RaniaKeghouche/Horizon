@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
 import { PAYMENT_MODE_LABEL } from "../../lib/labels";
@@ -23,6 +24,7 @@ export default function TeacherForm({
   onSave: (values: TeacherFormValues) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const allSubjects = useData((s) => s.subjects);
   const addSubject = useData((s) => s.addSubject);
   const [newSubject, setNewSubject] = useState("");
@@ -55,34 +57,34 @@ export default function TeacherForm({
 
   return (
     <Modal
-      title={initial ? "Modifier l'enseignant" : "Nouvel enseignant"}
+      title={initial ? t("frm.edit_teacher") : t("tea.new")}
       onClose={onClose}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>Annuler</button>
+          <button className="btn btn-ghost" onClick={onClose}>{t("common.cancel")}</button>
           <button
             className="btn btn-primary"
             disabled={!v.name.trim()}
             onClick={() => onSave({ ...v, name: v.name.trim() })}
           >
-            Enregistrer
+            {t("common.save")}
           </button>
         </>
       }
     >
       <div className="form-grid">
         <label className="field">
-          <span>Nom complet *</span>
+          <span>{t("frm.full_name")} *</span>
           <input className="input" value={v.name} onChange={(e) => set("name", e.target.value)} />
         </label>
         <label className="field">
-          <span>Téléphone</span>
+          <span>{t("reg.phoneLabel")}</span>
           <input className="input" value={v.phone} onChange={(e) => set("phone", e.target.value)} />
         </label>
       </div>
 
       <div className="field">
-        <span>Matières enseignées</span>
+        <span>{t("frm.subjects_taught")}</span>
         <div className="checkbox-list">
           {allSubjects.map((s) => (
             <label key={s.id} className={"chip-toggle" + (v.subjects.includes(s.id) ? " on" : "")}>
@@ -98,18 +100,18 @@ export default function TeacherForm({
         <div className="add-row" style={{ marginTop: "0.5rem" }}>
           <input
             className="input"
-            placeholder="Nouvelle matière (ex : Espagnol)"
+            placeholder={t("sub.placeholder")}
             value={newSubject}
             onChange={(e) => setNewSubject(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), quickAddSubject())}
           />
-          <button type="button" className="btn btn-ghost" onClick={quickAddSubject}>＋ Ajouter</button>
+          <button type="button" className="btn btn-ghost" onClick={quickAddSubject}>{t("common.add")}</button>
         </div>
       </div>
 
       <div className="form-grid">
         <label className="field">
-          <span>Mode de rémunération</span>
+          <span>{t("frm.pay_mode")}</span>
           <select
             className="input"
             value={v.paymentMode}
@@ -126,7 +128,7 @@ export default function TeacherForm({
         </label>
         {v.paymentMode === "percentage" ? (
           <label className="field">
-            <span>Pourcentage pour l'enseignant (%)</span>
+            <span>{t("frm.pct_teacher")}</span>
             <input
               className="input"
               type="number"
@@ -135,18 +137,18 @@ export default function TeacherForm({
               value={100 - v.schoolCutValue}
               onChange={(e) => set("schoolCutValue", Math.min(100, Math.max(0, 100 - Number(e.target.value))))}
             />
-            <span className="muted small">L'école garde {v.schoolCutValue}%.</span>
+            <span className="muted small">{t("frm.school_keeps", { pct: v.schoolCutValue })}</span>
           </label>
         ) : (
           <label className="field">
-            <span>Montant fixe pris par l'école (DA / séance)</span>
+            <span>{t("frm.fixed_school")}</span>
             <input
               className="input"
               type="number"
               value={v.schoolCutValue}
               onChange={(e) => set("schoolCutValue", Number(e.target.value))}
             />
-            <span className="muted small">L'enseignant garde le reste.</span>
+            <span className="muted small">{t("frm.teacher_keeps")}</span>
           </label>
         )}
       </div>

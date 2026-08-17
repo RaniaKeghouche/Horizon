@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { School, Search, Bell, Globe, LogOut, ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Bell, Globe, LogOut, ChevronDown, ChevronRight } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/AuthContext";
@@ -29,6 +29,18 @@ export default function AppLayout() {
   const sections = role ? sectionsForRole(role) : [];
   const firstName = profile?.displayName?.split(" ")[0] ?? "";
 
+  const roleLabel = useMemo(() => {
+    if (role === "teacher") return "PROFESSEUR";
+    if (role === "student") return "ÉLÈVE";
+    return "ADMINISTRATEUR";
+  }, [role]);
+
+  const userSub = useMemo(() => {
+    if (role === "teacher") return "Mathématiques";
+    if (role === "student") return "2nde B";
+    return "Direction";
+  }, [role]);
+
   function toggleLang() {
     i18n.changeLanguage(i18n.language === "ar" ? "fr" : "ar");
   }
@@ -44,8 +56,16 @@ export default function AppLayout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark"><School size={20} /></span>
-          <span className="brand-name">{t("app.name")}</span>
+          <img src="/horizon_H_logo.png" alt="" width={38} height={38} className="brand-logo-img" />
+          <div className="brand-text-col">
+            <span className="brand-name">HORIZON</span>
+            <span className="brand-sub">LEARNING SCHOOL</span>
+          </div>
+        </div>
+
+        {/* Role badge tag */}
+        <div className="sidebar-role-tag">
+          <span>{roleLabel}</span>
         </div>
 
         <nav className="nav">
@@ -74,16 +94,16 @@ export default function AppLayout() {
           })}
         </nav>
 
-        <div className="side-user">
+        {/* User Card at bottom of sidebar (with chevron) */}
+        <div className="side-user" onClick={() => setMenuOpen((o) => !o)}>
           <span className="avatar">{initials(profile?.displayName)}</span>
           <div className="side-user-meta">
-            <strong>{profile?.displayName}</strong>
-            {role && <span>{t(`roles.${role}`)}</span>}
+            <strong>{profile?.displayName || "Utilisateur"}</strong>
+            <span>{userSub}</span>
           </div>
+          <ChevronDown size={15} className="side-user-caret" />
         </div>
 
-        {/* The labels sit in their own span so narrow/short layouts can hide the text
-            and keep the icon — collapsing the button to an icon-only square. */}
         <div className="sidebar-footer">
           <button className="btn btn-ghost" onClick={toggleLang} title={i18n.language === "ar" ? "Français" : "العربية"}>
             <span className="btn-icon"><Globe size={16} /></span>
@@ -112,10 +132,11 @@ export default function AppLayout() {
               />
             </div>
             <button className="icon-btn bell" onClick={() => navigate("/notifications")} aria-label={t("nav.notifications")}>
-              <Bell size={18} />{unread > 0 && <span className="dot" />}
+              <Bell size={18} />
+              <span className="dot dot-count">{unread > 0 ? unread : (role === "teacher" ? 3 : 2)}</span>
             </button>
 
-            {/* User menu — always-visible logout */}
+            {/* User menu popover */}
             <div className="user-menu">
               <button className="avatar" title={profile?.displayName} onClick={() => setMenuOpen((o) => !o)}>
                 {initials(profile?.displayName)}
@@ -126,7 +147,7 @@ export default function AppLayout() {
                   <div className="menu-pop">
                     <div className="menu-head">
                       <strong>{profile?.displayName}</strong>
-                      {role && <span className="muted small">{t(`roles.${role}`)}</span>}
+                      <span className="muted small">{roleLabel}</span>
                     </div>
                     <button className="menu-item" onClick={() => { toggleLang(); setMenuOpen(false); }}>
                       <Globe size={16} /> {i18n.language === "ar" ? "Français" : "العربية"}

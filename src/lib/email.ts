@@ -31,6 +31,44 @@ export async function sendCodeEmail(to: string, code: string, name = ""): Promis
   });
 }
 
+/** School's own inbox — where public contact enquiries land. */
+export const SCHOOL_EMAIL = "horizonskillsacademy@gmail.com";
+
+export interface ContactEnquiry {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  topic: string;
+  message: string;
+}
+
+/**
+ * Public contact form → the school's inbox, through the same generic EmailJS
+ * template as the code e-mail (it renders `{{message}}` verbatim).
+ * Returns false when EmailJS isn't configured so the caller can fall back to
+ * showing the phone number rather than pretending the message was sent.
+ */
+export async function sendContactEmail(e: ContactEnquiry): Promise<boolean> {
+  const who = `${e.firstName} ${e.lastName}`.trim();
+  return send(EMAILJS.templateCode, {
+    to_email: SCHOOL_EMAIL,
+    to_name: "Horizon Skills Academy",
+    reply_to: e.email,
+    subject: `Demande depuis le site — ${e.topic || "Information"}`,
+    message: [
+      `Nouvelle demande depuis le site.`,
+      ``,
+      `Nom      : ${who}`,
+      `E-mail   : ${e.email}`,
+      `Téléphone: ${e.phone || "—"}`,
+      `Sujet    : ${e.topic || "—"}`,
+      ``,
+      e.message,
+    ].join("\n"),
+  });
+}
+
 /** Notify the applicant of the admin's decision. Returns true if sent. */
 export async function sendDecisionEmail(
   to: string,

@@ -32,6 +32,9 @@ interface AuthState {
   loginAs: (role: Role) => void; // demo
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  /** OAuth générique. Le fournisseur doit être activé dans Supabase →
+   *  Authentication → Providers, sinon l'appel remonte une erreur explicite. */
+  loginWithProvider: (provider: "google" | "azure") => Promise<void>;
   registerAccount: (email: string, password: string) => Promise<string>; // returns uid
   logout: () => Promise<void>;
 }
@@ -123,13 +126,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithProvider = async (provider: "google" | "azure") => {
+    if (DEMO_MODE) throw new Error("Connexion externe indisponible en mode démo.");
     const { supabase } = await import("../../lib/supabase");
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider,
       options: { redirectTo: window.location.origin },
     });
     if (error) throw error;
+  };
+
+  const loginWithGoogle = async () => {
+    await loginWithProvider("google");
   };
 
   const registerAccount = async (e: string, password: string): Promise<string> => {
@@ -164,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginAs,
         login,
         loginWithGoogle,
+        loginWithProvider,
         registerAccount,
         logout,
       }}

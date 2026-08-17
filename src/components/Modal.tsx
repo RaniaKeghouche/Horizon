@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
 
 export default function Modal({
   title,
@@ -17,7 +18,7 @@ export default function Modal({
         <header className="modal-head">
           <h2>{title}</h2>
           <button className="icon-btn" onClick={onClose} aria-label="close">
-            ✕
+            <X size={18} />
           </button>
         </header>
         <div className="modal-body">{children}</div>

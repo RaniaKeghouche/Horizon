@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Plus, Pencil, Trash2, Phone, Users } from "lucide-react";
 import { useData } from "../../data/store";
 import { teacherPayout } from "../../lib/billing";
 import { formatDA } from "../../lib/format";
@@ -27,52 +28,88 @@ export default function TeachersPage() {
 
   return (
     <div className="stack">
-      <div className="page-head">
-        <h1>{t("nav.teachers")}</h1>
+      <header className="page-head">
+        <div className="page-title">
+          <h1>{t("nav.teachers")}</h1>
+          <p>{t("tea.count", { n: teachers.length })}</p>
+        </div>
         <button className="btn btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>
-          ＋ Nouvel enseignant
+          <Plus size={17} /> {t("tea.new")}
         </button>
-      </div>
+      </header>
 
-      <div className="card table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Matières</th>
-              <th>Rémunération enseignant</th>
-              <th>Encaissé (part prof)</th>
-              <th>En attente</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {teachers.map((teacher) => {
-              const payout = teacherPayout(teacher.id, enrollments, payments);
-              return (
-                <tr key={teacher.id}>
-                  <td><strong>{teacher.name}</strong><div className="muted small">📞 {teacher.phone}</div></td>
-                  <td>{teacher.subjects.map(subjName).join(", ") || "—"}</td>
-                  <td>
-                    {teacher.paymentMode === "percentage"
-                      ? `${100 - teacher.schoolCutValue}% du payé`
-                      : `reste après ${formatDA(teacher.schoolCutValue)}/séance (école)`}
-                  </td>
-                  <td className="text-ok">{formatDA(payout.earned)}</td>
-                  <td>{payout.pending > 0 ? <span className="text-danger">{formatDA(payout.pending)}</span> : "—"}</td>
-                  <td className="row-actions">
-                    <button className="icon-btn" title={t("common.edit")} onClick={() => { setEditing(teacher); setShowForm(true); }}>✏️</button>
-                    <button className="icon-btn danger" title={t("common.delete")} onClick={() => confirm(`Supprimer ${teacher.name} ?`) && deleteTeacher(teacher.id)}>🗑</button>
-                  </td>
-                </tr>
-              );
-            })}
-            {teachers.length === 0 && (
-              <tr><td colSpan={7} className="muted center">Aucun enseignant.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {teachers.length === 0 ? (
+        <div className="card">
+          <div className="empty-state">
+            <span className="empty-state-icon"><Users size={24} /></span>
+            <strong>{t("tea.none")}</strong>
+            <p>{t("tea.none_hint")}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="card table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t("stu.name")}</th>
+                <th>{t("nav.subjects")}</th>
+                <th>{t("tea.pay_rule")}</th>
+                <th>{t("tea.collected")}</th>
+                <th>{t("tea.pending")}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {teachers.map((teacher) => {
+                const payout = teacherPayout(teacher.id, enrollments, payments);
+                return (
+                  <tr key={teacher.id}>
+                    <td>
+                      <div className="cell-id">
+                        <span className="cell-avatar">{initials(teacher.name)}</span>
+                        <div>
+                          <strong>{teacher.name}</strong>
+                          <a className="muted small cell-phone" href={`tel:${teacher.phone}`}>
+                            <Phone size={12} /> {teacher.phone}
+                          </a>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="cell-tags">
+                        {teacher.subjects.length === 0
+                          ? "—"
+                          : teacher.subjects.map((id) => (
+                              <span key={id} className="pill pill-soft">{subjName(id)}</span>
+                            ))}
+                      </div>
+                    </td>
+                    <td>
+                      {teacher.paymentMode === "percentage"
+                        ? t("tea.rule_percent", { pct: 100 - teacher.schoolCutValue })
+                        : t("tea.rule_fixed", { amount: formatDA(teacher.schoolCutValue) })}
+                    </td>
+                    <td className="text-ok">{formatDA(payout.earned)}</td>
+                    <td>{payout.pending > 0 ? <span className="text-danger">{formatDA(payout.pending)}</span> : "—"}</td>
+                    <td className="row-actions">
+                      <button className="icon-btn" title={t("common.edit")} onClick={() => { setEditing(teacher); setShowForm(true); }}>
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        className="icon-btn danger"
+                        title={t("common.delete")}
+                        onClick={() => confirm(t("stu.confirm_delete", { name: teacher.name })) && deleteTeacher(teacher.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showForm && (
         <TeacherForm
@@ -83,4 +120,8 @@ export default function TeachersPage() {
       )}
     </div>
   );
+}
+
+function initials(name: string): string {
+  return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 }

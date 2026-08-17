@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Trash2, Copy } from "lucide-react";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
 import { checkSlot, DAYS } from "../../lib/schedule";
@@ -31,6 +33,7 @@ export default function ClassForm({
   onDelete?: () => void;
   onDuplicate?: () => void;
 }) {
+  const { t } = useTranslation();
   const { subjects, teachers, classes } = useData();
   const addClass = useData((s) => s.addClass);
   const updateClass = useData((s) => s.updateClass);
@@ -76,32 +79,40 @@ export default function ClassForm({
         <>
           {(onDelete || onDuplicate) && (
             <div className="foot-left">
-              {onDelete && <button className="btn btn-danger" onClick={onDelete}>🗑 Supprimer</button>}
-              {onDuplicate && <button className="btn btn-ghost" onClick={onDuplicate}>⧉ Dupliquer</button>}
+              {onDelete && (
+                <button className="btn btn-danger" onClick={onDelete}>
+                  <Trash2 size={16} /> {t("common.delete")}
+                </button>
+              )}
+              {onDuplicate && (
+                <button className="btn btn-ghost" onClick={onDuplicate}>
+                  <Copy size={16} /> {t("cf.duplicate")}
+                </button>
+              )}
             </div>
           )}
-          <button className="btn btn-ghost" onClick={onClose}>Annuler</button>
+          <button className="btn btn-ghost" onClick={onClose}>{t("common.cancel")}</button>
           <button className="btn btn-primary" onClick={save} disabled={!subjectId || !teacherId}>
-            Enregistrer
+            {t("common.save")}
           </button>
         </>
       }
     >
       <div className="form-grid">
         <label className="field">
-          <span>Matière</span>
+          <span>{t("cf.subject")}</span>
           <select className="input" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
             {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </label>
         <label className="field">
-          <span>Enseignant</span>
+          <span>{t("roles.teacher")}</span>
           <select className="input" value={teacherId} onChange={(e) => setTeacherId(e.target.value)}>
             {teachers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </label>
         <label className="field">
-          <span>Niveau</span>
+          <span>{t("stu.level")}</span>
           <select className="input" value={level} onChange={(e) => setLevel(e.target.value as StudentLevel)}>
             {LEVEL_GROUPS.map((g) => (
               <optgroup key={g.label} label={g.label}>
@@ -111,7 +122,7 @@ export default function ClassForm({
           </select>
         </label>
         <label className="field">
-          <span>Type de séance</span>
+          <span>{t("cf.session_type")}</span>
           <select className="input" value={sessionType} onChange={(e) => setSessionType(e.target.value as SessionType)}>
             {SESSION_TYPES.map((s) => <option key={s} value={s}>{SESSION_TYPE_LABEL[s]}</option>)}
           </select>
@@ -132,11 +143,11 @@ export default function ClassForm({
           />
         </label>
         <label className="field">
-          <span>Fin (2h par défaut, modifiable)</span>
+          <span>{t("cf.end_time")}</span>
           <input type="time" className="input" value={end} onChange={(e) => setEnd(e.target.value)} />
         </label>
         <label className="field">
-          <span>Capacité max (4–20)</span>
+          <span>{t("cf.capacity")}</span>
           <input className="input" type="number" min={4} max={20} value={maxStudents}
             onChange={(e) => setMaxStudents(Number(e.target.value))} />
         </label>

@@ -1,14 +1,17 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Users, ClipboardList, Wallet, CalendarDays } from "lucide-react";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { formatDate, billingMonth, formatDA } from "../../lib/format";
-import { ATTENDANCE_LABEL, DAY_LABEL, LEVEL_LABEL } from "../../lib/labels";
+import { LEVEL_LABEL } from "../../lib/labels";
 import type { AttendanceState } from "../../lib/types";
 
 // Overview: every group → its sessions grouped by month → each student's attendance
 // and paid/unpaid status for that exact session. Admin sees all groups; a teacher sees
 // only their own groups (cahier: prof consulte ses groupes, élèves, présences, paiement).
 export default function SessionsPage() {
+  const { t } = useTranslation();
   const { role, profile } = useAuth();
   const { classes, subjects, teachers, students, enrollments, sessions, payments } = useData();
 
@@ -55,23 +58,67 @@ export default function SessionsPage() {
 
   return (
     <div className="stack">
-      <div className="page-head">
-        <h1>{role === "teacher" ? "Mes groupes" : "Séances par groupe"}</h1>
-        <select className="input" style={{ maxWidth: 320 }} value={classId} onChange={(e) => setClassId(e.target.value)}>
-          {myClasses.map((c) => (
-            <option key={c.id} value={c.id}>
-              {subjName(c.subjectId)} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} · {teacherName(c.teacherId)}
-            </option>
-          ))}
-        </select>
-      </div>
-      {myClasses.length === 0 && <p className="muted">Aucun groupe pour l'instant.</p>}
+      <header className="page-head">
+        <div className="page-title">
+          <h1>{role === "teacher" ? t("dash.my_groups") : t("grp.title_admin")}</h1>
+          {klass && (
+            <p>
+              {t("grp.summary", {
+                students: klass.currentStudents,
+                sessions: sessions.filter((s) => s.classId === classId).length,
+              })}
+            </p>
+          )}
+        </div>
+        {myClasses.length > 0 && (
+          <select className="input grp-picker" value={classId} onChange={(e) => setClassId(e.target.value)}>
+            {myClasses.map((c) => (
+              <option key={c.id} value={c.id}>
+                {subjName(c.subjectId)} · {t(`days.${c.dayOfWeek}`)} {c.timeSlot} · {teacherName(c.teacherId)}
+              </option>
+            ))}
+          </select>
+        )}
+      </header>
+
+      {myClasses.length === 0 && (
+        <div className="card">
+          <div className="empty-state">
+            <span className="empty-state-icon"><CalendarDays size={24} /></span>
+            <strong>{t("grp.none")}</strong>
+            <p>{t("grp.none_hint")}</p>
+          </div>
+        </div>
+      )}
 
       {klass && (
-        <p className="muted">
-          {klass.currentStudents} élève(s) · {sessions.filter((s) => s.classId === classId).length} séance(s) ·{" "}
-          {totalUnpaid > 0 ? <span className="text-danger">impayé : {formatDA(totalUnpaid)}</span> : <span className="text-ok">tout payé</span>}
-        </p>
+        <div className="grid-cards">
+          <div className="card stat-card">
+            <span className="stat-icon badge-blue"><Users size={20} /></span>
+            <div className="stat-body">
+              <span className="stat-value">{klass.currentStudents}/{klass.maxStudents}</span>
+              <span className="stat-label">{t("grp.enrolled")}</span>
+            </div>
+          </div>
+          <div className="card stat-card">
+            <span className="stat-icon badge-green"><ClipboardList size={20} /></span>
+            <div className="stat-body">
+              <span className="stat-value">{sessions.filter((s) => s.classId === classId).length}</span>
+              <span className="stat-label">{t("dash.sessions_held")}</span>
+            </div>
+          </div>
+          <div className="card stat-card">
+            <span className={"stat-icon " + (totalUnpaid > 0 ? "badge-red" : "badge-green")}>
+              <Wallet size={20} />
+            </span>
+            <div className="stat-body">
+              <span className={"stat-value " + (totalUnpaid > 0 ? "text-danger" : "text-ok")}>
+                {totalUnpaid > 0 ? formatDA(totalUnpaid) : t("grp.all_paid")}
+              </span>
+              <span className="stat-label">{t("payments.unpaid")}</span>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Roster: the students enrolled in this group (créneau). */}
@@ -82,13 +129,19 @@ export default function SessionsPage() {
           .filter((s): s is NonNullable<typeof s> => !!s);
         return (
           <div className="card">
-            <h3 className="section-title" style={{ marginTop: 0 }}>Élèves du groupe ({roster.length})</h3>
+            <h3 className="section-title" style={{ marginTop: 0 }}>
+              <Users size={16} /> {t("grp.roster", { n: roster.length })}
+            </h3>
             {roster.length === 0 ? (
-              <p className="muted">Aucun élève inscrit dans ce groupe.</p>
+              <div className="empty-state">
+                <span className="empty-state-icon"><Users size={24} /></span>
+                <strong>{t("att.no_roster")}</strong>
+                <p>{t("att.no_roster_hint")}</p>
+              </div>
             ) : (
               <div className="table-wrap">
                 <table className="table">
-                  <thead><tr><th>Élève</th><th>Niveau</th><th>Paiement</th></tr></thead>
+                  <thead><tr><th>{t("nav.students")}</th><th>{t("stu.level")}</th><th>{t("nav.payments")}</th></tr></thead>
                   <tbody>
                     {roster.map((s) => {
                       const enr = enrollments.find((e) => e.studentId === s.id && e.classId === classId);
@@ -97,7 +150,11 @@ export default function SessionsPage() {
                         <tr key={s.id}>
                           <td>{s.name}</td>
                           <td>{LEVEL_LABEL[s.level]}</td>
-                          <td>{due > 0 ? <span className="pill pill-danger">Doit {formatDA(due)}</span> : <span className="pill pill-ok">✓ payé</span>}</td>
+                          <td>
+                            {due > 0
+                              ? <span className="pill pill-danger">{formatDA(due)}</span>
+                              : <span className="pill pill-ok">{t("payments.paid")}</span>}
+                          </td>
                         </tr>
                       );
                     })}
@@ -109,33 +166,41 @@ export default function SessionsPage() {
         );
       })()}
 
-      {byMonth.length === 0 && <p className="muted">Aucune séance pour ce groupe.</p>}
+      {byMonth.length === 0 && klass && (
+        <div className="card">
+          <div className="empty-state">
+            <span className="empty-state-icon"><ClipboardList size={24} /></span>
+            <strong>{t("att.no_session")}</strong>
+            <p>{t("att.no_session_hint")}</p>
+          </div>
+        </div>
+      )}
 
       {byMonth.map(([month, monthSessions]) => (
         <div key={month} className="stack">
-          <h3 className="section-title">📅 {month}</h3>
+          <h3 className="section-title"><CalendarDays size={16} /> {month}</h3>
           {monthSessions.map((sess) => (
             <div key={sess.id} className="card">
               <div className="req-head" style={{ marginBottom: "0.5rem" }}>
-                <strong>Séance {sess.sessionNumber ?? "?"}</strong>
+                <strong>{t("att.session_n", { n: sess.sessionNumber ?? "?" })}</strong>
                 <span className="muted small">{formatDate(sess.date)}</span>
               </div>
               <div className="table-wrap">
                 <table className="table">
-                  <thead><tr><th>Élève</th><th>Présence</th><th>Paiement</th></tr></thead>
+                  <thead><tr><th>{t("nav.students")}</th><th>{t("nav.attendance")}</th><th>{t("nav.payments")}</th></tr></thead>
                   <tbody>
                     {Object.entries(sess.attendance).map(([sid, st]) => {
                       const ps = payStatus(sess.id, sid);
                       return (
                         <tr key={sid}>
                           <td>{studentName(sid)}</td>
-                          <td><span className={"pill " + segClass(st)}>{ATTENDANCE_LABEL[st]}</span></td>
+                          <td><span className={"pill " + segClass(st)}>{t(`attendance.${st}`)}</span></td>
                           <td>
                             {ps === "free"
-                              ? <span className="muted small">non facturée</span>
+                              ? <span className="muted small">{t("grp.not_billed")}</span>
                               : ps === "paid"
-                              ? <span className="pill pill-ok">✓ payé</span>
-                              : <span className="pill pill-danger">✕ non payé</span>}
+                              ? <span className="pill pill-ok">{t("payments.paid")}</span>
+                              : <span className="pill pill-danger">{t("payments.unpaid")}</span>}
                           </td>
                         </tr>
                       );

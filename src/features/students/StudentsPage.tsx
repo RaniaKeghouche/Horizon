@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Plus, Search, Pencil, Trash2, Phone, GraduationCap } from "lucide-react";
 import { useData } from "../../data/store";
 import { computeStudentBilling } from "../../lib/billing";
 import { formatDA } from "../../lib/format";
-import { LEVELS, LEVEL_LABEL, STATUS_LABEL } from "../../lib/labels";
+import { LEVELS, LEVEL_LABEL } from "../../lib/labels";
 import { useAuth } from "../auth/AuthContext";
 import StudentForm, { type StudentFormValues } from "./StudentForm";
 import StudentDetail from "./StudentDetail";
@@ -63,24 +64,30 @@ export default function StudentsPage() {
 
   return (
     <div className="stack">
-      <div className="page-head">
-        <h1>{t("nav.students")}</h1>
+      <header className="page-head">
+        <div className="page-title">
+          <h1>{t("nav.students")}</h1>
+          <p>{t("stu.count", { n: filtered.length })}</p>
+        </div>
         {isAdmin && (
           <button className="btn btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>
-            ＋ Nouvel étudiant
+            <Plus size={17} /> {t("stu.new")}
           </button>
         )}
-      </div>
+      </header>
 
       <div className="toolbar">
-        <input
-          className="input"
-          placeholder={t("common.search")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="toolbar-search">
+          <Search size={16} aria-hidden="true" />
+          <input
+            className="input"
+            placeholder={t("common.search")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
         <select className="input" value={levelFilter} onChange={(e) => setLevelFilter(e.target.value as StudentLevel | "")}>
-          <option value="">Tous les niveaux</option>
+          <option value="">{t("stu.all_levels")}</option>
           {LEVELS.map((l) => (
             <option key={l} value={l}>
               {LEVEL_LABEL[l]}
@@ -89,46 +96,80 @@ export default function StudentsPage() {
         </select>
       </div>
 
-      <div className="card table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Niveau</th>
-              <th>Parent</th>
-              <th>Statut</th>
-              <th>Total dû</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((s) => {
-              const due = dueFor(s);
-              return (
-                <tr key={s.id}>
-                  <td><strong>{s.name}</strong><div className="muted small">📞 {s.phone}</div></td>
-                  <td>{LEVEL_LABEL[s.level]}</td>
-                  <td>{s.parentName}<div className="muted small">{s.parentPhone}</div></td>
-                  <td><span className={"pill " + statusClass(s.status)}>{STATUS_LABEL[s.status]}</span></td>
-                  <td>{due > 0 ? <span className="text-danger">{formatDA(due)}</span> : <span className="text-ok">À jour</span>}</td>
-                  <td className="row-actions">
-                    <button className="btn btn-ghost sm" onClick={() => setDetail(s)}>Détails</button>
-                    {isAdmin && (
-                      <>
-                        <button className="icon-btn" title={t("common.edit")} onClick={() => { setEditing(s); setShowForm(true); }}>✏️</button>
-                        <button className="icon-btn danger" title={t("common.delete")} onClick={() => confirm(`Supprimer ${s.name} ?`) && deleteStudent(s.id)}>🗑</button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr><td colSpan={6} className="muted center">Aucun étudiant.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {filtered.length === 0 ? (
+        <div className="card">
+          <div className="empty-state">
+            <span className="empty-state-icon"><GraduationCap size={24} /></span>
+            <strong>{t("stu.none")}</strong>
+            <p>{search || levelFilter ? t("stu.none_filtered") : t("stu.none_hint")}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="card table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t("stu.name")}</th>
+                <th>{t("stu.level")}</th>
+                <th>{t("stu.parent")}</th>
+                <th>{t("stu.status")}</th>
+                <th>{t("payments.totalDue")}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((s) => {
+                const due = dueFor(s);
+                return (
+                  <tr key={s.id}>
+                    <td>
+                      <div className="cell-id">
+                        <span className="cell-avatar">{initials(s.name)}</span>
+                        <div>
+                          <strong>{s.name}</strong>
+                          <a className="muted small cell-phone" href={`tel:${s.phone}`}>
+                            <Phone size={12} /> {s.phone}
+                          </a>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{LEVEL_LABEL[s.level]}</td>
+                    <td>
+                      {s.parentName}
+                      <a className="muted small cell-phone" href={`tel:${s.parentPhone}`}>
+                        <Phone size={12} /> {s.parentPhone}
+                      </a>
+                    </td>
+                    <td><span className={"pill " + statusClass(s.status)}>{t(`status.${s.status}`)}</span></td>
+                    <td>
+                      {due > 0
+                        ? <span className="text-danger">{formatDA(due)}</span>
+                        : <span className="text-ok">{t("stu.up_to_date")}</span>}
+                    </td>
+                    <td className="row-actions">
+                      <button className="btn btn-ghost sm" onClick={() => setDetail(s)}>{t("stu.details")}</button>
+                      {isAdmin && (
+                        <>
+                          <button className="icon-btn" title={t("common.edit")} onClick={() => { setEditing(s); setShowForm(true); }}>
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            className="icon-btn danger"
+                            title={t("common.delete")}
+                            onClick={() => confirm(t("stu.confirm_delete", { name: s.name })) && deleteStudent(s.id)}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showForm && (
         <StudentForm
@@ -144,4 +185,8 @@ export default function StudentsPage() {
 
 function statusClass(status: Student["status"]) {
   return status === "active" ? "pill-ok" : status === "paused" ? "pill-warn" : "pill-danger";
+}
+
+function initials(name: string): string {
+  return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 }

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Sparkles, MapPin, Award, Users, Play, Pause, Compass } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Sparkles, MapPin, Users, Play, Pause, Compass } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export default function ClassroomExperience() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const sectionRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -86,7 +86,7 @@ export default function ClassroomExperience() {
           <div 
             className="showcase-media-box"
             style={{
-              transform: scale() translateY(px)
+              transform: `scale(${scale}) translateY(${panY}px)`
             }}
           >
             <img 
@@ -100,7 +100,7 @@ export default function ClassroomExperience() {
           {spots.map((spot, idx) => (
             <div 
               key={idx}
-              className={showcase-hotspot }
+              className={`showcase-hotspot ${activeSpot === idx ? "active" : ""}`}
               style={{ top: spot.top, left: spot.left }}
             >
               <div className="hotspot-pulse-ring" />
@@ -131,7 +131,7 @@ export default function ClassroomExperience() {
             <div className="showcase-progress-bar">
               <div 
                 className="showcase-progress-fill" 
-                style={{ width: ${scrollProgress * 100}% }}
+                style={{ width: `${scrollProgress * 100}%` }}
               />
             </div>
 

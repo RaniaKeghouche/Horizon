@@ -28,15 +28,15 @@ function applyChange(table: string, eventType: string, newRow: Row | null, oldRo
 
 const setState = useData.setState as (p: Record<string, unknown>) => void;
 
-/** Publicly-readable catalogue (subjects/classes/teachers) so the registration screen has
- *  its dropdowns even before the user is authenticated. Requires public read RLS on these. */
+/** Publicly-readable catalogue so the registration screen has its dropdowns before the
+ *  user is authenticated. Only `subjects` is fetched: RegisterFlow's sole pre-login
+ *  dropdown is the teacher subject picker, and anon read on classes/teachers was dropped
+ *  in supabase/rls-hardening.sql — the teachers table carries pay terms. */
 export async function fetchPublicCatalog(): Promise<void> {
   if (DEMO_MODE) return;
   const { supabase } = await import("../lib/supabase");
-  for (const table of ["subjects", "classes", "teachers"]) {
-    const { data, error } = await supabase.from(table).select("*");
-    if (!error && data) setState({ [table]: data });
-  }
+  const { data, error } = await supabase.from("subjects").select("*");
+  if (!error && data) setState({ subjects: data });
 }
 
 let channel: RealtimeChannel | null = null;

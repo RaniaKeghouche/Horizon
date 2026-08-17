@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { Receipt, Check, Bell } from "lucide-react";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
 import { computeStudentBilling } from "../../lib/billing";
@@ -7,6 +9,7 @@ import type { Student } from "../../lib/types";
 
 // Admin per-session payment manager (cahier §3.4): mark paid/unpaid, send reminders.
 export default function PaymentManage({ student, onClose }: { student: Student; onClose: () => void }) {
+  const { t } = useTranslation();
   const { subjects, teachers, enrollments, sessions, payments } = useData();
   const markPaid = useData((s) => s.markPaid);
   const markUnpaid = useData((s) => s.markUnpaid);
@@ -33,13 +36,15 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
       onClose={onClose}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={() => printInvoice(billing)}>🧾 Facture PDF</button>
-          <button className="btn btn-primary" onClick={onClose}>Fermer</button>
+          <button className="btn btn-ghost" onClick={() => printInvoice(billing)}>
+            <Receipt size={16} /> {t("pmt.invoice")}
+          </button>
+          <button className="btn btn-primary" onClick={onClose}>{t("pm.close")}</button>
         </>
       }
     >
       <div className="total-line">
-        <span>Total dû</span>
+        <span>{t("payments.totalDue")}</span>
         <strong className={billing.totalDue > 0 ? "text-danger" : "text-ok"}>{formatDA(billing.totalDue)}</strong>
       </div>
 
@@ -49,10 +54,10 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
         if (unpaidMonths.length === 0) return null;
         return (
           <div className="month-pay-row">
-            <span className="muted small">Encaisser tout un mois :</span>
+            <span className="muted small">{t("pm.collect_month")}</span>
             {unpaidMonths.map((m) => (
               <button key={m} className="btn btn-primary sm" onClick={() => markMonthPaid(student.id, m)}>
-                ✓ {m} payé
+                <Check size={14} /> {t("pmt.month_paid", { month: m })}
               </button>
             ))}
           </div>
@@ -62,7 +67,7 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
       <div className="card table-wrap">
         <table className="table">
           <thead>
-            <tr><th>Matière</th><th>Séance</th><th>Montant</th><th>Statut</th><th>Rappels</th><th></th></tr>
+            <tr><th>{t("cf.subject")}</th><th>{t("payments.session")}</th><th>{t("pm.amount")}</th><th>{t("stu.status")}</th><th>{t("pm.reminders")}</th><th></th></tr>
           </thead>
           <tbody>
             {myPayments.map((p) => (
@@ -72,23 +77,27 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
                 <td>{formatDA(p.amount)}</td>
                 <td>
                   <span className={"pill " + (p.status === "paid" ? "pill-ok" : "pill-danger")}>
-                    {p.status === "paid" ? "Payé" : "Non payé"}
+                    {p.status === "paid" ? t("payments.paid") : t("payments.unpaid")}
                   </span>
                 </td>
-                <td>{p.reminderCount > 0 ? `🔔 ${p.reminderCount}` : "—"}</td>
+                <td>
+                  {p.reminderCount > 0
+                    ? <span className="cell-phone"><Bell size={12} /> {p.reminderCount}</span>
+                    : "—"}
+                </td>
                 <td className="row-actions">
                   {p.status === "unpaid" ? (
                     <>
-                      <button className="btn btn-primary sm" onClick={() => markPaid(p.id)}>Marquer payé</button>
-                      <button className="btn btn-ghost sm" onClick={() => sendReminder(p.id)}>Relancer</button>
+                      <button className="btn btn-primary sm" onClick={() => markPaid(p.id)}>{t("pm.mark_paid")}</button>
+                      <button className="btn btn-ghost sm" onClick={() => sendReminder(p.id)}>{t("pm.remind")}</button>
                     </>
                   ) : (
-                    <button className="btn btn-ghost sm" onClick={() => markUnpaid(p.id)}>Annuler</button>
+                    <button className="btn btn-ghost sm" onClick={() => markUnpaid(p.id)}>{t("pm.undo")}</button>
                   )}
                 </td>
               </tr>
             ))}
-            {myPayments.length === 0 && <tr><td colSpan={6} className="muted center">Aucun paiement.</td></tr>}
+            {myPayments.length === 0 && <tr><td colSpan={6} className="muted center">{t("pm.none")}</td></tr>}
           </tbody>
         </table>
       </div>

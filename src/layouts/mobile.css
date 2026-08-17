@@ -1,0 +1,229 @@
+/* ============================================================================
+   MobileLayout — forme tactile (app Android + web sur téléphone)
+
+   Ce n'est pas le layout bureau rétréci : en-tête compact, contenu qui défile
+   seul, barre d'onglets fixe en bas, grandes cibles tactiles.
+
+   Les encoches et la barre de gestes Android/iOS sont gérées via env(safe-area-*) :
+   sans ça, la barre d'onglets passe SOUS les boutons système du téléphone.
+   ========================================================================= */
+
+.mb-shell {
+  --mb-tabbar-h: 4.25rem;
+  --mb-safe-b: env(safe-area-inset-bottom, 0px);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+/* ------------------------------------------------------------- En-tête */
+
+.mb-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
+  background: var(--sidebar-grad);
+  color: #fff;
+}
+
+.mb-header-id { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.mb-header-id div { display: flex; flex-direction: column; min-width: 0; }
+.mb-header-id strong {
+  font-size: 1rem;
+  font-weight: 750;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mb-header-id span { font-size: 0.75rem; color: var(--sb-muted); }
+
+.mb-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.mb-icon-btn {
+  position: relative;
+  flex: none;
+  margin-inline-start: auto;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  cursor: pointer;
+}
+.mb-icon-btn:active { background: rgba(255, 255, 255, 0.2); }
+.mb-dot {
+  position: absolute;
+  top: 0.6rem;
+  inset-inline-end: 0.65rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--navy-800);
+}
+
+/* ------------------------------------------------------------- Contenu */
+
+.mb-content {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-4);
+  /* Laisse passer la barre d'onglets ET la zone de gestes système. */
+  padding-bottom: calc(var(--mb-tabbar-h) + var(--mb-safe-b) + var(--space-4));
+}
+
+/* ------------------------------------------------------------- Onglets */
+
+.mb-tabbar {
+  position: fixed;
+  z-index: 30;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+  height: calc(var(--mb-tabbar-h) + var(--mb-safe-b));
+  padding-bottom: var(--mb-safe-b);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -6px 24px rgba(15, 37, 71, 0.08);
+}
+
+.mb-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0 0.15rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+.mb-tab span {
+  font-size: 0.66rem;
+  font-weight: 650;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mb-tab.active { color: var(--color-primary); }
+.mb-tab.active svg { stroke-width: 2.4; }
+
+/* Repère d'onglet actif, aligné sur le filet doré de la nav publique. */
+.mb-tab.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 1.75rem;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--color-accent);
+}
+.mb-tab { position: relative; }
+
+/* ------------------------------------------------------------- Feuille « Plus » */
+
+.mb-sheet-wrap { position: fixed; inset: 0; z-index: 40; }
+.mb-sheet-backdrop { position: absolute; inset: 0; background: rgba(8, 19, 42, 0.5); }
+
+.mb-sheet {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: var(--space-4);
+  padding-bottom: calc(var(--space-4) + var(--mb-safe-b));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--surface);
+  box-shadow: 0 -12px 40px rgba(8, 19, 42, 0.28);
+}
+
+.mb-sheet-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+.mb-sheet-head strong { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+.mb-sheet-head .mb-icon-btn { background: var(--surface-2); color: var(--text); }
+
+.mb-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: var(--space-3);
+}
+.mb-sheet-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+}
+.mb-sheet-item:active { background: var(--primary-soft); }
+.mb-sheet-item span { font-size: 0.72rem; font-weight: 650; line-height: 1.25; }
+
+.mb-sheet-foot {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.mb-sheet-action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--text);
+  text-align: start;
+  cursor: pointer;
+}
+.mb-sheet-action:active { background: var(--surface-2); }
+.mb-sheet-action.danger { color: var(--color-danger); border-color: rgba(180, 35, 24, 0.28); }
+
+/* Les pages du dossier features/ ont été dessinées pour la largeur bureau —
+   on assouplit ici ce qui déborde sur un écran de téléphone. */
+.mb-content .page-head { flex-direction: column; align-items: stretch; gap: var(--space-3); }
+.mb-content .grid-cards { grid-template-columns: minmax(0, 1fr); }
+.mb-content .table-wrap { overflow-x: auto; }
+.mb-content h1 { font-size: 1.35rem; }

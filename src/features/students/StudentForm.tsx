@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Modal from "../../components/Modal";
-import { LEVEL_LABEL, LEVEL_GROUPS, STATUSES, STATUS_LABEL } from "../../lib/labels";
+import { LEVEL_LABEL, LEVEL_GROUPS, STATUSES } from "../../lib/labels";
 import type { Student, StudentLevel, StudentStatus } from "../../lib/types";
 
 export interface StudentFormValues {
@@ -21,6 +22,7 @@ export default function StudentForm({
   onSave: (values: StudentFormValues) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const [v, setV] = useState<StudentFormValues>({
     name: initial?.name ?? "",
     level: initial?.level ?? "1as",
@@ -37,31 +39,31 @@ export default function StudentForm({
 
   return (
     <Modal
-      title={initial ? "Modifier l'étudiant" : "Nouvel étudiant"}
+      title={initial ? t("frm.edit_student") : t("stu.new")}
       onClose={onClose}
       footer={
         <>
           <button className="btn btn-ghost" onClick={onClose}>
-            Annuler
+            {t("common.cancel")}
           </button>
           <button
             className="btn btn-primary"
             disabled={!valid}
             onClick={() => onSave({ ...v, name: v.name.trim() })}
           >
-            Enregistrer
+            {t("common.save")}
           </button>
         </>
       }
     >
       <div className="form-grid">
         <label className="field">
-          <span>Nom complet *</span>
+          <span>{t("frm.full_name")} *</span>
           <input className="input" value={v.name} onChange={(e) => set("name", e.target.value)} />
         </label>
 
         <label className="field">
-          <span>Niveau</span>
+          <span>{t("stu.level")}</span>
           <select className="input" value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
             {LEVEL_GROUPS.map((g) => (
               <optgroup key={g.label} label={g.label}>
@@ -72,28 +74,28 @@ export default function StudentForm({
         </label>
 
         <label className="field">
-          <span>Téléphone étudiant *</span>
+          <span>{t("frm.student_phone")} *</span>
           <input className="input" value={v.phone} onChange={(e) => set("phone", e.target.value)} />
         </label>
 
         <label className="field">
-          <span>Statut</span>
+          <span>{t("stu.status")}</span>
           <select className="input" value={v.status} onChange={(e) => set("status", e.target.value as StudentStatus)}>
             {STATUSES.map((s) => (
               <option key={s} value={s}>
-                {STATUS_LABEL[s]}
+                {t(`status.${s}`)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="field">
-          <span>Nom du parent</span>
+          <span>{t("frm.parent_name")}</span>
           <input className="input" value={v.parentName} onChange={(e) => set("parentName", e.target.value)} />
         </label>
 
         <label className="field">
-          <span>Téléphone parent *</span>
+          <span>{t("frm.parent_phone")} *</span>
           <input className="input" value={v.parentPhone} onChange={(e) => set("parentPhone", e.target.value)} />
         </label>
       </div>

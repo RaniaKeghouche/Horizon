@@ -1,0 +1,580 @@
+/* ============================================================================
+   Tableau de bord — Horizon Skills Academy
+   Design fidèle aux maquettes Enseignant & Élève (Image 2) :
+   - Salutations conviviales + Date du jour en pilule.
+   - 4 Tuiles de statistiques avec icônes colorées et liens cliquables.
+   - Grille 2 colonnes principales + 1 colonne latérale droite.
+   - Barres de progression dorées, puces colorées de calendrier, badges d'échéance.
+   - Bannières d'encouragement navy avec Trophée et Fusée.
+   ========================================================================= */
+
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ------------------------------------------------------------- En-tête */
+
+.dash-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dash-greeting-wrap h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+.dash-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+  color: #64748b;
+}
+
+.dash-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dash-today-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 37, 71, 0.1);
+  box-shadow: 0 2px 8px rgba(15, 37, 71, 0.04);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+.dash-today-pill svg { color: #1b63ad; }
+
+/* ------------------------------------------------------------- 4 Tuiles Statistiques */
+
+.dash-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.15rem;
+}
+
+.dash-tile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 37, 71, 0.07);
+  box-shadow: 0 4px 16px rgba(15, 37, 71, 0.04);
+}
+
+.dash-tile-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 16px;
+}
+.dash-tile-icon.tone-gold   { background: #fef3c7; color: #d97706; }
+.dash-tile-icon.tone-navy   { background: #edf5fd; color: #1b63ad; }
+.dash-tile-icon.tone-green  { background: #ecfdf5; color: #059669; }
+.dash-tile-icon.tone-violet { background: #f3e8ff; color: #7c3aed; }
+.dash-tile-icon.tone-danger { background: #fef2f2; color: #dc2626; }
+
+.dash-tile-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dash-tile-val-row strong {
+  font-size: clamp(1.4rem, 1.8vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: #0f172a;
+}
+.dash-tile-lbl {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+.dash-tile-lbl em {
+  font-style: normal;
+  color: #94a3b8;
+  font-size: 0.76rem;
+  margin-inline-start: 0.25rem;
+}
+.dash-tile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 750;
+  color: #1b63ad;
+  text-decoration: none;
+}
+.dash-tile-link:hover { text-decoration: underline; }
+
+/* ------------------------------------------------------------- Grille principale */
+
+.dash-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.dash-main-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.dash-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ------------------------------------------------------------- Panneaux */
+
+.dash-panel {
+  padding: 1.35rem 1.4rem;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 37, 71, 0.07);
+  box-shadow: 0 4px 16px rgba(15, 37, 71, 0.04);
+}
+
+.dash-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1.15rem;
+}
+.dash-panel-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.dash-panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 750;
+  color: #1b63ad;
+  text-decoration: none;
+}
+.dash-panel-link:hover { text-decoration: underline; }
+
+.dash-empty {
+  margin: 0;
+  padding: 1rem 0;
+  font-size: 0.86rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- Mes classes (Teacher) */
+
+.dash-classes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dash-class-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.6rem;
+  border-radius: 14px;
+  transition: background 0.15s ease;
+}
+.dash-class-card:hover { background: #f8fafc; }
+
+.dash-class-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+}
+.dash-class-icon.tone-gold  { background: #fef3c7; color: #d97706; }
+.dash-class-icon.tone-navy  { background: #edf5fd; color: #1b63ad; }
+.dash-class-icon.tone-green { background: #ecfdf5; color: #059669; }
+
+.dash-class-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dash-class-info strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.dash-class-info span {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.dash-class-meta {
+  margin-inline-start: auto;
+  display: flex;
+  flex-direction: column;
+  text-align: end;
+}
+.dash-class-meta em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.dash-class-meta span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.dash-class-more {
+  border: none;
+  background: transparent;
+  padding: 0.35rem;
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+.dash-class-more:hover { color: #0f172a; background: #f1f5f9; }
+
+/* ------------------------------------------------------------- Activités récentes */
+
+.dash-activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dash-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0.4rem;
+}
+
+.dash-activity-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 10px;
+  margin-top: 0.1rem;
+}
+.dash-activity-icon.tone-green { background: #ecfdf5; color: #059669; }
+.dash-activity-icon.tone-navy  { background: #edf5fd; color: #1b63ad; }
+.dash-activity-icon.tone-gold  { background: #fef3c7; color: #d97706; }
+
+.dash-activity-content {
+  flex: 1;
+  min-width: 0;
+}
+.dash-activity-content strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: #0f172a;
+}
+.dash-activity-content p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-activity-time {
+  flex: none;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- Mes cours (Student) */
+
+.dash-student-courses {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.dash-course-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem 0.2rem;
+}
+
+.dash-course-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  background: #edf5fd;
+  color: #1b63ad;
+}
+.dash-math-sym {
+  font-family: serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #d97706;
+}
+
+.dash-course-details {
+  flex: 1;
+  min-width: 0;
+}
+.dash-course-details strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.dash-course-details span {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.dash-course-prog {
+  flex: none;
+  width: 110px;
+}
+
+.dash-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.dash-progress-rail {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+.dash-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #eab308);
+}
+.dash-progress-pct {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0f172a;
+  min-width: 32px;
+  text-align: end;
+}
+
+/* ------------------------------------------------------------- Devoirs à venir */
+
+.dash-homework-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dash-homework-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.2rem;
+}
+
+.dash-homework-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 12px;
+}
+.dash-homework-icon.tone-navy  { background: #edf5fd; color: #1b63ad; }
+.dash-homework-icon.tone-green { background: #ecfdf5; color: #059669; }
+
+.dash-homework-details {
+  flex: 1;
+  min-width: 0;
+}
+.dash-homework-details strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: #0f172a;
+}
+.dash-homework-details p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.dash-due-badge {
+  flex: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* ------------------------------------------------------------- Calendrier */
+
+.dash-calendar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.dash-cal-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.2rem;
+}
+
+.dash-cal-time {
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: #475569;
+  min-width: 44px;
+}
+
+.dash-cal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.dash-cal-content {
+  flex: 1;
+  min-width: 0;
+}
+.dash-cal-content strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: #0f172a;
+}
+.dash-cal-content span {
+  display: block;
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.dash-cal-room {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* ------------------------------------------------------------- Cartes de motivation */
+
+.dash-motivation-banner {
+  position: relative;
+  padding: 1.5rem 1.4rem;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #0b1a33 0%, #08132a 100%);
+  box-shadow: 0 16px 40px rgba(11, 26, 51, 0.25);
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.dash-trophy-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.dash-motiv-rocket-art {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -1rem;
+}
+.dash-orbit-doodle {
+  position: absolute;
+  top: 0;
+  right: 1.5rem;
+  width: 80px;
+  height: 40px;
+}
+.dash-rocket-emoji {
+  font-size: 2.4rem;
+  position: relative;
+  z-index: 2;
+}
+
+.dash-motiv-text h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+.dash-motiv-text p {
+  margin: 0.35rem 0 1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.dash-motiv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+  color: #0f172a;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+.dash-motiv-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+/* ------------------------------------------------------------- Responsive */
+
+@media (max-width: 1200px) {
+  .dash-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .dash-tiles { grid-template-columns: minmax(0, 1fr); }
+  .dash-main-cols { grid-template-columns: minmax(0, 1fr); }
+}

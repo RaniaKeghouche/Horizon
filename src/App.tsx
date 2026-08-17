@@ -1,8 +1,9 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./features/auth/AuthContext";
 import ProtectedRoute from "./app/ProtectedRoute";
-import AppLayout from "./app/AppLayout";
-import LoginPage from "./features/auth/LoginPage";
+import Shell from "./layouts/Shell";
+import { HAS_PUBLIC_SITE } from "./app/platform";
 import AuthPage from "./features/auth/AuthPage";
 import PendingGate from "./features/auth/PendingGate";
 import DashboardPage from "./features/dashboard/DashboardPage";
@@ -20,8 +21,25 @@ import NotificationsPage from "./features/notifications/NotificationsPage";
 import AnalyticsPage from "./features/analytics/AnalyticsPage";
 import ActivityLogPage from "./features/activity/ActivityLogPage";
 
+/** Chargée à la demande : la landing et ses images ne sont tirées que par la
+ *  cible web. Sur mobile et desktop, ce chunk n'est jamais demandé. */
+const LandingPage = lazy(() => import("./pages/public/LandingPage"));
+
+/**
+ * Point d'entrée des visiteurs non connectés.
+ *
+ * Web     → le site vitrine, dont le bouton « Connexion » mène à /auth.
+ * Mobile  → directement l'écran de connexion : une app installée n'a pas à
+ *   et desktop  redérouler l'argumentaire commercial à chaque ouverture (§3 et §4
+ *              du cahier des charges).
+ */
 function LoginRoute() {
-  return <LoginPage />;
+  if (!HAS_PUBLIC_SITE) return <AuthPage />;
+  return (
+    <Suspense fallback={<div className="center-screen">…</div>}>
+      <LandingPage />
+    </Suspense>
+  );
 }
 
 // Decides what to render based on auth state.
@@ -38,7 +56,7 @@ function Root() {
       <Route
         element={
           <ProtectedRoute>
-            <AppLayout />
+            <Shell />
           </ProtectedRoute>
         }
       >

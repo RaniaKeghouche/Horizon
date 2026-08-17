@@ -1,0 +1,223 @@
+/* ============================================================
+   Horizon Skills Academy — design tokens (source unique)
+   ============================================================
+
+   Trois couches, dans cet ordre :
+
+     1. PRIMITIVES  — rampes brutes. Jamais utilisées directement dans un composant.
+     2. SÉMANTIQUE  — rôles (primary, accent, surface, fg…). C'est ce que le code neuf consomme.
+     3. ALIAS       — les noms historiques du shell applicatif, redirigés vers les couches
+                      ci-dessus. Ils existent pour que les ~3800 lignes de global.css
+                      continuent de résoudre à l'identique. Ne pas en ajouter de nouveaux.
+
+   Ce fichier remplace les deux blocs `:root` concurrents qui vivaient dans global.css
+   (l'un pour le shell, l'autre pour la landing). Les valeurs calculées sont préservées
+   à l'identique, à une exception documentée plus bas : le thème sombre.
+
+   Partagé par les trois cibles — web, mobile (Tauri Android), desktop (Tauri).
+   ============================================================ */
+
+:root {
+  /* ---- Couche 1 : primitives ------------------------------------------- */
+
+  --navy-950: #08132a;
+  --navy-900: #0b1a33;
+  --navy-800: #0f2547;
+  --navy-700: #16305c;
+  --navy-600: #1e3f75;
+  --navy-500: #2d5490;
+  --navy-300: #7d93b5;
+
+  --gold-700: #6f4f0c;
+  --gold-600: #8a6410;
+  --gold-500: #c8922a;
+  --gold-400: #e0a83c;
+  --gold-300: #f2c86a;
+  --gold-100: #fdf3dd;
+
+  /* Échantillonné sur horizon-logo.png (magenta 300deg / violet 250deg / bleu 206deg),
+     assombri jusqu'à ce que chaque point du dégradé passe WCAG AA en texte blanc.
+     Mesuré : 6.88 -> 8.98 -> 6.11, pire point 6.11. */
+  --brand-magenta: #9c1b9c;
+  --brand-violet: #5b21b6;
+  --brand-blue: #1b63ad;
+  --brand-gradient: linear-gradient(135deg, var(--brand-magenta) 0%, var(--brand-violet) 50%, var(--brand-blue) 100%);
+
+  /* Échantillonné sur climb.png pour que la page et l'illustration partagent un même ciel. */
+  --sky-500: #9fd2ea;
+  --sky-300: #c8e4f4;
+  --sky-100: #eef6fc;
+
+  --slate-600: #46587a;
+  --slate-400: #5b6b80;
+  --slate-200: #e2e8f0;
+  --slate-100: #f5f7fa;
+  --slate-50: #eef1f6;
+
+  /* ---- Couche 2 : rôles sémantiques ------------------------------------ */
+
+  --color-primary: var(--navy-800);
+  --color-primary-hover: var(--navy-700);
+  --color-on-primary: #ffffff;
+  --color-secondary: var(--navy-600);
+  --color-accent: var(--gold-400);
+  --color-accent-strong: var(--gold-500);
+  --color-on-accent: var(--navy-900);
+  /* L'accent est à 2.14:1 sur blanc — bon pour filets, points et bordures, JAMAIS pour du
+     texte. Ceci est la teinte conforme AA pour de la typo couleur accent. */
+  --color-accent-text: var(--gold-600);
+  --color-fg: var(--navy-800);
+  --color-muted-fg: var(--slate-600);
+  --color-surface: #ffffff;
+  --color-surface-tint: var(--sky-100);
+  --color-border: rgba(15, 37, 71, 0.12);
+  --color-cta: linear-gradient(135deg, var(--gold-300) 0%, var(--gold-400) 55%, var(--gold-500) 100%);
+  --color-cta-shadow: rgba(200, 146, 42, 0.32);
+  --color-ring: var(--gold-400);
+  --color-destructive: #dc2626;
+
+  --color-success: #076c3d;
+  --color-danger: #b42318;
+  --color-warning: #b54708;
+
+  /* ---- Échelles -------------------------------------------------------- */
+
+  /* Espacement sur une base de 4px. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 4px 14px rgba(26, 26, 61, 0.06);
+  --shadow: 0 12px 34px rgba(26, 26, 61, 0.08);
+  --glow: 0 10px 30px rgba(15, 37, 71, 0.35);
+
+  --sidebar-grad: linear-gradient(180deg, #0f2547 0%, #08132a 100%);
+  --hero-grad: linear-gradient(150deg, #16305c 0%, #0f2547 55%, #08132a 100%);
+  --primary-grad: linear-gradient(135deg, #2d5490, #0f2547);
+
+  /* Mouvement. Les micro-interactions du §20 s'y réfèrent pour rester cohérentes. */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Gabarit. Consommés avec repli dans global.css — déclarés ici pour de bon. */
+  --shell-max: 1150px;
+  --shell-pad: 2rem;
+
+  /* ---- Couche 3 : alias historiques ------------------------------------ */
+  /* Le shell applicatif (sidebar, cartes, boutons, tableaux) consomme ces noms.
+     Valeurs identiques à celles d'avant l'unification. */
+
+  --bg: var(--slate-50);
+  --surface: var(--color-surface);
+  --surface-2: var(--slate-100);
+  --border: var(--slate-200);
+  --text: var(--color-fg);
+  --muted: var(--slate-400);
+
+  --primary: var(--navy-600);
+  --primary-2: var(--navy-500);
+  --primary-dark: var(--navy-700);
+  --primary-soft: #eaf1f9;
+  --accent: var(--gold-500);
+  --cyan: var(--sky-500);
+
+  --success: var(--color-success);
+  --danger: var(--color-danger);
+  --warning: var(--color-warning);
+
+  --sb-text: #e8eef7;
+  --sb-muted: #9fb0c9;
+
+  /* Alias de la landing. --gold vaut bien --color-accent : le second bloc `:root`
+     de global.css écrasait la valeur #f5b544 déclarée plus haut, qui était donc morte. */
+  --ink: var(--color-fg);
+  --ink-soft: var(--color-muted-fg);
+  --gold: var(--color-accent);
+  --gold-lift: var(--gold-300);
+  --gold-text: var(--color-accent-text);
+  --sky-deep: var(--sky-500);
+  --sky-top: var(--sky-300);
+  --sky-bottom: var(--sky-100);
+
+  font-family: "Segoe UI", system-ui, "Tahoma", "Noto Sans Arabic", sans-serif;
+}
+
+/* ---- Thème sombre -----------------------------------------------------
+   Retuné en navy. L'ancien thème sombre virait au violet (#0e0c22 / #16143a),
+   hérité d'une direction artistique antérieure — il contredisait l'identité
+   navy + jaune. Seul changement visuel volontaire de cette unification.
+   ---------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--navy-950);
+    --surface: var(--navy-900);
+    --surface-2: var(--navy-800);
+    --border: rgba(255, 255, 255, 0.09);
+    --text: #edf2fa;
+    --muted: var(--navy-300);
+    --primary-soft: rgba(45, 84, 144, 0.22);
+    --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+    --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+    --color-fg: #edf2fa;
+    --color-muted-fg: var(--navy-300);
+    --color-surface: var(--navy-900);
+    --color-surface-tint: var(--navy-800);
+    --color-border: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* La bascule de thème estampille data-theme sur la racine : elle doit gagner
+   dans les deux sens, y compris contre la media query ci-dessus. */
+:root[data-theme="dark"] {
+  --bg: var(--navy-950);
+  --surface: var(--navy-900);
+  --surface-2: var(--navy-800);
+  --border: rgba(255, 255, 255, 0.09);
+  --text: #edf2fa;
+  --muted: var(--navy-300);
+  --primary-soft: rgba(45, 84, 144, 0.22);
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  --color-fg: #edf2fa;
+  --color-muted-fg: var(--navy-300);
+  --color-surface: var(--navy-900);
+  --color-surface-tint: var(--navy-800);
+  --color-border: rgba(255, 255, 255, 0.12);
+}
+
+:root[data-theme="light"] {
+  --bg: var(--slate-50);
+  --surface: #ffffff;
+  --surface-2: var(--slate-100);
+  --border: var(--slate-200);
+  --text: var(--navy-800);
+  --muted: var(--slate-400);
+  --primary-soft: #eaf1f9;
+  --shadow: 0 12px 34px rgba(26, 26, 61, 0.08);
+  --shadow-sm: 0 4px 14px rgba(26, 26, 61, 0.06);
+
+  --color-fg: var(--navy-800);
+  --color-muted-fg: var(--slate-600);
+  --color-surface: #ffffff;
+  --color-surface-tint: var(--sky-100);
+  --color-border: rgba(15, 37, 71, 0.12);
+}

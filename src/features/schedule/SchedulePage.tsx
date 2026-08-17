@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CalendarClock, Clock, Lock, CircleCheck } from "lucide-react";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { DAYS, TIME_SLOTS, checkSlot } from "../../lib/schedule";
-import { DAY_LABEL } from "../../lib/labels";
 import Modal from "../../components/Modal";
 import ClassForm from "./ClassForm";
 import type { ClassRoom, DayOfWeek } from "../../lib/types";
@@ -30,6 +30,13 @@ export default function SchedulePage() {
   const [reqSlot, setReqSlot] = useState(TIME_SLOTS[0]);
   const [reqSubject, setReqSubject] = useState("");
 
+  const [flash, setFlash] = useState("");
+  useEffect(() => {
+    if (!flash) return;
+    const id = setTimeout(() => setFlash(""), 4000);
+    return () => clearTimeout(id);
+  }, [flash]);
+
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
   const teacherName = (id: string) => teachers.find((x) => x.id === id)?.name ?? "?";
 
@@ -46,25 +53,32 @@ export default function SchedulePage() {
 
   return (
     <div className="stack">
-      <div className="page-head">
-        <h1>{t("nav.schedule")}</h1>
+      <header className="page-head">
+        <div className="page-title">
+          <h1>{t("nav.schedule")}</h1>
+          <p>{t("sch.subtitle")}</p>
+        </div>
         {isAdmin && (
           <div className="teacher-pick">
-            <span className="muted small">Créneaux libres pour :</span>
+            <span className="muted small">{t("sch.free_for")}</span>
             <select className="input" value={teacherId} onChange={(e) => setTeacherId(e.target.value)}>
               {teachers.map((tc) => <option key={tc.id} value={tc.id}>{tc.name}</option>)}
             </select>
           </div>
         )}
         {role === "teacher" && (
-          <button className="btn btn-primary" onClick={() => setRequesting(true)}>🗓️ Demander un créneau</button>
+          <button className="btn btn-primary" onClick={() => setRequesting(true)}>
+            <CalendarClock size={17} /> {t("sch.request_slot")}
+          </button>
         )}
-      </div>
+      </header>
+
+      {flash && <p className="att-flash"><CircleCheck size={16} /> {flash}</p>}
 
       {isAdmin && (
-        <p className="muted">
-          Vert = libre pour <strong>{teacherName(teacherId)}</strong> (créneau vide + enseignant
-          disponible). Cliquez pour ajouter. Cliquez une classe pour la modifier ou la déplacer.
+        <p className="sch-legend">
+          <span className="sch-swatch" aria-hidden="true" />
+          {t("sch.legend", { name: teacherName(teacherId) })}
         </p>
       )}
 
@@ -72,8 +86,8 @@ export default function SchedulePage() {
         <table className="schedule-grid">
           <thead>
             <tr>
-              <th>⏰</th>
-              {DAYS.map((d) => <th key={d}>{DAY_LABEL[d]}</th>)}
+              <th><Clock size={15} /></th>
+              {DAYS.map((d) => <th key={d}>{t(`days.${d}`)}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -86,9 +100,12 @@ export default function SchedulePage() {
                     return (
                       <td key={day} className="cell cell-booked">
                         <button className="cell-class" onClick={() => isAdmin && setEditing(booked)}>
-                          <span className="cell-subj">📘 {subjName(booked.subjectId)}</span>
+                          <span className="cell-subj">{subjName(booked.subjectId)}</span>
                           <span className="cell-meta">{teacherName(booked.teacherId).split(" ")[0]}</span>
-                          <span className="cell-cap">{booked.currentStudents}/{booked.maxStudents}{booked.isLocked ? " 🔒" : ""}</span>
+                          <span className="cell-cap">
+                            {booked.currentStudents}/{booked.maxStudents}
+                            {booked.isLocked && <Lock size={11} />}
+                          </span>
                         </button>
                       </td>
                     );
@@ -117,17 +134,17 @@ export default function SchedulePage() {
         if (custom.length === 0) return null;
         return (
           <>
-            <h3 className="section-title">Autres créneaux (heures personnalisées)</h3>
+            <h3 className="section-title">{t("sch.custom_slots")}</h3>
             <div className="stack">
               {custom.map((c) => (
                 <div key={c.id} className="card billing-row">
                   <div>
                     <strong>{subjName(c.subjectId)}</strong>
                     <div className="muted small">
-                      {DAY_LABEL[c.dayOfWeek]} {c.timeSlot} · {teacherName(c.teacherId)} · {c.currentStudents}/{c.maxStudents}
+                      {t(`days.${c.dayOfWeek}`)} {c.timeSlot} · {teacherName(c.teacherId)} · {c.currentStudents}/{c.maxStudents}
                     </div>
                   </div>
-                  {isAdmin && <button className="btn btn-ghost sm" onClick={() => setEditing(c)}>Modifier</button>}
+                  {isAdmin && <button className="btn btn-ghost sm" onClick={() => setEditing(c)}>{t("common.edit")}</button>}
                 </div>
               ))}
             </div>
@@ -148,7 +165,7 @@ export default function SchedulePage() {
           onDelete={
             isAdmin
               ? () => {
-                  if (confirm("Supprimer cette classe ? Le créneau redeviendra libre.")) {
+                  if (confirm(t("sch.confirm_delete"))) {
                     deleteClass(editing.id);
                     setEditing(null);
                   }
@@ -177,39 +194,39 @@ export default function SchedulePage() {
 
       {requesting && (
         <Modal
-          title="Demander un créneau"
+          title={t("sch.request_slot")}
           onClose={() => setRequesting(false)}
           footer={
             <>
-              <button className="btn btn-ghost" onClick={() => setRequesting(false)}>Annuler</button>
+              <button className="btn btn-ghost" onClick={() => setRequesting(false)}>{t("common.cancel")}</button>
               <button
                 className="btn btn-primary"
                 onClick={() => {
                   addSlotRequest(teacherId, reqSubject || undefined, reqDay, reqSlot);
                   setRequesting(false);
-                  alert("Demande envoyée à l'administration.");
+                  setFlash(t("sch.request_sent"));
                 }}
               >
-                Envoyer la demande
+                {t("sch.send_request")}
               </button>
             </>
           }
         >
           <div className="form-grid">
             <label className="field">
-              <span>Jour</span>
+              <span>{t("sch.day")}</span>
               <select className="input" value={reqDay} onChange={(e) => setReqDay(e.target.value as DayOfWeek)}>
-                {DAYS.map((d) => <option key={d} value={d}>{DAY_LABEL[d]}</option>)}
+                {DAYS.map((d) => <option key={d} value={d}>{t(`days.${d}`)}</option>)}
               </select>
             </label>
             <label className="field">
-              <span>Créneau</span>
+              <span>{t("sch.slot")}</span>
               <select className="input" value={reqSlot} onChange={(e) => setReqSlot(e.target.value)}>
                 {TIME_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
             <label className="field">
-              <span>Matière (optionnel)</span>
+              <span>{t("sch.subject_optional")}</span>
               <select className="input" value={reqSubject} onChange={(e) => setReqSubject(e.target.value)}>
                 <option value="">—</option>
                 {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}

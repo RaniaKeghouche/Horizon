@@ -1,0 +1,626 @@
+/* ============================================================================
+   Connexion / Inscription — Horizon Skills Academy
+   Disposition 2 colonnes fidèle à la maquette :
+   - Colonne gauche : Ciel doux, typographie manuscrite, doodles et illustration.
+   - Colonne droite : Carte blanche épurée, champs doux, sélecteur de rôles, checklist.
+   - Pied de page centré avec mentions légales.
+   ========================================================================= */
+
+.au-page-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.au {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  flex: 1;
+  align-items: start;   /* aside doesn't stretch to match form height */
+  background:
+    radial-gradient(100% 70% at 15% 0%, #e2f0fb 0%, transparent 65%),
+    #ffffff;
+}
+
+/* ------------------------------------------------------------- Colonne gauche */
+
+.au-aside {
+  position: sticky;
+  top: 0;
+  height: 100vh;         /* fills exactly the viewport — image always visible */
+  display: flex;
+  flex-direction: column;
+  padding: clamp(2rem, 5vw, 4rem);
+  overflow: hidden;
+  /* Sky tones matching the image background — creates seamless transition */
+  background:
+    radial-gradient(ellipse 130% 60% at 80% 100%, rgba(135, 195, 240, 0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 80% at 20% 0%,  rgba(220, 238, 252, 0.9)  0%, transparent 70%),
+    linear-gradient(180deg, #eaf5fc 0%, #daeef8 50%, #c8e6f5 100%);
+  border-inline-end: 1px solid rgba(15, 37, 71, 0.05);
+}
+
+.au-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 37, 71, 0.1);
+  box-shadow: 0 2px 8px rgba(15, 37, 71, 0.04);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  z-index: 5;
+}
+.au-back:hover { background: #f8fafc; transform: translateX(-2px); }
+
+.au-aside-decorations {
+  position: absolute;
+  top: 2rem;
+  inset-inline-end: 2rem;
+  pointer-events: none;
+}
+.au-doodle-plane {
+  width: 120px;
+  height: 70px;
+}
+.au-dots-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 5px);
+  grid-template-rows: repeat(3, 5px);
+  gap: 8px;
+  margin-top: 1rem;
+  margin-inline-start: 2rem;
+}
+.au-dot {
+  width: 4.5px;
+  height: 4.5px;
+  border-radius: 50%;
+  background: #f59e0b;
+  opacity: 0.65;
+}
+
+.au-aside-copy {
+  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+  max-width: 28rem;
+  z-index: 3;          /* above the image */
+  position: relative;
+}
+.au-aside-copy h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 3.4vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: #0f1a30;
+}
+
+.au-script-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.au-script {
+  font-family: "Caveat", "Segoe Script", cursive;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.18em;
+  color: #f59e0b;
+  padding-inline-end: 0.1em;
+}
+
+.au-brush {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.08em;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #93c5fd, #60a5fa);
+  opacity: 0.85;
+}
+
+.au-aside-copy p {
+  margin: 1.25rem 0 0;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #475569;
+}
+
+/*
+  .au-art — full-bleed illustration, no visible box:
+  Covers the bottom ~65% of the aside.
+  Fades:
+    • top    → transparent (melts into the sky background)
+    • left   → slight fade (mirrors the hero's left blend)
+    • right  → full (image reaches the border)
+    • bottom → stays visible / slight fade
+*/
+.au-art {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  top: 30%;            /* image starts at 30% from top of aside */
+  width: 100%;
+  height: 70%;         /* fills bottom 70% of the column */
+  object-fit: cover;
+  object-position: 55% 20%;  /* show tower top + student body */
+  pointer-events: none;
+  z-index: 1;
+  /* Mask: fade top edge into sky, very slight fade on left */
+  -webkit-mask-image:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0,0,0,0.3)  10%,
+      rgba(0,0,0,0.75) 22%,
+      #000 38%,
+      #000 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(0,0,0,0.5) 0%,
+      #000 20%,
+      #000 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0,0,0,0.3)  10%,
+      rgba(0,0,0,0.75) 22%,
+      #000 38%,
+      #000 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(0,0,0,0.5) 0%,
+      #000 20%,
+      #000 100%
+    );
+  mask-composite: intersect;
+}
+
+/* ------------------------------------------------------------- Colonne droite */
+
+.au-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.au-card {
+  width: min(100%, 32rem);
+  padding: clamp(1.75rem, 3.5vw, 3rem);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgba(15, 37, 71, 0.08);
+  border: 1px solid rgba(15, 37, 71, 0.07);
+}
+
+.au-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.au-title-bar {
+  display: inline-block;
+  width: 4px;
+  height: 1.2em;
+  border-radius: 2px;
+  background: #f59e0b;
+}
+
+.au-subtitle {
+  margin: 0.35rem 0 1.75rem;
+  font-size: 0.92rem;
+  color: #64748b;
+}
+
+/* ------------------------------------------------------------- Sélecteur Rôles */
+
+.reg-role-section {
+  margin-bottom: 1.25rem;
+}
+.reg-role-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.reg-role-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.reg-role-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1.5px solid rgba(15, 37, 71, 0.12);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+}
+.reg-role-btn:hover {
+  border-color: #f59e0b;
+  background: #fffdf5;
+}
+.reg-role-btn.on {
+  border-color: #f59e0b;
+  background: #fffdf5;
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.12);
+}
+.reg-role-radio {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  margin-inline-start: 0.25rem;
+}
+
+/* ------------------------------------------------------------- Champs */
+
+.au-field {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 1.15rem;
+}
+.au-field label > span,
+.au-field > span {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.au-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.au-input input,
+.reg-select {
+  width: 100%;
+  padding: 0.9rem 1.15rem;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 37, 71, 0.08);
+  font: inherit;
+  font-size: 0.92rem;
+  color: #0f172a;
+  transition: all 0.18s ease;
+}
+.au-input input::placeholder {
+  color: #94a3b8;
+}
+.au-input input:focus,
+.reg-select:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.au-eye {
+  position: absolute;
+  inset-inline-end: 0.85rem;
+  display: grid;
+  place-items: center;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+.au-eye:hover { color: #0f172a; }
+
+.au-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.35rem;
+}
+.au-forgot {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1b63ad;
+  text-decoration: none;
+}
+.au-forgot:hover { text-decoration: underline; }
+
+/* Checklist de sécurité mot de passe */
+.reg-pwd-rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+.reg-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  color: #94a3b8;
+  font-weight: 600;
+  transition: color 0.18s ease;
+}
+.reg-rule-icon {
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-size: 0.7rem;
+}
+.reg-rule.passed {
+  color: #059669;
+}
+.reg-rule.passed .reg-rule-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.reg-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.reg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: #edf5fd;
+  color: #1e3f75;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.reg-chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #1e3f75;
+}
+
+/* ------------------------------------------------------------- Boutons CTA & Réseaux */
+
+.au-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  margin-top: 0.75rem;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f59e0b 0%, #eab308 50%, #d97706 100%);
+  color: #0f172a;
+  font-size: 1.02rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.32);
+  transition: all 0.18s ease;
+}
+.au-submit:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(245, 158, 11, 0.4);
+}
+.au-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
+
+.au-divider {
+  position: relative;
+  margin: 1.5rem 0 1.25rem;
+  text-align: center;
+}
+.au-divider::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(15, 37, 71, 0.08);
+}
+.au-divider span {
+  position: relative;
+  display: inline-block;
+  padding-inline: 0.85rem;
+  background: #ffffff;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.au-social-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.au-social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 37, 71, 0.12);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.au-social-btn:hover {
+  background: #f8fafc;
+  border-color: rgba(15, 37, 71, 0.25);
+  transform: translateY(-1px);
+}
+
+.au-alt {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+.au-alt button {
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  color: #1b63ad;
+  cursor: pointer;
+}
+.au-alt button:hover { text-decoration: underline; }
+
+.au-error {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.au-demo {
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: #f1f5f9;
+  border: 1px solid rgba(15, 37, 71, 0.08);
+  margin-bottom: 1.25rem;
+}
+.au-demo-hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #475569;
+}
+.au-demo-roles {
+  display: flex;
+  gap: 0.5rem;
+}
+.au-demo-roles button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 37, 71, 0.12);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 750;
+  color: #0f172a;
+  cursor: pointer;
+}
+.au-demo-roles button:hover {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+/* ------------------------------------------------------------- Pied de page */
+
+.au-footer {
+  padding: 1.25rem var(--hz-gutter);
+  border-top: 1px solid rgba(15, 37, 71, 0.06);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.82rem;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+.au-footer p { margin: 0; }
+.au-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.au-footer-links a {
+  color: #1b63ad;
+  text-decoration: none;
+  font-weight: 600;
+}
+.au-footer-links a:hover { text-decoration: underline; }
+
+/* ------------------------------------------------------------- Mode succès */
+
+.reg-done {
+  text-align: center;
+  padding-block: 1rem;
+}
+.reg-done-mark {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #059669;
+  margin: 0 auto 1.25rem;
+}
+.reg-username {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  border-radius: 12px;
+  background: #edf5fd;
+  color: #1e3f75;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin: 0.5rem 0;
+}
+.reg-muted { color: #64748b; margin: 0; }
+
+/* ------------------------------------------------------------- Responsive */
+
+@media (max-width: 980px) {
+  .au { grid-template-columns: minmax(0, 1fr); }
+  .au-aside { display: none; }
+}
+
+@media (max-width: 600px) {
+  .reg-role-switch { grid-template-columns: minmax(0, 1fr); }
+  .reg-pwd-rules { grid-template-columns: minmax(0, 1fr); }
+  .au-social-grid { grid-template-columns: minmax(0, 1fr); }
+  .au-footer { justify-content: center; text-align: center; }
+}

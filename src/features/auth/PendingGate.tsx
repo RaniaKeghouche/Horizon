@@ -1,3 +1,4 @@
+import { Ban, CircleCheck } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { usernameFromEmail } from "../../lib/username";
 import RegisterFlow from "./RegisterFlow";
@@ -15,14 +16,14 @@ export default function PendingGate() {
           <RegisterFlow mode="complete" onDone={() => { /* status becomes pending live */ }} />
         ) : requestStatus === "rejected" ? (
           <div className="stack center">
-            <div className="pending-icon">🚫</div>
+            <div className="pending-icon"><Ban size={40} /></div>
             <h2 className="login-title">Demande refusée</h2>
             <p className="muted">Votre demande d'inscription a été refusée par l'administration.</p>
             <button className="btn btn-ghost" onClick={logout}>Se déconnecter</button>
           </div>
         ) : (
           <div className="stack center">
-            <div className="pending-icon">✅</div>
+            <div className="pending-icon"><CircleCheck size={40} /></div>
             <h2 className="login-title">Votre demande a été envoyée</h2>
             {username && (
               <>

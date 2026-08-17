@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
-  GraduationCap, Users, Award, Lightbulb, Library, HeartHandshake,
-  Phone, Mail, MapPin, User, Laptop, Check,
+  Phone, Mail, MapPin, Check,
   UserPlus, ClipboardCheck, Rocket, Sparkles, X, Menu, Globe
 } from "lucide-react";
 
