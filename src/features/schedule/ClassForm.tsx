@@ -4,9 +4,10 @@ import { Trash2, Copy } from "lucide-react";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
 import { checkSlot, DAYS } from "../../lib/schedule";
-import { defaultPrice } from "../../lib/payments";
-import { LEVEL_LABEL, LEVEL_GROUPS, SESSION_TYPES, SESSION_TYPE_LABEL, DAY_LABEL } from "../../lib/labels";
-import type { ClassRoom, DayOfWeek, SessionType, StudentLevel } from "../../lib/types";
+import { defaultPrice, computeCut } from "../../lib/payments";
+import { formatDA } from "../../lib/format";
+import { LEVEL_LABEL, LEVEL_GROUPS, SESSION_TYPES, SESSION_TYPE_LABEL, PAYMENT_MODE_LABEL } from "../../lib/labels";
+import type { ClassRoom, DayOfWeek, PaymentMode, SessionType, StudentLevel } from "../../lib/types";
 
 function splitSlot(s: string): { start: string; end: string } {
   const [a, b] = s.split("-");
@@ -34,7 +35,7 @@ export default function ClassForm({
   onDuplicate?: () => void;
 }) {
   const { t } = useTranslation();
-  const { subjects, teachers, classes } = useData();
+  const { subjects, teachers, classes, rooms } = useData();
   const addClass = useData((s) => s.addClass);
   const updateClass = useData((s) => s.updateClass);
 
@@ -50,26 +51,39 @@ export default function ClassForm({
   const [maxStudents, setMaxStudents] = useState(initial?.maxStudents ?? prefill?.maxStudents ?? 15);
   const [error, setError] = useState("");
 
+  // Champs introduits avec les salles physiques : un créneau n'est occupé que
+  // PAR SALLE, et le tarif comme la part école se fixent désormais sur le groupe
+  // (ils y font autorité sur la fiche enseignant).
+  const [roomId, setRoomId] = useState(initial?.roomId ?? prefill?.roomId ?? rooms[0]?.id ?? "");
+  const [pricePerSession, setPricePerSession] = useState(
+    initial?.pricePerSession ?? prefill?.pricePerSession ?? defaultPrice(sessionType, level) ?? 2000
+  );
+  const teacher = teachers.find((x) => x.id === teacherId);
+  const [schoolCutMode, setSchoolCutMode] = useState<PaymentMode>(
+    initial?.schoolCutMode ?? teacher?.paymentMode ?? "percentage"
+  );
+  const [schoolCutValue, setSchoolCutValue] = useState(
+    initial?.schoolCutValue ?? teacher?.schoolCutValue ?? 25
+  );
+
   function save() {
-    // Two-part free-slot check (§5.2), excluding this class when editing.
-    const check = checkSlot(classes, dayOfWeek, timeSlot, teacherId, initial?.id);
+    // Vérification du créneau libre (§5.2). L'ordre des arguments compte : la
+    // salle vient AVANT la classe à exclure, sinon on exclut la mauvaise.
+    const check = checkSlot(classes, dayOfWeek, timeSlot, teacherId, roomId, initial?.id);
     if (!check.ok) {
-      setError(
-        check.reason === "slot_taken"
-          ? "Ce créneau est déjà occupé par une autre classe."
-          : "Cet enseignant a déjà une classe à ce créneau."
-      );
+      setError(check.reason === "slot_taken" ? t("cf.slot_taken") : t("cf.teacher_busy"));
       return;
     }
-    if (initial) {
-      updateClass(initial.id, { subjectId, teacherId, level, sessionType, dayOfWeek, timeSlot, maxStudents });
-    } else {
-      addClass({ subjectId, teacherId, level, sessionType, dayOfWeek, timeSlot, maxStudents });
-    }
+    const values = {
+      subjectId, teacherId, roomId, level, sessionType, dayOfWeek, timeSlot,
+      maxStudents, pricePerSession, schoolCutMode, schoolCutValue,
+    };
+    if (initial) updateClass(initial.id, values);
+    else addClass(values);
     onClose();
   }
 
-  const price = defaultPrice(sessionType, level);
+  const price = pricePerSession;
 
   return (
     <Modal
@@ -128,13 +142,22 @@ export default function ClassForm({
           </select>
         </label>
         <label className="field">
-          <span>Jour</span>
-          <select className="input" value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value as DayOfWeek)}>
-            {DAYS.map((d) => <option key={d} value={d}>{DAY_LABEL[d]}</option>)}
+          <span>{t("cf.room")}</span>
+          <select className="input" value={roomId} onChange={(e) => setRoomId(e.target.value)}>
+            {rooms.length === 0 && <option value="">{t("cf.no_room")}</option>}
+            {rooms.map((r) => (
+              <option key={r.id} value={r.id}>{r.name} ({r.capacity})</option>
+            ))}
           </select>
         </label>
         <label className="field">
-          <span>Début</span>
+          <span>{t("sch.day")}</span>
+          <select className="input" value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value as DayOfWeek)}>
+            {DAYS.map((d) => <option key={d} value={d}>{t(`days.${d}`)}</option>)}
+          </select>
+        </label>
+        <label className="field">
+          <span>{t("cf.start")}</span>
           <input
             type="time"
             className="input"
@@ -151,11 +174,43 @@ export default function ClassForm({
           <input className="input" type="number" min={4} max={20} value={maxStudents}
             onChange={(e) => setMaxStudents(Number(e.target.value))} />
         </label>
+        <label className="field">
+          <span>{t("cf.price")}</span>
+          <input className="input" type="number" min={0} step={100} value={pricePerSession}
+            onChange={(e) => setPricePerSession(Number(e.target.value))} />
+        </label>
+        <label className="field">
+          <span>{t("frm.pay_mode")}</span>
+          <select
+            className="input"
+            value={schoolCutMode}
+            onChange={(e) => {
+              const m = e.target.value as PaymentMode;
+              setSchoolCutMode(m);
+              setSchoolCutValue(m === "percentage" ? 25 : 500);
+            }}
+          >
+            {(["percentage", "fixed"] as PaymentMode[]).map((m) => (
+              <option key={m} value={m}>{PAYMENT_MODE_LABEL[m]}</option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>{schoolCutMode === "percentage" ? t("cf.cut_pct") : t("cf.cut_fixed")}</span>
+          <input className="input" type="number" min={0} value={schoolCutValue}
+            onChange={(e) => setSchoolCutValue(Number(e.target.value))} />
+        </label>
       </div>
 
-      {price != null && (
-        <div className="preview-box">Prix par défaut pour ce type/niveau : {price} DA/séance</div>
-      )}
+      {/* Le tarif et la part école se fixent sur le GROUPE et font autorité sur
+          la fiche enseignant : on montre donc le partage résultant. */}
+      <div className="preview-box">
+        {t("cf.split_preview", {
+          price: formatDA(price),
+          school: formatDA(computeCut(price, schoolCutMode, schoolCutValue).schoolCut),
+          teacher: formatDA(computeCut(price, schoolCutMode, schoolCutValue).teacherCut),
+        })}
+      </div>
       {error && <p className="error-text">{error}</p>}
     </Modal>
   );

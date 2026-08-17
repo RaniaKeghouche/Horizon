@@ -89,18 +89,41 @@ export interface Subject {
   id: string;
   name: string;
   isCustom: boolean;
+  /** Which teachers may teach this subject, per school level. A student only
+   *  ever sees the teachers listed for their own level, and a level with no
+   *  entry simply isn't offered. e.g. { "3as": ["t1", "t2"], "4am": ["t1"] } */
+  teachersByLevel: Partial<Record<StudentLevel, string[]>>;
   createdAt: number;
+}
+
+/** A physical room in the centre. Several classes can run at the same time as
+ *  long as they are in different rooms — which is why a time slot is only
+ *  "taken" per room, never globally. */
+export interface Room {
+  id: string;
+  name: string;
+  /** Rough size, used to sort and to warn when a group outgrows the room. */
+  capacity: number;
+  kind: "large" | "standard" | "individual" | "office";
 }
 
 export interface ClassRoom {
   id: string;
   subjectId: string;
   teacherId: string;
+  /** Which physical room this class occupies. */
+  roomId: string;
   level: StudentLevel;
   sessionType: SessionType;
   dayOfWeek: DayOfWeek;
   timeSlot: string; // e.g. "16:00-17:30"
   maxStudents: number; // 4..20
+  /** Price each student in this group pays per session. */
+  pricePerSession: number;
+  /** School's share, set when the group is formed. Defaults to 25% but can be a
+   *  fixed DA amount instead. Overrides anything on the teacher record. */
+  schoolCutMode: PaymentMode;
+  schoolCutValue: number;
   currentStudents: number;
   isLocked: boolean;
   waitingList?: string[]; // studentIds waiting for a spot (cahier §5.3)
@@ -191,6 +214,20 @@ export interface RegistrationRequest {
   reviewedAt?: number;
 }
 
+/** A student's request to study a subject with a chosen teacher (تسجيل).
+ *  Sits in the admin's queue until they group several of these into a class. */
+export interface EnrollmentRequest {
+  id: string;
+  studentId: string;
+  subjectId: string;
+  teacherId: string;
+  status: "pending" | "grouped" | "rejected";
+  /** Set when the admin forms a group from this request. */
+  classId?: string;
+  createdAt: number;
+  reviewedAt?: number;
+}
+
 export interface TeacherSlotRequest {
   id: string;
   teacherId: string;
@@ -207,6 +244,7 @@ export const COLLECTIONS = {
   students: "students",
   teachers: "teachers",
   subjects: "subjects",
+  rooms: "rooms",
   classes: "classes",
   enrollments: "enrollments",
   sessions: "sessions",
@@ -215,5 +253,6 @@ export const COLLECTIONS = {
   activityLog: "activityLog",
   slotRequests: "slotRequests",
   registrationRequests: "registrationRequests",
+  enrollmentRequests: "enrollmentRequests",
   teacherPayouts: "teacherPayouts",
 } as const;

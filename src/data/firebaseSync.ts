@@ -6,6 +6,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js"; // type-only: eras
 import { DEMO_MODE } from "../lib/config";
 import { COLLECTIONS } from "../lib/types";
 import { useData } from "./store";
+import { clearSyncIssues, reportMissingTable } from "./syncStatus";
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -48,28 +49,75 @@ export async function startSync(): Promise<void> {
   const { supabase } = await import("../lib/supabase");
   const tables = Object.values(COLLECTIONS);
 
-  // Initial full load.
+  // Initial full load. Record which tables actually answered: a table that is
+  // missing (migration not run) or blocked by RLS must NOT be subscribed to
+  // below, because one bad entry makes Realtime reject the whole channel — which
+  // silently kills live updates for every other table too.
+  const live: string[] = [];
+  const missing: { table: string; reason: string }[] = [];
+
   await Promise.all(
     tables.map(async (table) => {
       const { data, error } = await supabase.from(table).select("*");
       if (error) {
-        console.warn(`sync ${table}:`, error.message);
+        missing.push({ table, reason: error.message });
         return;
       }
-      if (data) (useData.setState as (p: Record<string, unknown>) => void)({ [table]: data });
+      live.push(table);
+      if (data) setState({ [table]: data });
     })
   );
 
-  // Live incremental updates.
+  if (missing.length > 0) {
+    console.warn(
+      `[sync] ${missing.length} table(s) unavailable — skipped, and NOT subscribed to realtime:\n` +
+        missing.map((m) => `  • ${m.table}: ${m.reason}`).join("\n") +
+        `\nIf these are new tables, run supabase/SETUP.sql.`
+    );
+    // Also tell the user, not just the console — an empty page must explain itself.
+    for (const m of missing) reportMissingTable(m.table, m.reason);
+  }
+
+  // Live incremental updates, only for tables that exist.
   channel = supabase.channel("horizon-all");
-  for (const table of tables) {
+  for (const table of live) {
     channel.on(
       "postgres_changes",
       { event: "*", schema: "public", table },
       (payload) => applyChange(table, payload.eventType, payload.new as Row, payload.old as Row)
     );
   }
-  channel.subscribe();
+  channel.subscribe((status) => {
+    if (status === "SUBSCRIBED") {
+      console.info(`[sync] realtime live on ${live.length} table(s)`);
+    } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+      // Realtime is an enhancement; the initial load already populated the store.
+      console.warn(
+        `[sync] realtime ${status}. Data loaded once, but live updates are off. ` +
+          `Check that Realtime is enabled for these tables in Supabase.`
+      );
+    }
+  });
+}
+
+/** Re-run the initial load. Useful after running a migration, or when rows were
+ *  changed directly in the Supabase dashboard while realtime was down. */
+export async function refetchAll(): Promise<void> {
+  if (DEMO_MODE) return;
+  const { supabase } = await import("../lib/supabase");
+  // Re-derive the issue list from scratch: after a migration the old warnings
+  // must disappear on their own.
+  clearSyncIssues();
+  await Promise.all(
+    Object.values(COLLECTIONS).map(async (table) => {
+      const { data, error } = await supabase.from(table).select("*");
+      if (error) {
+        reportMissingTable(table, error.message);
+        return;
+      }
+      if (data) setState({ [table]: data });
+    })
+  );
 }
 
 export function stopSync(): void {

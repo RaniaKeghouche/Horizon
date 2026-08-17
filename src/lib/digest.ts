@@ -35,7 +35,7 @@ export function buildDigest(classes: ClassRoom[], subjects: Subject[], teachers:
   const td = dayEnum(today);
   const tm = dayEnum(tomorrow);
   return (
-    `📅 Aujourd'hui (${DAY_LABEL[td]}) : ${lineFor(classes, td, subjects, teachers)}. ` +
+    `Aujourd'hui (${DAY_LABEL[td]}) : ${lineFor(classes, td, subjects, teachers)}. ` +
     `Demain (${DAY_LABEL[tm]}) : ${lineFor(classes, tm, subjects, teachers)}.`
   );
 }
