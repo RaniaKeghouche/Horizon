@@ -663,6 +663,8 @@
     "motiv_teacher_cta": "Voir ma paie",
     "motiv_student_title": "Continue comme ça !",
     "motiv_student_body": "Chaque séance suivie te rapproche de tes objectifs.",
-    "motiv_student_cta": "Voir mes présences"
+    "motiv_student_cta": "Voir mes présences",
+    "students_count_one": "{{count}} élève",
+    "students_count_other": "{{count}} élèves"
   }
 }

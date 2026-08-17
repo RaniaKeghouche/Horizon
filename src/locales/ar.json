@@ -663,6 +663,12 @@
     "motiv_teacher_cta": "عرض أجري",
     "motiv_student_title": "واصل هكذا!",
     "motiv_student_body": "كل حصة تحضرها تقرّبك من أهدافك.",
-    "motiv_student_cta": "عرض حضوري"
+    "motiv_student_cta": "عرض حضوري",
+    "students_count_zero": "لا طالب",
+    "students_count_one": "طالب واحد",
+    "students_count_two": "طالبان",
+    "students_count_few": "{{count}} طلاب",
+    "students_count_many": "{{count}} طالبًا",
+    "students_count_other": "{{count}} طالب"
   }
 }

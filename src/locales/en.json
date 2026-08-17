@@ -663,6 +663,8 @@
     "motiv_teacher_cta": "See my pay",
     "motiv_student_title": "Keep it up!",
     "motiv_student_body": "Every session you attend brings your goals closer.",
-    "motiv_student_cta": "See my attendance"
+    "motiv_student_cta": "See my attendance",
+    "students_count_one": "{{count}} student",
+    "students_count_other": "{{count}} students"
   }
 }

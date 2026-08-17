@@ -4,12 +4,13 @@ import { NavLink } from "react-router-dom";
 import {
   GraduationCap, Users, CalendarDays, BookOpen,
   ArrowRight, FileText, CheckCircle2,
-  FlaskConical, MoreVertical, Award, BarChart3, ClipboardList, Trophy,
+  FlaskConical, Award, BarChart3, ClipboardList, Trophy,
 } from "lucide-react";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { computeStudentBilling } from "../../lib/billing";
-import { formatDA } from "../../lib/format";
+import { dayEnum } from "../../lib/digest";
+import { formatDA, formatDate } from "../../lib/format";
 import { LEVEL_LABEL } from "../../lib/labels";
 import type { LucideIcon } from "lucide-react";
 import "./dashboard.css";
@@ -133,93 +134,93 @@ function GoldProgress({ value }: { value: number }) {
 
 function TeacherHome({ teacherId }: { teacherId?: string }) {
   const { t } = useTranslation();
-  const { classes, sessions } = useData();
+  const { classes, sessions, subjects, enrollments } = useData();
 
   const myClasses = useMemo(() => classes.filter((c) => c.teacherId === teacherId), [classes, teacherId]);
   const myClassIds = new Set(myClasses.map((c) => c.id));
+  const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "—";
 
-  const held = sessions.filter((s) => myClassIds.has(s.classId)).length;
+  const mySessionsAll = sessions.filter((s) => myClassIds.has(s.classId));
+  const held = mySessionsAll.length;
 
-  // Mock list items as fallback if fresh DB has few entries
-  const classItems = myClasses.length > 0 ? myClasses : [
-    { id: "c1", level: "3am", currentStudents: 25, subjectId: "s1", next: "Aujourd'hui, 10:00", name: "3ème A" },
-    { id: "c2", level: "2as", currentStudents: 28, subjectId: "s1", next: "Aujourd'hui, 11:30", name: "2nde B" },
-    { id: "c3", level: "1as", currentStudents: 23, subjectId: "s1", next: "Demain, 08:30", name: "1ère S" },
-  ];
+  // Cinq dernières séances tenues, les plus récentes d'abord.
+  const mySessions = [...mySessionsAll].sort((a, b) => b.date - a.date).slice(0, 5);
 
-  const recentActivities = [
-    { id: "a1", type: "check", title: "Devoir corrigé", sub: "Devoir n°4 – 3ème A", time: "Il y a 2 heures", icon: CheckCircle2, color: "green" },
-    { id: "a2", type: "book", title: "Nouveau cours publié", sub: "Les fonctions linéaires – 2nde B", time: "Il y a 5 heures", icon: FileText, color: "blue" },
-    { id: "a3", type: "eval", title: "Évaluation créée", sub: "Contrôle continu – 1ère S", time: "Il y a 1 jour", icon: CheckCircle2, color: "green" },
-    { id: "a4", type: "res", title: "Ressource partagée", sub: "Exercices supplémentaires – 3ème A", time: "Il y a 2 jours", icon: BookOpen, color: "blue" },
-  ];
+  const myStudentIds = new Set(
+    enrollments.filter((e) => e.teacherId === teacherId).map((e) => e.studentId)
+  );
 
-  const calendarItems = [
-    { id: "cal1", time: "08:00", title: "1ère S", sub: "Mathématiques", dotColor: "#94a3b8" },
-    { id: "cal2", time: "10:00", title: "3ème A", sub: "Mathématiques", dotColor: "#f59e0b" },
-    { id: "cal3", time: "11:30", title: "2nde B", sub: "Mathématiques", dotColor: "#3b82f6" },
-    { id: "cal4", time: "14:00", title: "Réunion pédagogique", sub: "Salle des professeurs", dotColor: "#10b981" },
-  ];
+  const today = dayEnum(new Date());
+  const todays = myClasses
+    .filter((c) => c.dayOfWeek === today)
+    .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
+
+  // Taux de présence réel sur les séances de cet enseignant.
+  const presenceRate = useMemo(() => {
+    let marks = 0, present = 0;
+    for (const s of mySessionsAll) {
+      for (const st of Object.values(s.attendance)) {
+        marks++;
+        if (st === "present") present++;
+      }
+    }
+    return marks > 0 ? Math.round((present / marks) * 100) : null;
+  }, [mySessionsAll]);
 
   return (
     <>
-      {/* 4 Stat Tiles */}
       <div className="dash-tiles">
-        <StatTile icon={Users} tone="gold" label="Classes" sublabel="Actives" value={String(Math.max(myClasses.length, 6))} />
-        <StatTile icon={FileText} tone="navy" label="Cours" sublabel="Publiés" value={String(Math.max(myClasses.length * 4, 24))} />
-        <StatTile icon={CheckCircle2} tone="green" label="Évaluations" sublabel="Corrigées" value={String(Math.max(held, 78))} />
-        <StatTile icon={Award} tone="violet" label="Taux de réussite" sublabel="Moyen" value="92%" />
+        <StatTile icon={Users} tone="gold" label={t("dash.my_groups")} sublabel={t("status.active")} value={String(myClasses.length)} />
+        <StatTile icon={Users} tone="navy" label={t("dash.students_followed")} value={String(myStudentIds.size)} />
+        <StatTile icon={CheckCircle2} tone="green" label={t("dash.sessions_held")} value={String(held)} />
+        <StatTile
+          icon={Award}
+          tone="violet"
+          label={t("dash.attendance_rate")}
+          value={presenceRate === null ? "—" : `${presenceRate}%`}
+        />
       </div>
 
-      {/* Main Grid: Left 2 columns & Right 1 column */}
       <div className="dash-layout">
         <div className="dash-main-cols">
-          {/* Mes classes */}
-          <Panel title="Mes classes" to="/sessions" toLabel="Voir toutes">
+          <Panel title={t("dash.my_groups")} to="/sessions" toLabel={t("dash.see_all")} empty={myClasses.length === 0}>
             <div className="dash-classes-list">
-              {classItems.map((c, i) => {
+              {myClasses.map((c, i) => {
                 const icons = [GraduationCap, BookOpen, FlaskConical];
                 const Icon = icons[i % icons.length];
-                const iconColors = ["gold", "navy", "green"];
-                const iconColor = iconColors[i % iconColors.length];
-                const title = "name" in c ? c.name : `${LEVEL_LABEL[c.level]}`;
-                const nextTime = "next" in c ? c.next : "Aujourd'hui, 10:00";
-
+                const iconColor = ["gold", "navy", "green"][i % 3];
                 return (
                   <div className="dash-class-card" key={c.id}>
                     <span className={"dash-class-icon tone-" + iconColor}><Icon size={20} /></span>
                     <div className="dash-class-info">
-                      <strong>{title}</strong>
-                      <span>{c.currentStudents} élèves</span>
+                      <strong>{subjName(c.subjectId)} · {LEVEL_LABEL[c.level]}</strong>
+                      <span>{t("dash.students_count", { count: c.currentStudents })}</span>
                     </div>
                     <div className="dash-class-meta">
                       <em>{t("dash.next_class")}</em>
-                      <span>{nextTime}</span>
+                      <span>{t(`days.${c.dayOfWeek}`)} {c.timeSlot}</span>
                     </div>
-                    <button className="dash-class-more" aria-label="Options">
-                      <MoreVertical size={16} />
-                    </button>
                   </div>
                 );
               })}
             </div>
           </Panel>
 
-          {/* Activités récentes */}
-          <Panel title="Activités récentes" to="/activity" toLabel="Voir tout">
+          {/* Journal réel de l'enseignant : les séances qu'il a tenues, les plus
+              récentes d'abord. Remplace une liste d'activités fictives. */}
+          <Panel title={t("nav.activity")} to="/sessions" toLabel={t("dash.see_all")} empty={mySessions.length === 0}>
             <div className="dash-activities-list">
-              {recentActivities.map((act) => {
-                const Icon = act.icon;
+              {mySessions.map((s) => {
+                const c = classes.find((x) => x.id === s.classId);
+                const marked = Object.keys(s.attendance).length;
                 return (
-                  <div className="dash-activity-item" key={act.id}>
-                    <span className={"dash-activity-icon tone-" + (act.color === "green" ? "green" : "navy")}>
-                      <Icon size={18} />
-                    </span>
+                  <div className="dash-activity-item" key={s.id}>
+                    <span className="dash-activity-icon tone-green"><CheckCircle2 size={18} /></span>
                     <div className="dash-activity-content">
-                      <strong>{act.title}</strong>
-                      <p>{act.sub}</p>
+                      <strong>{c ? subjName(c.subjectId) : "—"}</strong>
+                      <p>{t("dash.students_count", { count: marked })}</p>
                     </div>
-                    <span className="dash-activity-time">{act.time}</span>
+                    <span className="dash-activity-time">{formatDate(s.date)}</span>
                   </div>
                 );
               })}
@@ -227,17 +228,16 @@ function TeacherHome({ teacherId }: { teacherId?: string }) {
           </Panel>
         </div>
 
-        {/* Right column */}
         <div className="dash-side-col">
-          <Panel title="Calendrier du jour" to="/schedule" toLabel="Voir le calendrier">
+          <Panel title={t("dash.day_agenda")} to="/schedule" toLabel={t("dash.see_all")} empty={todays.length === 0}>
             <div className="dash-calendar-list">
-              {calendarItems.map((it) => (
-                <div className="dash-cal-item" key={it.id}>
-                  <span className="dash-cal-time">{it.time}</span>
-                  <span className="dash-cal-dot" style={{ backgroundColor: it.dotColor }} />
+              {todays.map((c) => (
+                <div className="dash-cal-item" key={c.id}>
+                  <span className="dash-cal-time">{c.timeSlot.split("-")[0]}</span>
+                  <span className="dash-cal-dot" />
                   <div className="dash-cal-content">
-                    <strong>{it.title}</strong>
-                    <span>{it.sub}</span>
+                    <strong>{subjName(c.subjectId)}</strong>
+                    <span>{LEVEL_LABEL[c.level]} · {t("dash.students_count", { count: c.currentStudents })}</span>
                   </div>
                 </div>
               ))}
@@ -266,123 +266,123 @@ function TeacherHome({ teacherId }: { teacherId?: string }) {
 
 /* ------------------------------------------------------------------ Student Dashboard (Image 2) */
 
-function StudentHome({ linkedStudentId: _linkedStudentId }: { linkedStudentId?: string }) {
+function StudentHome({ linkedStudentId }: { linkedStudentId?: string }) {
   const { t } = useTranslation();
 
-  const studentCourses = [
-    { id: "sc1", name: "Mathématiques", teacher: "M. Karim Belkacem", progress: 75, icon: "√x" },
-    { id: "sc2", name: "Physique-Chimie", teacher: "Mme. Leila A.", progress: 60, icon: FlaskConical },
-    { id: "sc3", name: "Français", teacher: "M. Samir D.", progress: 90, icon: BookOpen },
-  ];
+  const { students, subjects, teachers, classes, enrollments, sessions, payments } = useData();
+  const student = students.find((s) => s.id === linkedStudentId);
 
-  const studentHomework = [
-    { id: "hw1", title: "Devoir de mathématiques", sub: "Chapitre 4 – Fonctions", due: "16 mai", color: "blue" },
-    { id: "hw2", title: "Exercices de physique", sub: "Les lois de Newton", due: "17 mai", color: "green" },
-    { id: "hw3", title: "Rédaction – Français", sub: "Sujet libre", due: "20 mai", color: "blue" },
-  ];
+  const billing = useMemo(
+    () => (student ? computeStudentBilling(student, enrollments, sessions, payments, { subjects, teachers }) : null),
+    [student, enrollments, sessions, payments, subjects, teachers]
+  );
 
-  const studentCalendar = [
-    { id: "scal1", time: "10:00", title: "Mathématiques", room: "Salle 12", dotColor: "#f59e0b" },
-    { id: "scal2", time: "11:30", title: "Physique-Chimie", room: "Salle 8", dotColor: "#3b82f6" },
-    { id: "scal3", time: "14:00", title: "Anglais", room: "Salle 15", dotColor: "#10b981" },
-  ];
+  const myClasses = useMemo(
+    () =>
+      enrollments
+        .filter((e) => e.studentId === student?.id)
+        .map((e) => classes.find((c) => c.id === e.classId))
+        .filter((c): c is NonNullable<typeof c> => !!c),
+    [enrollments, classes, student]
+  );
+
+  const today = dayEnum(new Date());
+  const todays = myClasses
+    .filter((c) => c.dayOfWeek === today)
+    .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
+
+  // Taux de présence réel, calculé sur les cartes de présence des séances suivies.
+  const attendance = useMemo(() => {
+    if (!student) return { present: 0, total: 0 };
+    const ids = new Set(myClasses.map((c) => c.id));
+    const mine = sessions.filter((s) => ids.has(s.classId) && s.attendance[student.id]);
+    return { present: mine.filter((s) => s.attendance[student.id] === "present").length, total: mine.length };
+  }, [student, myClasses, sessions]);
+  const rate = attendance.total > 0 ? Math.round((attendance.present / attendance.total) * 100) : null;
+
+  const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "—";
+  const teacherName = (id: string) => teachers.find((x) => x.id === id)?.name ?? "—";
+
+  if (!student || !billing) return <p className="dash-empty">{t("dash.no_student_link")}</p>;
 
   return (
     <>
-      {/* 4 Stat Tiles */}
       <div className="dash-tiles">
         <StatTile
-          icon={BookOpen}
-          tone="gold"
-          label="Cours aujourd'hui"
-          value="5"
-          linkText="Voir mon emploi du temps"
-          linkTo="/courses"
+          icon={BookOpen} tone="gold" label={t("dash.my_subjects")}
+          value={String(billing.subjects.length)}
+          linkText={t("dash.see_all")} linkTo="/courses"
         />
         <StatTile
-          icon={ClipboardList}
-          tone="navy"
-          label="Devoirs à rendre"
-          value="3"
-          linkText="Voir mes devoirs"
-          linkTo="/courses"
+          icon={ClipboardList} tone="navy" label={t("dash.today_count")}
+          value={String(todays.length)}
+          linkText={t("dash.see_all")} linkTo="/courses"
         />
         <StatTile
-          icon={BarChart3}
-          tone="green"
-          label="Moyenne générale"
-          value="85%"
-          linkText="Voir mes notes"
-          linkTo="/attendance"
+          icon={BarChart3} tone="green" label={t("dash.attendance_rate")}
+          value={rate === null ? "—" : `${rate}%`}
+          linkText={t("dash.see_all")} linkTo="/attendance"
         />
         <StatTile
-          icon={Trophy}
-          tone="violet"
-          label="Badges"
-          value="12"
-          linkText="Voir mes badges"
-          linkTo="/courses"
+          icon={Trophy} tone="violet" label={t("payments.totalDue")}
+          value={formatDA(billing.totalDue)}
+          linkText={t("dash.see_all")} linkTo="/payments"
         />
       </div>
 
-      {/* Main Grid: Left 2 columns & Right 1 column */}
       <div className="dash-layout">
         <div className="dash-main-cols">
-          {/* Mes cours */}
-          <Panel title="Mes cours" to="/courses" toLabel="Voir tous mes cours">
+          {/* Progression = séance X sur Y de la période de facturation. */}
+          <Panel title={t("dash.my_subjects")} to="/courses" toLabel={t("dash.see_all")} empty={billing.subjects.length === 0}>
             <div className="dash-student-courses">
-              {studentCourses.map((c) => (
-                <div className="dash-course-row" key={c.id}>
-                  <div className="dash-course-badge">
-                    {typeof c.icon === "string" ? (
-                      <span className="dash-math-sym">{c.icon}</span>
-                    ) : (
-                      <c.icon size={18} />
-                    )}
-                  </div>
+              {billing.subjects.map((s) => (
+                <div className="dash-course-row" key={s.enrollmentId}>
+                  <div className="dash-course-badge"><BookOpen size={18} /></div>
                   <div className="dash-course-details">
-                    <strong>{c.name}</strong>
-                    <span>{c.teacher}</span>
+                    <strong>{s.subjectName}</strong>
+                    <span>{s.teacherName}</span>
                   </div>
                   <div className="dash-course-prog">
-                    <GoldProgress value={c.progress} />
+                    <GoldProgress
+                      value={s.totalSessions > 0 ? Math.round((s.currentSession / s.totalSessions) * 100) : 0}
+                    />
                   </div>
                 </div>
               ))}
             </div>
           </Panel>
 
-          {/* Devoirs à venir */}
-          <Panel title="Devoirs à venir" to="/courses" toLabel="Voir tous">
+          <Panel title={t("nav.payments")} to="/payments" toLabel={t("dash.see_all")} empty={billing.subjects.length === 0}>
             <div className="dash-homework-list">
-              {studentHomework.map((hw) => (
-                <div className="dash-homework-item" key={hw.id}>
-                  <span className={"dash-homework-icon tone-" + (hw.color === "green" ? "green" : "navy")}>
+              {billing.subjects.map((s) => (
+                <div className="dash-homework-item" key={s.enrollmentId}>
+                  <span className={"dash-homework-icon tone-" + (s.amountDue > 0 ? "navy" : "green")}>
                     <FileText size={18} />
                   </span>
                   <div className="dash-homework-details">
-                    <strong>{hw.title}</strong>
-                    <p>{hw.sub}</p>
+                    <strong>{s.subjectName}</strong>
+                    <p>{t("payments.session")} {s.currentSession} {t("payments.of")} {s.totalSessions}</p>
                   </div>
-                  <span className="dash-due-badge">{hw.due}</span>
+                  <span className="dash-due-badge">
+                    {s.amountDue > 0 ? formatDA(s.amountDue) : t("payments.paid")}
+                  </span>
                 </div>
               ))}
             </div>
           </Panel>
         </div>
 
-        {/* Right column */}
         <div className="dash-side-col">
-          <Panel title="Calendrier" to="/courses" toLabel="Voir le calendrier">
+          <Panel title={t("dash.day_agenda")} to="/courses" toLabel={t("dash.see_all")} empty={todays.length === 0}>
             <div className="dash-calendar-list">
-              {studentCalendar.map((it) => (
-                <div className="dash-cal-item" key={it.id}>
-                  <span className="dash-cal-time">{it.time}</span>
-                  <span className="dash-cal-dot" style={{ backgroundColor: it.dotColor }} />
+              {todays.map((c) => (
+                <div className="dash-cal-item" key={c.id}>
+                  <span className="dash-cal-time">{c.timeSlot.split("-")[0]}</span>
+                  <span className="dash-cal-dot" />
                   <div className="dash-cal-content">
-                    <strong>{it.title}</strong>
+                    <strong>{subjName(c.subjectId)}</strong>
                   </div>
-                  <span className="dash-cal-room">{it.room}</span>
+                  <span className="dash-cal-room">{teacherName(c.teacherId)}</span>
                 </div>
               ))}
             </div>
@@ -432,30 +432,30 @@ function AdminHome() {
   return (
     <>
       <div className="dash-tiles">
-        <StatTile icon={GraduationCap} tone="gold" label="Élèves inscrits" value={String(students.length)} linkText="Voir les élèves" linkTo="/students" />
-        <StatTile icon={Users} tone="navy" label="Enseignants" value={String(teachers.length)} linkText="Voir les enseignants" linkTo="/teachers" />
-        <StatTile icon={CalendarDays} tone="green" label="Groupes de cours" value={String(classes.length)} linkText="Gérer les groupes" linkTo="/sessions" />
+        <StatTile icon={GraduationCap} tone="gold" label={t("nav.students")} value={String(students.length)} linkText={t("dash.see_all")} linkTo="/students" />
+        <StatTile icon={Users} tone="navy" label={t("nav.teachers")} value={String(teachers.length)} linkText={t("dash.see_all")} linkTo="/teachers" />
+        <StatTile icon={CalendarDays} tone="green" label={t("nav.sessions")} value={String(classes.length)} linkText={t("dash.see_all")} linkTo="/sessions" />
         <StatTile
           icon={Award}
           tone={totalDebt > 0 ? "danger" : "green"}
-          label="Paiements"
-          sublabel="En attente"
+          label={t("nav.payments")}
+          sublabel={t("tea.pending")}
           value={formatDA(totalDebt)}
-          linkText="Voir les paiements"
+          linkText={t("dash.see_all")}
           linkTo="/payments"
         />
       </div>
 
       <div className="dash-layout">
         <div className="dash-main-cols">
-          <Panel title="Demandes d'inscription" to="/requests" toLabel="Traiter les demandes" empty={pending.length === 0}>
+          <Panel title={t("req.title")} to="/requests" toLabel={t("dash.review")} empty={pending.length === 0}>
             <div className="dash-activities-list">
               {pending.slice(0, 5).map((r) => (
                 <div className="dash-activity-item" key={r.id}>
                   <span className="dash-activity-icon tone-gold"><Users size={18} /></span>
                   <div className="dash-activity-content">
                     <strong>{r.name}</strong>
-                    <p>{r.role === "teacher" ? "Candidature Enseignant" : "Inscription Élève"} · {r.phone}</p>
+                    <p>{t(`roles.${r.role}`)} · {r.phone}</p>
                   </div>
                   <span className="dash-due-badge">{t("tea.pending")}</span>
                 </div>
