@@ -102,9 +102,20 @@ drop policy if exists "enrolreq write" on public."enrollmentRequests";
 create policy "enrolreq write" on public."enrollmentRequests" for all to authenticated using (true) with check (true);
 
 -- ---------------------------------------------------------------------------
--- 6. Rollback for the demo data (see DELETE-DEMO-DATA.sql) — kept separate so
---    you can drop the mock rows without touching the schema.
+-- 6. Per-student remarks on a session ("Remarque" column on Faire l'appel).
+--    Shape: {"<studentId>": "arrivé en retard", ...}
 -- ---------------------------------------------------------------------------
+alter table public.sessions
+  add column if not exists "studentNotes" jsonb default '{}'::jsonb;
+-- ---------------------------------------------------------------------------
+-- Note written when a payment is collected ("payé en 2 fois", "chèque"...).
+-- ---------------------------------------------------------------------------
+alter table public.payments
+  add column if not exists "note" text;
+
+
+-- Note : pour retirer UNIQUEMENT les donnees de demo plus tard, sans toucher
+-- au schema, executez supabase/DELETE-DEMO-DATA.sql.
 
 
 -- ############################################################
@@ -144,8 +155,8 @@ on conflict (id) do update set
 -- rooms (5)
 insert into public."rooms" ("id", "name", "capacity", "kind") values
   ('rm_big', 'Grande salle', 20, 'large'),
-  ('rm_1', 'Salle 1', 12, 'standard'),
-  ('rm_2', 'Salle 2', 12, 'standard'),
+  ('rm_1', 'Classe 1', 12, 'standard'),
+  ('rm_2', 'Classe 2', 12, 'standard'),
   ('rm_indiv', 'Salle individuelle', 2, 'individual'),
   ('rm_office', 'Bureau', 4, 'office')
 on conflict (id) do update set
@@ -266,3 +277,23 @@ on conflict (id) do update set
   "classId" = excluded."classId",
   "createdAt" = excluded."createdAt",
   "reviewedAt" = excluded."reviewedAt";
+
+-- ============================================================
+-- Reservations faites avant la validation du compte
+-- ============================================================
+-- Un compte en attente n'a pas encore de fiche eleve : il ne peut donc pas
+-- porter d'"enrollmentRequests", qui pointe sur un studentId. Les groupes qu'il
+-- reserve depuis la page de decouverte attendent ici, sur sa propre demande
+-- d'inscription, et approveRegistration() les transforme en vraies inscriptions
+-- au moment de la validation.
+alter table public."registrationRequests"
+  add column if not exists "wantedClassIds" jsonb;
+
+-- ============================================================
+-- Seances supplementaires
+-- ============================================================
+-- Rattrapage, revision d'examen, cours ajoute a la demande des eleves : une
+-- seance qui ne tombe pas sur le creneau hebdomadaire du groupe. Plusieurs
+-- peuvent exister le meme jour, contrairement a une seance ordinaire.
+alter table public.sessions
+  add column if not exists "isExtra" boolean;

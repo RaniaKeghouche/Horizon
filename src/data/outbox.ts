@@ -35,6 +35,25 @@ export function pendingCount(): number {
   return queue.length;
 }
 
+/**
+ * Retire de la file les ecritures en attente qui visent une ligne donnee.
+ *
+ * Sert quand une action locale a mis en file des ecritures que la base
+ * refusera de toute facon, parce qu'une fonction en base va faire le travail a
+ * leur place (voir selfEnroll et supabase/self-service.sql). Les laisser
+ * partir ne produirait que des refus dans le bandeau de synchro.
+ */
+export function dropQueued(table: string, id: string): void {
+  if (DEMO_MODE) return;
+  const before = queue.length;
+  queue = queue.filter((op) => {
+    if (op.table !== table) return true;
+    const opId = op.k === "upsert" ? (op.row.id as string) : op.id;
+    return opId !== id;
+  });
+  if (queue.length !== before) persist();
+}
+
 export function enqueue(op: Op): void {
   if (DEMO_MODE) return;
   queue.push(op);

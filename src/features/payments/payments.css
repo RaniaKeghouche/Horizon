@@ -1,0 +1,653 @@
+/* ============================================================
+   Mes paiements (vue eleve)
+   ============================================================
+   Palette navy / or / ciel, celle de la page vitrine. Chaque matiere garde la
+   teinte que lui donne subjectLook, comme sur l'emploi du temps et le
+   catalogue, pour qu'on la reconnaisse d'un ecran a l'autre.
+
+   Proprietes logiques partout : l'arabe est la langue par defaut.
+   ============================================================ */
+
+.pay {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.pay-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.pay-head-icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  flex: none;
+}
+.pay-head h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.pay-head p {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.pay-invoice {
+  margin-inline-start: auto;
+  flex: none;
+}
+
+.pay-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21rem;
+  gap: 1.15rem;
+  align-items: start;
+}
+.pay-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+  /* Les lignes se replient d'apres la largeur de cette colonne, pas de la
+     fenetre : la colonne de droite en prend deja 21rem. */
+  container-type: inline-size;
+  container-name: paymain;
+}
+.pay-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* ------------------------------------------------------------------ onglets */
+
+.pay-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  align-self: flex-start;
+}
+.pay-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.95rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pay-tab:hover {
+  color: var(--text);
+}
+.pay-tab.on {
+  background: var(--primary-grad);
+  color: #fff;
+}
+.pay-tab em {
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.pay-tab.on em {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+/* -------------------------------------------------------------- les lignes */
+
+.pay-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pay-row {
+  display: grid;
+  grid-template-columns: auto minmax(9rem, 1.5fr) auto auto auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.pay-row:hover {
+  border-color: var(--tile-fg, var(--primary-2));
+  box-shadow: var(--shadow-sm);
+}
+/* Un cours termine reste consultable, en retrait : son historique de paiement
+   compte, mais il ne doit pas concurrencer les cours en cours. */
+.pay-row.archived {
+  opacity: 0.62;
+  border-style: dashed;
+}
+
+.pay-tile {
+  display: grid;
+  place-items: center;
+  width: 3.3rem;
+  height: 3.3rem;
+  border-radius: 15px;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+}
+
+.pay-id {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.pay-id strong {
+  font-size: 0.93rem;
+  color: var(--text);
+}
+.pay-teacher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.pay-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.1rem;
+}
+.pay-chips em {
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  font-style: normal;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.pay-chips em.ghost {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.pay-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.pay-facts span {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 0.35rem;
+  font-size: 0.79rem;
+  color: var(--text);
+}
+.pay-facts svg {
+  grid-row: span 2;
+  align-self: center;
+  color: var(--muted);
+}
+.pay-facts b {
+  font-size: 0.67rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.pay-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.pay-price b {
+  font-size: 1rem;
+  color: var(--gold-600);
+}
+.pay-price span {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.pay-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  min-width: 7.5rem;
+}
+.pay-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.pay-status.paid {
+  background: rgba(7, 108, 61, 0.1);
+  color: var(--success);
+}
+.pay-status.due {
+  background: var(--gold-100);
+  color: var(--gold-700);
+}
+.pay-status.pending {
+  background: var(--sky-100);
+  color: var(--navy-600);
+}
+.pay-details {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pay-details:hover {
+  border-color: var(--primary-2);
+  color: var(--primary);
+}
+.pay-details svg {
+  transition: transform var(--dur-fast) var(--ease);
+}
+.pay-details svg.up {
+  transform: rotate(180deg);
+}
+
+/* Le detail occupe toute la largeur sous la ligne, sans la disloquer. */
+.pay-detail {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.25rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
+.pay-detail dt {
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pay-detail dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.pay-detail dd.ok {
+  color: var(--success);
+}
+.pay-detail dd.no {
+  color: var(--gold-700);
+}
+
+.pay-more {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pay-more:hover {
+  background: var(--primary-soft);
+}
+.pay-more svg.up {
+  transform: rotate(180deg);
+}
+
+/* ------------------------------------------------------- colonne de droite */
+
+.pay-summary {
+  padding: 1.1rem;
+  border-radius: var(--radius-lg);
+  background: var(--hero-grad);
+  color: #fff;
+}
+.pay-summary header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+.pay-summary h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+.pay-sum-icon {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--gold-300);
+}
+.pay-year {
+  margin-inline-start: auto;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--sky-300);
+  white-space: nowrap;
+}
+.pay-sum-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.pay-sum-grid span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--sky-500);
+}
+.pay-sum-grid b {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.pay-sum-grid b.ok {
+  color: #6ee7a8;
+}
+.pay-sum-grid b.warn {
+  color: var(--gold-300);
+}
+.pay-sum-total {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 0.82rem;
+  color: var(--sky-300);
+}
+.pay-sum-total strong {
+  margin-inline-start: auto;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.pay-panel {
+  padding: 1rem;
+}
+.pay-panel h3 {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.pay-empty {
+  margin: 0;
+  padding: 0.6rem 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.pay-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.pay-donut {
+  width: 6.5rem;
+  height: 6.5rem;
+  flex: none;
+}
+.pay-donut-bg {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 13;
+}
+.pay-donut-paid {
+  fill: none;
+  stroke: var(--success);
+  stroke-width: 13;
+  stroke-linecap: round;
+  transition: stroke-dasharray var(--dur-slow) var(--ease);
+}
+.pay-donut-n {
+  text-anchor: middle;
+  font-size: 17px;
+  font-weight: 800;
+  fill: var(--text);
+}
+.pay-donut-k {
+  text-anchor: middle;
+  font-size: 8px;
+  font-weight: 700;
+  fill: var(--muted);
+}
+
+.pay-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.pay-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.pay-legend b {
+  margin-inline-start: auto;
+  font-size: 0.78rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+.pay-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.pay-legend i.ok {
+  background: var(--success);
+}
+.pay-legend i.warn {
+  background: var(--gold-400);
+}
+.pay-legend i.idle {
+  background: var(--sky-500);
+}
+.pay-legend li.total {
+  margin-top: 0.2rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.pay-recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.pay-recent li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.pay-recent-tile {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 10px;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  flex: none;
+}
+.pay-recent strong {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.pay-recent li > div:nth-child(2) span {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.pay-recent-end {
+  margin-inline-start: auto;
+  text-align: end;
+  white-space: nowrap;
+}
+.pay-recent-end b {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+.pay-recent-end em {
+  font-style: normal;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+.pay-recent-end em.ok {
+  color: var(--success);
+}
+.pay-recent-end em.warn {
+  color: var(--gold-700);
+}
+
+/* Pas de paiement en ligne : la carte dit ou regler, elle ne fait pas semblant
+   d'ouvrir une caisse. */
+.pay-howto {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--sky-300);
+  border-radius: var(--radius);
+  background: var(--sky-100);
+  color: var(--navy-700);
+}
+.pay-howto svg {
+  flex: none;
+  margin-top: 0.1rem;
+}
+.pay-howto p {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 1100px) {
+  .pay-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pay-side {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    align-items: start;
+  }
+}
+
+/* Cinq colonnes ne tiennent pas dans une colonne etroite sans reduire le texte
+   au point de le rendre illisible : la ligne se plie en carte. */
+@container paymain (max-width: 760px) {
+  .pay-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "tile  id"
+      "facts facts"
+      "price actions";
+    gap: 0.7rem 0.85rem;
+  }
+  .pay-tile { grid-area: tile; }
+  .pay-id { grid-area: id; }
+  .pay-facts {
+    grid-area: facts;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+  }
+  .pay-price {
+    grid-area: price;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .pay-actions { grid-area: actions; }
+}
+
+@media (max-width: 560px) {
+  .pay-head {
+    flex-wrap: wrap;
+  }
+  .pay-invoice {
+    margin-inline-start: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .pay-tabs {
+    align-self: stretch;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .pay-sum-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

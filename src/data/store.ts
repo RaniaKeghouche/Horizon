@@ -7,6 +7,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { makeSeed } from "./seed";
 import { fbWrite, fbPatch, fbDelete, fbWriteMany } from "./fb";
+import { callRpc } from "./rpc";
+import { dropQueued } from "./outbox";
 import { DEMO_MODE } from "../lib/config";
 import { computeCut, isBillable, defaultPrice } from "../lib/payments";
 import { billingMonth } from "../lib/format";
@@ -88,7 +90,9 @@ interface DataState {
 
   enroll: (studentId: string, classId: string, pricePerSession: number) => void;
   unenroll: (enrollmentId: string) => void;
-  selfEnroll: (studentId: string, classId: string) => void; // student enrolls; admins notified
+  /** L'eleve s'inscrit lui-meme. Asynchrone : la base a le dernier mot sur la
+   *  place disponible, et l'inscription est annulee localement si elle refuse. */
+  selfEnroll: (studentId: string, classId: string) => Promise<boolean>;
   adminAssign: (studentId: string, classId: string, price: number) => void; // admin enrolls; student notified
   moveStudent: (enrollmentId: string, newClassId: string) => void; // admin moves group; student notified
 
@@ -98,10 +102,14 @@ interface DataState {
     date: number,
     attendance: Record<string, Session["attendance"][string]>,
     notes?: string,
-    sessionId?: string
+    sessionId?: string,
+    /** Seance supplementaire (rattrapage, revision) : elle s'ajoute au creneau
+     *  hebdomadaire au lieu de le remplacer, donc plusieurs peuvent tomber le
+     *  meme jour. */
+    isExtra?: boolean
   ) => void;
 
-  markPaid: (paymentId: string) => void;
+  markPaid: (paymentId: string, note?: string) => void;
   markUnpaid: (paymentId: string) => void;
   markMonthPaid: (studentId: string, month: string) => void;
   markMonthUnpaid: (studentId: string, month: string) => void;
@@ -119,6 +127,10 @@ interface DataState {
 
   joinWaitlist: (classId: string, studentId: string) => void;
   leaveWaitlist: (classId: string, studentId: string) => void;
+
+  /** Reservation d'un candidat encore en attente de validation. Bascule le
+   *  groupe dans/hors de sa liste d'envies ; renvoie l'etat obtenu. */
+  toggleWantedClass: (requestId: string, classId: string) => boolean;
 
   // Enrolment requests (تسجيل): student picks subject + teacher, admin groups them
   requestEnrollment: (studentId: string, subjectId: string, teacherId: string) => EnrollmentRequest | null;
@@ -330,19 +342,89 @@ export const useData = create<DataState>()(
         }
       },
 
-      // Student self-enrolls into a group → admins are notified.
-      selfEnroll: (studentId, classId) => {
+      // Un compte en attente n'a pas de fiche eleve, donc pas d'inscription
+      // possible : sa selection est gardee sur sa demande d'inscription et
+      // convertie en vraies inscriptions le jour de la validation.
+      toggleWantedClass: (requestId, classId) => {
+        const req = get().registrationRequests.find((r) => r.id === requestId);
+        if (!req) return false;
+        const current = req.wantedClassIds ?? [];
+        const wanted = current.includes(classId)
+          ? current.filter((id) => id !== classId)
+          : [...current, classId];
+        set((s) => ({
+          registrationRequests: s.registrationRequests.map((r) =>
+            r.id === requestId ? { ...r, wantedClassIds: wanted } : r
+          ),
+        }));
+        fbPatch(COLLECTIONS.registrationRequests, requestId, { wantedClassIds: wanted });
+        return wanted.includes(classId);
+      },
+
+      /**
+       * L'eleve s'inscrit lui-meme a un groupe.
+       *
+       * Les regles de la base reservent a l'administration l'ecriture dans
+       * `enrollments` et la mise a jour de `classes` : les deux ecritures
+       * lancees par enroll() etaient donc refusees, la file d'attente les
+       * abandonnait, et l'inscription — bien visible a l'ecran — n'existait
+       * nulle part. Elle passe maintenant par la fonction self_enroll(), qui
+       * fait le travail cote serveur en une transaction (place, niveau,
+       * doublon, compteur du groupe).
+       *
+       * L'ecriture locale reste immediate pour que l'interface reponde tout de
+       * suite, mais elle est ANNULEE si la base refuse : mieux vaut voir le
+       * bouton revenir que croire a une inscription qui n'a pas eu lieu.
+       */
+      selfEnroll: async (studentId, classId) => {
         const state = get();
         const klass = state.classes.find((c) => c.id === classId);
         const student = state.students.find((s) => s.id === studentId);
-        if (!klass || !student) return;
+        if (!klass || !student) return false;
+
+        const before = {
+          enrollments: state.enrollments,
+          classes: state.classes,
+          students: state.students,
+        };
         get().enroll(studentId, classId, defaultPrice(klass.sessionType, klass.level) ?? 2000);
-        if (get().enrollments.some((e) => e.studentId === studentId && e.classId === classId)) {
-          const subj = state.subjects.find((s) => s.id === klass.subjectId)?.name ?? "un cours";
-          state.users
-            .filter((u) => u.role === "admin")
-            .forEach((a) => get().addNotification(a.id, "enrollment", `${student.name} s'est inscrit(e) au groupe ${subj} (${klass.timeSlot}).`));
+        const added = get().enrollments.find(
+          (e) => e.studentId === studentId && e.classId === classId
+        );
+        if (!added) return false; // deja inscrit, ou groupe complet localement
+
+        if (!DEMO_MODE) {
+          // enroll() a mis les deux ecritures dans la file : elles seraient
+          // refusees. On les retire et on laisse la fonction en base faire foi.
+          dropQueued(COLLECTIONS.enrollments, added.id);
+          dropQueued(COLLECTIONS.classes, classId);
+
+          const res = await callRpc<Enrollment>("self_enroll", { p_class_id: classId });
+          if (!res.ok) {
+            set(before); // la base a refuse : on remet l'ecran dans son etat
+            return false;
+          }
+          // La base a pu attribuer un autre identifiant : on adopte le sien
+          // pour que les paiements et l'appel s'y rattachent correctement.
+          if (res.data?.id && res.data.id !== added.id) {
+            const real = res.data;
+            set((s) => ({
+              enrollments: s.enrollments.map((e) => (e.id === added.id ? { ...e, ...real } : e)),
+            }));
+          }
         }
+
+        const subj = state.subjects.find((s) => s.id === klass.subjectId)?.name ?? "un cours";
+        state.users
+          .filter((u) => u.role === "admin")
+          .forEach((a) =>
+            get().addNotification(
+              a.id,
+              "enrollment",
+              `${student.name} s'est inscrit(e) au groupe ${subj} (${klass.timeSlot}).`
+            )
+          );
+        return true;
       },
 
       // Admin assigns a student to a group → the student is notified.
@@ -374,7 +456,7 @@ export const useData = create<DataState>()(
       },
 
       // ---- Attendance (cahier §4) ----
-      saveAttendance: (classId, teacherId, date, attendance, notes, sessionId) => {
+      saveAttendance: (classId, teacherId, date, attendance, notes, sessionId, isExtra) => {
         const state = get();
         const klass = state.classes.find((c) => c.id === classId);
         if (!klass) return;
@@ -385,7 +467,10 @@ export const useData = create<DataState>()(
         const existing = state.sessions.find((s) => s.id === id);
         const sessionNumber =
           existing?.sessionNumber ?? state.sessions.filter((s) => s.classId === classId).length + 1;
-        const session: Session = { id, classId, teacherId, date, notes, attendance, sessionNumber };
+        // On garde le drapeau d'une seance deja enregistree : la corriger ne doit
+        // pas la transformer en seance ordinaire.
+        const extra = isExtra ?? existing?.isExtra;
+        const session: Session = { id, classId, teacherId, date, notes, attendance, sessionNumber, ...(extra ? { isExtra: true } : {}) };
 
         const newPayments: Payment[] = [];
         const newNotifs: AppNotification[] = [];
@@ -430,23 +515,50 @@ export const useData = create<DataState>()(
           }
         }
 
+        // Editing a session can turn a billable mark into a non-billable one (or
+        // drop a student from it). The charge for that session no longer applies,
+        // so remove it — but only while it is still UNPAID: money already taken
+        // is history and must never vanish.
+        const staleIds = state.payments
+          .filter(
+            (p) =>
+              p.sessionId === id &&
+              p.status === "unpaid" &&
+              !isBillable(attendance[p.studentId] ?? "absent_free")
+          )
+          .map((p) => p.id);
+
         set((s) => ({
           sessions: [...s.sessions.filter((x) => x.id !== id), session],
-          payments: [...s.payments, ...newPayments],
+          payments: [...s.payments.filter((p) => !staleIds.includes(p.id)), ...newPayments],
           notifications: [...newNotifs, ...s.notifications],
         }));
         fbWrite(COLLECTIONS.sessions, session);
+        staleIds.forEach((pid) => fbDelete(COLLECTIONS.payments, pid));
         newPayments.forEach((p) => fbWrite(COLLECTIONS.payments, p));
         newNotifs.forEach((n) => fbWrite(COLLECTIONS.notifications, n));
         get().log(teacherId, "attendance.mark", `Présence enregistrée (${Object.keys(attendance).length} élèves)`);
       },
 
       // ---- Payments ----
-      markPaid: (paymentId) => {
+      markPaid: (paymentId, note) => {
         const paidAt = now();
-        set((s) => ({ payments: s.payments.map((p) => (p.id === paymentId ? { ...p, status: "paid", paidAt } : p)) }));
-        fbPatch(COLLECTIONS.payments, paymentId, { status: "paid", paidAt });
-        get().log("u_admin", "payment.mark_paid", "Paiement encaissé");
+        set((s) => ({
+          payments: s.payments.map((p) =>
+            p.id === paymentId ? { ...p, status: "paid", paidAt, note: note ?? p.note } : p
+          ),
+        }));
+        fbPatch(COLLECTIONS.payments, paymentId, { status: "paid", paidAt, ...(note ? { note } : {}) });
+        // Also written to the journal: if the `note` column is missing on an
+        // un-migrated database the row's note would be dropped, but the audit
+        // trail keeps it either way.
+        const p = get().payments.find((x) => x.id === paymentId);
+        const who = get().students.find((x) => x.id === p?.studentId)?.name ?? "";
+        get().log(
+          "u_admin",
+          "payment.mark_paid",
+          `Paiement encaissé${who ? ` — ${who}` : ""}${note ? ` · ${note}` : ""}`
+        );
       },
       markUnpaid: (paymentId) => {
         set((s) => ({ payments: s.payments.map((p) => (p.id === paymentId ? { ...p, status: "unpaid", paidAt: undefined } : p)) }));
@@ -756,6 +868,13 @@ export const useData = create<DataState>()(
           set((s) => ({ students: [...s.students, student], users: [...s.users.filter((u) => u.id !== req.id), user] }));
           fbWrite(COLLECTIONS.students, student);
           fbWrite(COLLECTIONS.users, user);
+
+          // Les groupes reperes avant la validation deviennent de vraies
+          // inscriptions : la personne a deja fait son choix, le lui redemander
+          // apres coup n'apporterait rien. selfEnroll gere la liste d'attente
+          // si le groupe s'est rempli entre-temps.
+          const wanted = req.wantedClassIds ?? (req.preferredClassId ? [req.preferredClassId] : []);
+          for (const classId of wanted) get().selfEnroll(student.id, classId);
         } else {
           const teacher: Teacher = { id: uid(), name: req.name, phone: req.phone, subjects: req.subjects ?? [], paymentMode: "percentage", schoolCutValue: 25, createdAt: now() };
           const user = { id: req.id, role: "teacher" as const, displayName: req.name, email: req.email, teacherId: teacher.id, createdAt: now() };

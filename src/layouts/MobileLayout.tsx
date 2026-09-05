@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Bell, LogOut, Globe, MoreHorizontal, X } from "lucide-react";
+import { Bell, LogOut, Globe, MoreHorizontal, X, Hand } from "lucide-react";
 import { useAuth } from "../features/auth/AuthContext";
 import { useData } from "../data/store";
 import { sectionsForRole, type NavItem } from "../app/navigation";
 import "./mobile.css";
+import { unreadCount } from "../lib/notifications";
 
 /** Onglets visibles en bas d'écran. Au-delà, le reste bascule dans « Plus ».
  *  Cinq cibles tactiles est le maximum tenable sur un écran de téléphone —
@@ -24,7 +25,7 @@ export default function MobileLayout() {
   const [moreOpen, setMoreOpen] = useState(false);
 
   const unread = useData((s) =>
-    s.notifications.filter((n) => n.userId === profile?.id && !n.read).length
+    unreadCount(s.notifications, profile?.id)
   );
 
   const items: NavItem[] = role ? sectionsForRole(role).flatMap((s) => s.items) : [];
@@ -40,7 +41,7 @@ export default function MobileLayout() {
         <div className="mb-header-id">
           <span className="mb-avatar">{initials(profile?.displayName)}</span>
           <div>
-            <strong>{t("common.hello")}, {firstName} 👋</strong>
+            <strong>{t("common.hello")}, {firstName} <Hand size={17} className="greet-wave" aria-hidden="true" /></strong>
             {role && <span>{t(`roles.${role}`)}</span>}
           </div>
         </div>

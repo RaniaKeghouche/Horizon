@@ -12,15 +12,59 @@ export const DAYS: DayOfWeek[] = [
 ];
 
 // Standard slots — a language center typically runs afternoon/evening blocks.
+// Une seance dure DEUX heures : c'est la duree reelle des cours du centre, et
+// c'est deja ce que propose ClassForm (addHours(start, 2)). La grille etait
+// restee sur des blocs d'1h30, ce qui rendait les deux incoherents. La coupure
+// de midi (12:00-14:00) est conservee.
+export const SESSION_HOURS = 2;
+
 export const TIME_SLOTS: string[] = [
-  "08:00-09:30",
-  "09:30-11:00",
-  "11:00-12:30",
-  "14:00-15:30",
-  "15:30-17:00",
-  "17:00-18:30",
-  "18:30-20:00",
+  "08:00-10:00",
+  "10:00-12:00",
+  "14:00-16:00",
+  "16:00-18:00",
+  "18:00-20:00",
 ];
+
+/** "8:00 - 10:00" -> "08:00-10:00". Les creneaux arrivent de plusieurs endroits
+ *  (formulaire, import, anciennes donnees) : on compare des chaines normalisees
+ *  plutot que des chaines brutes. */
+export function normalizeSlot(timeSlot: string): string {
+  const pad = (t: string) => {
+    const [h, m] = t.trim().split(":");
+    return `${(h ?? "0").padStart(2, "0")}:${(m ?? "00").padStart(2, "0")}`;
+  };
+  const [a, b] = timeSlot.split("-");
+  return b ? `${pad(a)}-${pad(b)}` : pad(timeSlot);
+}
+
+/**
+ * La ligne de la grille ou poser un cours.
+ *
+ * On compare l'HEURE DE DEBUT, pas la chaine entiere : un groupe cree avant le
+ * passage aux seances de deux heures porte encore « 17:00-18:30 » et
+ * disparaissait de la semaine, releguee dans la liste des horaires
+ * personnalises. Il s'affiche desormais sur la ligne de 16:00, avec son horaire
+ * reel indique sur la carte.
+ *
+ * `null` quand aucune ligne ne commence a cette heure-la : le cours reste alors
+ * listee a part, ce qui est le bon comportement pour un horaire vraiment hors
+ * grille.
+ */
+export function gridRowFor(timeSlot: string, slots: string[] = TIME_SLOTS): string | null {
+  const norm = normalizeSlot(timeSlot);
+  if (slots.includes(norm)) return norm;
+  const start = norm.split("-")[0];
+  const exact = slots.find((s) => s.split("-")[0] === start);
+  if (exact) return exact;
+  // Sinon, la ligne dont la plage contient l'heure de debut.
+  const mins = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+  const at = mins(start);
+  return slots.find((s) => {
+    const [a, b] = s.split("-");
+    return at >= mins(a) && at < mins(b);
+  }) ?? null;
+}
 
 export interface SlotCheck {
   roomFree: boolean; // this room has no other class at this day/time

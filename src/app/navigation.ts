@@ -1,11 +1,7 @@
 // Which sections each role can see (RBAC at the UI level; RLS enforces it too).
 import type { Role } from "../lib/types";
 import type { LucideIcon } from "lucide-react";
-import {
-  LayoutDashboard, GraduationCap, Users, Inbox, BookOpen, BookMarked,
-  CalendarDays, ClipboardList, CircleCheck, Wallet, Banknote, Bell,
-  TrendingUp, ScrollText,
-} from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users, Inbox, BookOpen, BookMarked, CalendarDays, ClipboardList, CircleCheck, Wallet, Banknote, Bell, TrendingUp, ScrollText, History } from "lucide-react";
 
 export interface NavItem {
   path: string;
@@ -46,6 +42,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { path: "/schedule", labelKey: "nav.schedule", icon: CalendarDays, roles: ["admin", "teacher"] },
       { path: "/sessions", labelKey: "nav.sessions", icon: ClipboardList, roles: ["admin", "teacher"] },
       { path: "/attendance", labelKey: "nav.attendance", icon: CircleCheck, roles: ["admin", "teacher", "student"] },
+      { path: "/attendance-history", labelKey: "nav.attendance_history", icon: History, roles: ["admin", "teacher"] },
     ],
   },
   {

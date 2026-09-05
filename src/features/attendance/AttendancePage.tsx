@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import {
   CircleCheck, ClipboardList, Save, Pencil, TriangleAlert, StickyNote,
-  Users, CalendarDays, History, X,
+  Users, CalendarDays, History, X, Search, CalendarPlus, Repeat2, UsersRound,
 } from "lucide-react";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { formatDate } from "../../lib/format";
 import type { AttendanceState } from "../../lib/types";
 import "./attendance.css";
+import StackedTable from "../../components/StackedTable";
+import StudentAttendance from "./StudentAttendance";
 
-const STATES: AttendanceState[] = ["present", "absent_paid", "absent_free"];
 
 export default function AttendancePage() {
   const { role, profile } = useAuth();
@@ -22,16 +24,53 @@ export default function AttendancePage() {
 
 function TeacherAttendance({ teacherId }: { teacherId?: string }) {
   const { t } = useTranslation();
-  const { classes, subjects, students, enrollments, sessions } = useData();
+  const { classes, subjects, teachers, students, enrollments, sessions } = useData();
   const saveAttendance = useData((s) => s.saveAttendance);
 
   const myClasses = teacherId ? classes.filter((c) => c.teacherId === teacherId) : classes;
   const [classId, setClassId] = useState(myClasses[0]?.id ?? "");
+  // In Supabase mode the store is still empty on the first render, so a classId
+  // initialised from myClasses[0] stays "" forever and the page looks empty even
+  // though groups exist. Adopt the first group as soon as the data arrives, and
+  // re-adopt if the selected group disappears.
+  useEffect(() => {
+    if (myClasses.length === 0) return;
+    if (myClasses.some((c) => c.id === classId)) return;
+    setClassId(myClasses[0].id);
+  }, [myClasses, classId]);
+
+  // Sidebar filter: with many groups, scanning a list is slower than typing.
+  const [groupSearch, setGroupSearch] = useState("");
   const klass = classes.find((c) => c.id === classId);
+  const visibleClasses = useMemo(() => {
+    const q = groupSearch.trim().toLowerCase();
+    if (!q) return myClasses;
+    return myClasses.filter((c) => subjName(c.subjectId).toLowerCase().includes(q));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myClasses, groupSearch, subjects]);
 
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState("");
   const [marks, setMarks] = useState<Record<string, AttendanceState>>({});
+  /**
+   * Ce que devient un eleve sur lequel l'enseignant n'a PAS clique.
+   *
+   * L'appel se fait de deux facons selon le groupe : soit on pointe les
+   * absents (les autres sont donc presents), soit on pointe les presents (les
+   * autres sont donc absents). Le premier clic dit laquelle des deux est en
+   * cours et le remplissage automatique s'aligne dessus ; la regle retenue
+   * reste affichee et reste modifiable a la main.
+   *
+   * L'absence par defaut est « non facturee » : facturer une seance a
+   * quelqu'un uniquement parce qu'on ne l'a pas coche serait un prelevement
+   * decide par un defaut d'interface.
+   */
+  const [fill, setFill] = useState<AttendanceState>("present");
+  const [fillLocked, setFillLocked] = useState(false);
+  /** Seance supplementaire : elle s'ajoute a la seance du jour au lieu de la
+   *  remplacer, donc elle echappe a la regle « une seance par groupe et par
+   *  date » et cree toujours une nouvelle entree. */
+  const [extra, setExtra] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   // Confirmation en ligne plutôt qu'un alert() : la boîte native bloque le fil
@@ -53,14 +92,10 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
   );
 
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "—";
-  const stateOf = (studentId: string) => marks[studentId] ?? "present";
+  const stateOf = (studentId: string) => marks[studentId] ?? fill;
   const nextNumber = editingId
     ? classSessions.find((s) => s.id === editingId)?.sessionNumber ?? "?"
     : classSessions.length + 1;
-
-  const existingForDate = classSessions.find(
-    (s) => new Date(s.date).toISOString().slice(0, 10) === date && s.id !== editingId
-  );
 
   function resetForm(nextClassId = classId) {
     const ros = enrollments.filter((e) => e.classId === nextClassId).map((e) => e.studentId);
@@ -68,6 +103,9 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     setMarks({});
     setNote("");
     setEditingId(null);
+    setExtra(false);
+    setFill("present");
+    setFillLocked(false);
     setDate(new Date().toISOString().slice(0, 10));
   }
 
@@ -75,6 +113,37 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     if (!editingId) setSelected(new Set(roster.map((s) => s.id)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classId, roster.length]);
+
+  // A session is created once and edited afterwards. The moment the chosen
+  // group + date matches one already recorded, the form loads it and switches
+  // to editing — so pressing save can only ever update it, never duplicate it.
+  useEffect(() => {
+    // Une seance supplementaire s'ajoute a celle du jour : la reprendre ici
+    // ecraserait justement la seance ordinaire qu'elle vient completer.
+    if (extra) return;
+    const already = classSessions.find(
+      (x) => !x.isExtra && new Date(x.date).toISOString().slice(0, 10) === date
+    );
+    if (already) {
+      // Already recorded: load it, so saving can only update it.
+      if (already.id === editingId) return;
+      setEditingId(already.id);
+      setNote(already.notes ?? "");
+      setMarks({ ...already.attendance });
+      setSelected(new Set(Object.keys(already.attendance)));
+      return;
+    }
+    // Moved to a free date. Leaving edit mode on would re-date the session we
+    // were editing instead of opening a new one — which silently loses the old
+    // séance. Start a fresh entry, keeping the date the user just picked.
+    if (editingId) {
+      setEditingId(null);
+      setNote("");
+      setMarks({});
+      setSelected(new Set(roster.map((x) => x.id)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classId, date, classSessions, editingId, extra]);
 
   useEffect(() => {
     if (!flash) return;
@@ -89,13 +158,20 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
       return n;
     });
   }
-  const setMark = (studentId: string, state: AttendanceState) =>
+  function setMark(studentId: string, state: AttendanceState) {
+    // Premier clic de la saisie : il dit ce que l'enseignant est en train de
+    // pointer, et donc ce que deviennent les eleves qu'il ne touchera pas.
+    if (!fillLocked && Object.keys(marks).length === 0) {
+      setFill(state === "present" ? "absent_free" : "present");
+    }
     setMarks((m) => ({ ...m, [studentId]: state }));
+  }
 
   function loadSession(sessId: string) {
     const sess = classSessions.find((s) => s.id === sessId);
     if (!sess) return;
     setEditingId(sess.id);
+    setExtra(!!sess.isExtra);
     setDate(new Date(sess.date).toISOString().slice(0, 10));
     setNote(sess.notes ?? "");
     setMarks({ ...sess.attendance });
@@ -105,6 +181,14 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
 
   function save() {
     if (!klass || selected.size === 0) return;
+    // Belt and braces: even if the effect above has not run yet, a session that
+    // already exists for this group and date is updated, never duplicated.
+    // Une correction vise la seance ouverte ; une seance supplementaire cree
+    // toujours une nouvelle entree, meme si le groupe a deja cours ce jour-la.
+    const target = editingId ?? (extra
+      ? undefined
+      : classSessions.find((x) => !x.isExtra && new Date(x.date).toISOString().slice(0, 10) === date)?.id);
+
     const full: Record<string, AttendanceState> = {};
     for (const s of roster) if (selected.has(s.id)) full[s.id] = stateOf(s.id);
     saveAttendance(
@@ -113,9 +197,10 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
       new Date(date).getTime(),
       full,
       note.trim() || undefined,
-      editingId ?? undefined
+      target ?? undefined,
+      extra
     );
-    setFlash(editingId ? t("att.saved_edit") : t("att.saved"));
+    setFlash(target ? t("att.saved_edit") : t("att.saved"));
     resetForm();
   }
 
@@ -123,33 +208,21 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
 
   return (
     <div className="stack att">
-      <header className="page-head">
+      <header className="page-head att-head">
         <div className="page-title">
           <h1>{t("att.title_call")}</h1>
-          <p>{t("att.subtitle")}</p>
+          <p>{t("att.pick_group")}</p>
+        </div>
+        <div className="att-head-actions">
+          <input className="input att-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Link className="btn btn-ghost" to={`/attendance-history?class=${classId}`}>
+            <History size={16} /> {t("att.show_full_history")}
+          </Link>
+          <button className="btn btn-primary" onClick={save} disabled={!klass || selected.size === 0}>
+            <Save size={17} /> {t("att.save_session")}
+          </button>
         </div>
       </header>
-
-      <div className="att-picker">
-        <label className="field">
-          <span>{t("nav.sessions")}</span>
-          <select
-            className="input"
-            value={classId}
-            onChange={(e) => { setClassId(e.target.value); resetForm(e.target.value); }}
-          >
-            {myClasses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {subjName(c.subjectId)} · {t(`days.${c.dayOfWeek}`)} {c.timeSlot}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          <span>{t("att.date")}</span>
-          <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </label>
-      </div>
 
       {flash && (
         <p className="att-flash">
@@ -157,8 +230,52 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
         </p>
       )}
 
+      <div className="att-workspace">
+        {/* Groups on the left: search, then pick the one being marked. */}
+        <aside className="card att-groups">
+          <div className="att-search-box">
+            <Search size={15} aria-hidden="true" />
+            <input
+              className="input"
+              value={groupSearch}
+              placeholder={t("att.search_groups")}
+              onChange={(e) => setGroupSearch(e.target.value)}
+            />
+          </div>
+          <span className="att-groups-label">{t("att.my_groups")}</span>
+          {visibleClasses.length === 0 ? (
+            <p className="muted small">{t("att.no_group_match")}</p>
+          ) : (
+            <ul className="att-group-list">
+              {visibleClasses.map((c) => (
+                <li key={c.id}>
+                  <button
+                    className={"att-group-btn" + (c.id === classId ? " on" : "")}
+                    onClick={() => { setClassId(c.id); resetForm(c.id); }}
+                  >
+                    <strong>{subjName(c.subjectId)}</strong>
+                    <span>
+                      {t("att.n_students", {
+                        n: enrollments.filter((e) => e.classId === c.id).length,
+                      })}
+                      {" · "}
+                      {c.timeSlot.split("-")[0]}
+                    </span>
+                    <em>{t(`days.${c.dayOfWeek}`)}</em>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </aside>
+
       {klass && roster.length > 0 ? (
+      <div className="att-split">
         <div className="card stack">
+          <div className="att-card-head">
+            <strong>{t("att.students_n", { n: roster.length })}</strong>
+            <span className="muted small">{t("att.click_hint")}</span>
+          </div>
           <div className="att-toolbar">
             <span className="pill pill-soft">
               {t("att.session_n", { n: nextNumber })}
@@ -180,48 +297,140 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
             </div>
           </div>
 
-          {existingForDate && !editingId && (
-            <div className="att-warn">
+          {/* Deux regles qui changent le resultat enregistre : elles sont donc
+              affichees en clair au-dessus de la liste, pas cachees dans un menu. */}
+          <div className="att-rules">
+            <button
+              type="button"
+              className={"att-rule" + (fill === "present" ? " ok" : " no")}
+              onClick={() => {
+                setFill(fill === "present" ? "absent_free" : "present");
+                setFillLocked(true);
+              }}
+              title={t("att.fill_hint")}
+            >
+              <UsersRound size={15} aria-hidden="true" />
+              <span>{t("att.fill_rest")}</span>
+              <b>{fill === "present" ? t("att.fill_present") : t("att.fill_absent")}</b>
+              <Repeat2 size={14} aria-hidden="true" />
+            </button>
+
+            <button
+              type="button"
+              className={"att-rule extra" + (extra ? " on" : "")}
+              onClick={() => {
+                const next = !extra;
+                setExtra(next);
+                // Passer en seance supplementaire ouvre une saisie neuve : sinon
+                // la nouvelle seance repartirait des pointages de l'ancienne.
+                if (next) {
+                  setEditingId(null);
+                  setMarks({});
+                  setNote("");
+                  setFill("present");
+                  setFillLocked(false);
+                }
+              }}
+              aria-pressed={extra}
+            >
+              <CalendarPlus size={15} aria-hidden="true" />
+              <span>{t("att.extra_session")}</span>
+            </button>
+
+            {extra && <span className="att-rule-note">{t("att.extra_hint")}</span>}
+          </div>
+
+          {/* A session exists for this date, so this is a correction, not a new
+              entry. Saying so prevents the "did I already do the appel?" doubt. */}
+          {editingId && (
+            <div className="att-warn att-warn-info">
               <TriangleAlert size={17} />
               <span>
-                {t("att.dup_warn", {
-                  n: existingForDate.sessionNumber ?? "?",
-                  date: formatDate(existingForDate.date),
+                {t("att.editing_notice", {
+                  n: classSessions.find((x) => x.id === editingId)?.sessionNumber ?? "?",
+                  date: formatDate(new Date(date).getTime()),
                 })}
               </span>
-              <button className="btn btn-ghost sm" onClick={() => loadSession(existingForDate.id)}>
-                {t("att.edit_this")}
-              </button>
             </div>
           )}
 
-          <ul className="att-list">
-            {roster.map((s) => {
-              const on = selected.has(s.id);
-              return (
-                <li key={s.id} className={"att-row" + (on ? "" : " off")}>
-                  <label className="att-name">
-                    <input type="checkbox" checked={on} onChange={() => toggleSelected(s.id)} />
-                    <span className="att-initials" aria-hidden="true">{initials(s.name)}</span>
-                    <strong>{s.name}</strong>
-                  </label>
-                  {on && (
-                    <div className="seg" role="group" aria-label={s.name}>
-                      {STATES.map((st) => (
-                        <button
-                          key={st}
-                          className={"seg-btn" + (stateOf(s.id) === st ? " on " + segClass(st) : "")}
-                          onClick={() => setMark(s.id, st)}
-                        >
-                          {t(`attendance.${st}`)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          {/* On ne pointe qu'un cote de la liste : les eleves non touches prennent
+              la valeur de la regle affichee juste au-dessus. */}
+          <StackedTable className="att-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>{t("att.col_name")}</th>
+                  <th>{t("att.col_phone")}</th>
+                  <th>{t("att.col_status")}</th>
+                  <th>{t("att.col_absence_type")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roster.map((s, i) => {
+                  const on = selected.has(s.id);
+                  const st = stateOf(s.id);
+                  const absent = on && st !== "present";
+                  return (
+                    <tr key={s.id} className={on ? "" : "off"}>
+                      <td className="muted">{i + 1}</td>
+                      <td>
+                        <label className="att-name">
+                          <input type="checkbox" checked={on} onChange={() => toggleSelected(s.id)} />
+                          <span className="att-initials" aria-hidden="true">{initials(s.name)}</span>
+                          <strong>{s.name}</strong>
+                        </label>
+                      </td>
+                      <td className="muted num">{s.phone || "—"}</td>
+                      <td>
+                        {/* Three states, one click each: present, absent, or not
+                            part of this session at all. */}
+                        <div className="att-seg" role="group" aria-label={s.name}>
+                          <button
+                            className={"att-seg-btn p" + (on && st === "present" ? " on" : "")}
+                            title={t("attendance.present")}
+                            onClick={() => { if (!on) toggleSelected(s.id); setMark(s.id, "present"); }}
+                          >
+                            P
+                          </button>
+                          <button
+                            className={"att-seg-btn a" + (on && st !== "present" ? " on" : "")}
+                            title={t("attendance.absent_free")}
+                            onClick={() => {
+                              if (!on) toggleSelected(s.id);
+                              setMark(s.id, st === "present" ? "absent_free" : st);
+                            }}
+                          >
+                            A
+                          </button>
+                          <button
+                            className={"att-seg-btn x" + (!on ? " on" : "")}
+                            title={t("att.not_applicable")}
+                            onClick={() => { if (on) toggleSelected(s.id); }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        {absent ? (
+                          <select
+                            className="input sm"
+                            value={st}
+                            onChange={(e) => setMark(s.id, e.target.value as AttendanceState)}
+                          >
+                            <option value="absent_free">{t("attendance_short.absent_free")}</option>
+                            <option value="absent_paid">{t("attendance_short.absent_paid")}</option>
+                          </select>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+          </StackedTable>
 
           <label className="field">
             <span><StickyNote size={13} /> {t("att.note_label")}</span>
@@ -233,18 +442,44 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
             />
           </label>
 
-          <div className="row-actions">
-            {editingId && (
+          {/* Legend, as on the register — the same four marks, same colours. */}
+          <div className="att-legend">
+            <span className="att-legend-title">{t("att.legend")}</span>
+            <span><b className="att-key ok">P</b> {t("attendance.present")}</span>
+            <span><b className="att-key no">A</b> {t("attendance.absent_free")}</span>
+            <span><b className="att-key warn">AP</b> {t("attendance.absent_paid")}</span>
+            <span><b className="att-key na">—</b> {t("att.not_applicable")}</span>
+          </div>
+
+          {editingId && (
+            <div className="row-actions">
               <button className="btn btn-ghost" onClick={() => resetForm()}>
                 <X size={16} /> {t("att.cancel_edit")}
               </button>
-            )}
-            <button className="btn btn-primary btn-lg" onClick={save} disabled={selected.size === 0}>
-              <Save size={17} />
-              {editingId ? t("att.save_edit") : t("att.save", { count: selected.size })}
-            </button>
-          </div>
+            </div>
+          )}
         </div>
+
+        {/* Running totals while you mark, so the desk can reconcile before saving. */}
+        <aside className="card att-aside">
+          <h3 className="att-aside-title">{t("att.summary")}</h3>
+          <div className="att-stat ok">
+            <span>{t("att.sum_present")}</span><strong>{presentCount}</strong>
+          </div>
+          <div className="att-stat no">
+            <span>{t("att.sum_absent_free")}</span>
+            <strong>{[...selected].filter((id) => stateOf(id) === "absent_free").length}</strong>
+          </div>
+          <div className="att-stat warn">
+            <span>{t("att.sum_absent_paid")}</span>
+            <strong>{[...selected].filter((id) => stateOf(id) === "absent_paid").length}</strong>
+          </div>
+          <div className="att-stat">
+            <span>{t("att.sum_total")}</span><strong>{roster.length}</strong>
+          </div>
+          <p className="att-note"><CircleCheck size={14} /> {t("att.only_unpaid_counted")}</p>
+        </aside>
+      </div>
       ) : (
         <div className="card">
           <div className="empty-state">
@@ -255,128 +490,80 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
         </div>
       )}
 
-      <h2 className="section-title"><History size={16} /> {t("att.history")}</h2>
-      <div className="stack">
-        {classSessions.map((sess) => (
-          <div key={sess.id} className="card att-history">
-            <div className="att-history-main">
-              <strong>
-                {t("att.session_n", { n: sess.sessionNumber ?? "?" })} · {formatDate(sess.date)}
-              </strong>
-              {sess.notes && (
-                <div className="muted small att-history-note">
-                  <StickyNote size={13} /> {sess.notes}
-                </div>
-              )}
-              <div className="att-history-marks">
-                {Object.entries(sess.attendance).map(([sid, st]) => {
-                  const name = students.find((s) => s.id === sid)?.name ?? "?";
-                  return (
-                    <span key={sid} className={"pill " + segClass(st)}>
-                      {name.split(" ")[0]} · {t(`attendance.${st}`)}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-            <button className="btn btn-ghost sm" onClick={() => loadSession(sess.id)}>
-              <Pencil size={14} /> {t("common.edit")}
-            </button>
-          </div>
-        ))}
-        {classSessions.length === 0 && (
-          <div className="card">
-            <div className="empty-state">
-              <span className="empty-state-icon"><ClipboardList size={24} /></span>
-              <strong>{t("att.no_session")}</strong>
-              <p>{t("att.no_session_hint")}</p>
-            </div>
-          </div>
-        )}
       </div>
+
+      <h2 className="section-title" id="att-history">
+        <History size={16} /> {t("att.history")}
+      </h2>
+      {classSessions.length === 0 ? (
+        <div className="card">
+          <div className="empty-state">
+            <span className="empty-state-icon"><ClipboardList size={24} /></span>
+            <strong>{t("att.no_session")}</strong>
+            <p>{t("att.no_session_hint")}</p>
+          </div>
+        </div>
+      ) : (
+        <StackedTable wrapClassName="card">
+            <thead>
+              <tr>
+                <th>{t("att.date")}</th>
+                <th>{t("att.slot")}</th>
+                <th>{t("att.sum_present")}</th>
+                <th>{t("att.sum_absent_free")}</th>
+                <th>{t("att.sum_absent_paid")}</th>
+                <th>{t("att.sum_total")}</th>
+                <th>{t("att.marked_by")}</th>
+                <th>{t("att.note_label")}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {classSessions.map((sess) => {
+                const marks = Object.values(sess.attendance);
+                const nb = (st: AttendanceState) => marks.filter((m) => m === st).length;
+                return (
+                  <tr key={sess.id}>
+                    <td>
+                      {formatDate(sess.date)}
+                      {sess.isExtra && (
+                        <span className="att-extra-badge">
+                          <CalendarPlus size={12} aria-hidden="true" /> {t("att.extra_short")}
+                        </span>
+                      )}
+                    </td>
+                    {/* Une seance supplementaire ne tombe pas sur le creneau
+                        hebdomadaire : afficher celui-ci serait faux. */}
+                    <td className="muted">{sess.isExtra ? "—" : klass?.timeSlot ?? "—"}</td>
+                    <td className="text-ok"><strong>{nb("present")}</strong></td>
+                    <td className="text-danger"><strong>{nb("absent_free")}</strong></td>
+                    <td className="text-warn"><strong>{nb("absent_paid")}</strong></td>
+                    <td>{marks.length}</td>
+                    <td className="muted">
+                      {teachers.find((x) => x.id === sess.teacherId)?.name ?? "—"}
+                    </td>
+                    <td className="muted">
+                      {sess.notes ? <><StickyNote size={13} /> {sess.notes}</> : "—"}
+                    </td>
+                    <td className="row-actions">
+                      <button className="btn btn-ghost sm" onClick={() => loadSession(sess.id)}>
+                        <Pencil size={14} /> {t("common.edit")}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+        </StackedTable>
+      )}
     </div>
   );
 }
 
 /* ------------------------------------------------- Élève / parent : lecture seule */
 
-function StudentAttendance() {
-  const { t } = useTranslation();
-  const { profile } = useAuth();
-  const { students, sessions, classes, subjects } = useData();
-  const student = students.find((s) => s.id === profile?.linkedStudentId);
-
-  const rows = useMemo(() => {
-    if (!student) return [];
-    return sessions
-      .filter((s) => s.attendance[student.id] !== undefined)
-      .sort((a, b) => b.date - a.date)
-      .map((s) => {
-        const klass = classes.find((c) => c.id === s.classId);
-        const subj = subjects.find((su) => su.id === klass?.subjectId)?.name ?? "—";
-        return { id: s.id, date: s.date, subj, state: s.attendance[student.id], note: s.notes };
-      });
-  }, [student, sessions, classes, subjects]);
-
-  const present = rows.filter((r) => r.state === "present").length;
-  const rate = rows.length > 0 ? Math.round((present / rows.length) * 100) : null;
-
-  if (!student) return <p className="muted">{t("dash.no_student_link")}</p>;
-
-  return (
-    <div className="stack att">
-      <header className="page-head">
-        <div className="page-title">
-          <h1>{t("att.title_student")}</h1>
-          <p>{student.name}</p>
-        </div>
-        {rate !== null && (
-          <span className="pill pill-ok att-rate">
-            <CircleCheck size={14} /> {t("dash.attendance_rate")} : {rate}%
-          </span>
-        )}
-      </header>
-
-      {rows.length === 0 ? (
-        <div className="card">
-          <div className="empty-state">
-            <span className="empty-state-icon"><ClipboardList size={24} /></span>
-            <strong>{t("att.no_history")}</strong>
-            <p>{t("att.no_history_hint")}</p>
-          </div>
-        </div>
-      ) : (
-        <div className="card table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>{t("att.date")}</th>
-                <th>{t("nav.subjects")}</th>
-                <th>{t("att.state")}</th>
-                <th>{t("att.note_label")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id}>
-                  <td>{formatDate(r.date)}</td>
-                  <td>{r.subj}</td>
-                  <td><span className={"pill " + segClass(r.state)}>{t(`attendance.${r.state}`)}</span></td>
-                  <td className="muted">{r.note ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function initials(name: string): string {
   return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 }
 
-function segClass(state: AttendanceState) {
-  return state === "present" ? "pill-ok" : state === "absent_paid" ? "pill-warn" : "pill-muted";
-}

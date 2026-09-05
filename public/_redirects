@@ -1,0 +1,3 @@
+# Meme regle que netlify.toml, pour les hebergeurs qui lisent ce fichier
+# (Netlify, Cloudflare Pages) : toute route est servie par index.html.
+/*  /index.html  200

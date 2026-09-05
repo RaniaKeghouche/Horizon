@@ -3,10 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Trash2, Copy } from "lucide-react";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
-import { checkSlot, DAYS } from "../../lib/schedule";
+import { checkSlot, freeRoomsAt, DAYS, SESSION_HOURS, TIME_SLOTS } from "../../lib/schedule";
+import { roomsOrDefault } from "../../lib/rooms";
 import { defaultPrice, computeCut } from "../../lib/payments";
 import { formatDA } from "../../lib/format";
-import { LEVEL_LABEL, LEVEL_GROUPS, SESSION_TYPES, SESSION_TYPE_LABEL, PAYMENT_MODE_LABEL } from "../../lib/labels";
+import { LEVEL_LABEL, SESSION_TYPES } from "../../lib/labels";
+import { useLabels } from "../../lib/useLabels";
 import type { ClassRoom, DayOfWeek, PaymentMode, SessionType, StudentLevel } from "../../lib/types";
 
 function splitSlot(s: string): { start: string; end: string } {
@@ -26,6 +28,7 @@ export default function ClassForm({
   onClose,
   onDelete,
   onDuplicate,
+  onCreated,
 }: {
   initial?: ClassRoom;
   prefill?: Partial<ClassRoom>;
@@ -33,9 +36,16 @@ export default function ClassForm({
   onClose: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
+  /** Appele UNIQUEMENT apres un enregistrement reussi. Permet a l'appelant de
+   *  n'acter une demande de creneau qu'une fois le groupe reellement cree :
+   *  fermer sans enregistrer ne doit rien approuver. */
+  onCreated?: (klass: ClassRoom) => void;
 }) {
   const { t } = useTranslation();
-  const { subjects, teachers, classes, rooms } = useData();
+  const L = useLabels();
+  const { subjects, teachers, classes, rooms: dbRooms } = useData();
+  // The five physical rooms always exist, whether or not the table does.
+  const rooms = roomsOrDefault(dbRooms);
   const addClass = useData((s) => s.addClass);
   const updateClass = useData((s) => s.updateClass);
 
@@ -44,7 +54,7 @@ export default function ClassForm({
   const [level, setLevel] = useState<StudentLevel>(initial?.level ?? prefill?.level ?? "1as");
   const [sessionType, setSessionType] = useState<SessionType>(initial?.sessionType ?? prefill?.sessionType ?? "group");
   const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(initial?.dayOfWeek ?? defaults?.dayOfWeek ?? "monday");
-  const initSlot = splitSlot(initial?.timeSlot ?? defaults?.timeSlot ?? "08:00-10:00");
+  const initSlot = splitSlot(initial?.timeSlot ?? defaults?.timeSlot ?? TIME_SLOTS[0]);
   const [start, setStart] = useState(initSlot.start);
   const [end, setEnd] = useState(initSlot.end);
   const timeSlot = `${start}-${end}`;
@@ -66,21 +76,38 @@ export default function ClassForm({
     initial?.schoolCutValue ?? teacher?.schoolCutValue ?? 25
   );
 
+  // A slot is only taken PER ROOM: the same day and time can host several
+  // classes as long as they sit in different rooms. Show that in the picker
+  // instead of letting the user find out on save.
+  const freeIds = freeRoomsAt(classes, rooms.map((r) => r.id), dayOfWeek, timeSlot, initial?.id);
+  const occupantOf = (rid: string) =>
+    classes.find(
+      (c) => c.id !== initial?.id && c.roomId === rid && c.dayOfWeek === dayOfWeek && c.timeSlot === timeSlot
+    );
+
   function save() {
     // Vérification du créneau libre (§5.2). L'ordre des arguments compte : la
     // salle vient AVANT la classe à exclure, sinon on exclut la mauvaise.
     const check = checkSlot(classes, dayOfWeek, timeSlot, teacherId, roomId, initial?.id);
     if (!check.ok) {
-      setError(check.reason === "slot_taken" ? t("cf.slot_taken") : t("cf.teacher_busy"));
+      // checkSlot reports "room_taken", never "slot_taken" — comparing against
+      // the wrong string showed "this teacher is busy" whenever the real
+      // problem was the room already being used at that time.
+      setError(check.reason === "room_taken" ? t("cf.slot_taken") : t("cf.teacher_busy"));
       return;
     }
     const values = {
       subjectId, teacherId, roomId, level, sessionType, dayOfWeek, timeSlot,
       maxStudents, pricePerSession, schoolCutMode, schoolCutValue,
     };
-    if (initial) updateClass(initial.id, values);
-    else addClass(values);
-    onClose();
+    if (initial) {
+      updateClass(initial.id, values);
+      onClose();
+      return;
+    }
+    const created = addClass(values);
+    if (onCreated) onCreated(created);
+    else onClose();
   }
 
   const price = pricePerSession;
@@ -128,7 +155,7 @@ export default function ClassForm({
         <label className="field">
           <span>{t("stu.level")}</span>
           <select className="input" value={level} onChange={(e) => setLevel(e.target.value as StudentLevel)}>
-            {LEVEL_GROUPS.map((g) => (
+            {L.levelGroups().map((g) => (
               <optgroup key={g.label} label={g.label}>
                 {g.levels.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
               </optgroup>
@@ -138,17 +165,27 @@ export default function ClassForm({
         <label className="field">
           <span>{t("cf.session_type")}</span>
           <select className="input" value={sessionType} onChange={(e) => setSessionType(e.target.value as SessionType)}>
-            {SESSION_TYPES.map((s) => <option key={s} value={s}>{SESSION_TYPE_LABEL[s]}</option>)}
+            {SESSION_TYPES.map((s) => <option key={s} value={s}>{L.sessionType(s)}</option>)}
           </select>
         </label>
         <label className="field">
           <span>{t("cf.room")}</span>
           <select className="input" value={roomId} onChange={(e) => setRoomId(e.target.value)}>
-            {rooms.length === 0 && <option value="">{t("cf.no_room")}</option>}
-            {rooms.map((r) => (
-              <option key={r.id} value={r.id}>{r.name} ({r.capacity})</option>
-            ))}
+            {rooms.map((r) => {
+              const busy = !freeIds.includes(r.id);
+              const occ = busy ? occupantOf(r.id) : undefined;
+              return (
+                <option key={r.id} value={r.id} disabled={busy}>
+                  {r.name} ({r.capacity}
+                  {r.capacity > 1 ? " places" : " place"})
+                  {busy ? ` — occupée${occ ? " : " + (subjects.find((x) => x.id === occ.subjectId)?.name ?? "") : ""}` : ""}
+                </option>
+              );
+            })}
           </select>
+          <span className="muted small">
+            {freeIds.length} salle(s) libre(s) {t("sch.day").toLowerCase()} {t(`days.${dayOfWeek}`)} {timeSlot}
+          </span>
         </label>
         <label className="field">
           <span>{t("sch.day")}</span>
@@ -162,7 +199,7 @@ export default function ClassForm({
             type="time"
             className="input"
             value={start}
-            onChange={(e) => { setStart(e.target.value); setEnd(addHours(e.target.value, 2)); }}
+            onChange={(e) => { setStart(e.target.value); setEnd(addHours(e.target.value, SESSION_HOURS)); }}
           />
         </label>
         <label className="field">
@@ -191,7 +228,7 @@ export default function ClassForm({
             }}
           >
             {(["percentage", "fixed"] as PaymentMode[]).map((m) => (
-              <option key={m} value={m}>{PAYMENT_MODE_LABEL[m]}</option>
+              <option key={m} value={m}>{L.paymentMode(m)}</option>
             ))}
           </select>
         </label>

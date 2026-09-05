@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Modal from "../../components/Modal";
-import { LEVEL_LABEL, LEVEL_GROUPS, STATUSES } from "../../lib/labels";
+import { LEVEL_LABEL, STATUSES } from "../../lib/labels";
+import { useLabels } from "../../lib/useLabels";
 import type { Student, StudentLevel, StudentStatus } from "../../lib/types";
 
 export interface StudentFormValues {
@@ -23,6 +24,7 @@ export default function StudentForm({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const L = useLabels();
   const [v, setV] = useState<StudentFormValues>({
     name: initial?.name ?? "",
     level: initial?.level ?? "1as",
@@ -65,7 +67,7 @@ export default function StudentForm({
         <label className="field">
           <span>{t("stu.level")}</span>
           <select className="input" value={v.level} onChange={(e) => set("level", e.target.value as StudentLevel)}>
-            {LEVEL_GROUPS.map((g) => (
+            {L.levelGroups().map((g) => (
               <optgroup key={g.label} label={g.label}>
                 {g.levels.map((l) => <option key={l} value={l}>{LEVEL_LABEL[l]}</option>)}
               </optgroup>

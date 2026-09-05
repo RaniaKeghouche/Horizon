@@ -41,11 +41,36 @@ export async function fetchPublicCatalog(): Promise<void> {
 }
 
 let channel: RealtimeChannel | null = null;
-let started = false;
+/**
+ * Le chargement initial en cours, partage par tous les appelants.
+ *
+ * Un simple drapeau booleen ne suffisait pas : il etait pose des la premiere
+ * ligne, si bien qu'un second appel arrivant pendant le chargement repartait
+ * aussitot, sur une promesse deja resolue. AuthContext appelle justement
+ * startSync() deux fois — une fois pour getSession(), une fois pour
+ * l'evenement INITIAL_SESSION — et le deuxieme appel rendait la main avec un
+ * magasin encore vide. L'application concluait alors « connecte mais sans
+ * profil », c'est-a-dire compte en attente, et l'ecran d'inscription
+ * apparaissait le temps que les donnees arrivent.
+ *
+ * En gardant la promesse elle-meme, le second appelant attend la fin du
+ * premier chargement au lieu de le court-circuiter.
+ */
+let syncing: Promise<void> | null = null;
 
-export async function startSync(): Promise<void> {
-  if (DEMO_MODE || started) return;
-  started = true;
+export function startSync(): Promise<void> {
+  if (DEMO_MODE) return Promise.resolve();
+  if (!syncing) {
+    syncing = runInitialSync().catch((err) => {
+      // Un echec ne doit pas condamner la session : le prochain appel reessaie.
+      syncing = null;
+      throw err;
+    });
+  }
+  return syncing;
+}
+
+async function runInitialSync(): Promise<void> {
   const { supabase } = await import("../lib/supabase");
   const tables = Object.values(COLLECTIONS);
 
@@ -121,7 +146,7 @@ export async function refetchAll(): Promise<void> {
 }
 
 export function stopSync(): void {
-  started = false;
+  syncing = null;
   if (channel) {
     channel.unsubscribe();
     channel = null;

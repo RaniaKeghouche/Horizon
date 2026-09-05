@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
-import { PAYMENT_MODE_LABEL } from "../../lib/labels";
+import { useLabels } from "../../lib/useLabels";
 import { computeCut } from "../../lib/payments";
 import { formatDA } from "../../lib/format";
 import type { PaymentMode, Teacher } from "../../lib/types";
@@ -25,6 +25,7 @@ export default function TeacherForm({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const L = useLabels();
   const allSubjects = useData((s) => s.subjects);
   const addSubject = useData((s) => s.addSubject);
   const [newSubject, setNewSubject] = useState("");
@@ -122,7 +123,7 @@ export default function TeacherForm({
             }}
           >
             {(["percentage", "fixed"] as PaymentMode[]).map((m) => (
-              <option key={m} value={m}>{PAYMENT_MODE_LABEL[m]}</option>
+              <option key={m} value={m}>{L.paymentMode(m)}</option>
             ))}
           </select>
         </label>

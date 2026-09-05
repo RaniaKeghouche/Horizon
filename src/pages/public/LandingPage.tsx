@@ -5,14 +5,17 @@ import {
   GraduationCap, Users, Trophy, Heart, BookOpen, UserRound, ShieldCheck,
   Backpack, PenLine, Send, Lock, Sparkles, Target, HeartHandshake, Check,
 } from "lucide-react";
-import { useData } from "../../data/store";
-import { sendContactEmail, SCHOOL_EMAIL } from "../../lib/email";
+import { sendContactEmail } from "../../lib/email";
+import { SCHOOL, MAPS_URL } from "../../lib/school";
 import { EMAIL_ENABLED } from "../../lib/config";
 import "./landing.css";
 
-const PHONE_DISPLAY = "055 33 66 204";
-const PHONE_HREF = "tel:+213553366204";
-const MAPS_URL = "https://www.google.com/maps/search/?api=1&query=Cit%C3%A9+Daksi%2C+Constantine%2C+Alg%C3%A9rie";
+// Les coordonnees vivent dans lib/school.ts : la page vitrine et le portail
+// d'inscription affichent ainsi le meme numero, et un changement se fait a un
+// seul endroit.
+const PHONE_DISPLAY = SCHOOL.phone;
+const PHONE_HREF = `tel:${SCHOOL.phoneE164.replace(/\s/g, "")}`;
+const SCHOOL_EMAIL = SCHOOL.email;
 
 /** Sections the sticky nav tracks and highlights while scrolling. */
 const SECTIONS = [
@@ -30,49 +33,41 @@ const LANGS = [
   { code: "en", label: "EN" },
 ] as const;
 
+/* Le libelle est desormais une cle i18n : ecrit ici, il etait fige au
+   chargement du module et restait francais quelle que soit la langue. */
 const STATS = [
-  { icon: GraduationCap, key: "programmes", val: "15+", label: "Programmes variés", tone: "gold" },
-  { icon: Users, key: "students", val: "500+", label: "Élèves accompagnés", tone: "navy" },
-  { icon: Trophy, key: "success", val: "98%", label: "Taux de réussite", tone: "green" },
-  { icon: Heart, key: "years", val: "4+", label: "Années d'expérience", tone: "violet" },
+  { icon: GraduationCap, key: "programmes", val: "15+", tone: "gold" },
+  { icon: Users, key: "students", val: "500+", tone: "navy" },
+  { icon: Trophy, key: "success", val: "98%", tone: "green" },
+  { icon: Heart, key: "years", val: "4+", tone: "violet" },
 ] as const;
 
+/* Seules la cle, l'icone, la photo et la teinte restent ici : les textes
+   vivent dans les fichiers de langue (hz.progs.*). */
 const PROGRAMMES = [
   {
     key: "primaire",
-    title: "Primaire",
-    age: "6 – 11 ans",
     icon: Backpack,
     photo: "/primaire_photo.png",
     tone: "gold",
-    points: ["Renforcement des bases", "Aide aux devoirs", "Méthodes ludiques"],
   },
   {
     key: "moyen",
-    title: "Collège",
-    age: "11 – 15 ans",
     icon: BookOpen,
     photo: "/college_photo.png",
     tone: "navy",
-    points: ["Soutien scolaire", "Préparation aux examens", "Méthodes de travail"],
   },
   {
     key: "lycee",
-    title: "Lycée",
-    age: "15 – 18 ans",
     icon: GraduationCap,
     photo: "/lycee_photo.png",
     tone: "green",
-    points: ["Préparation Bac", "Spécialités & options", "Orientation scolaire"],
   },
   {
     key: "soutien",
-    title: "Soutien scolaire",
-    age: "Tous niveaux",
     icon: PenLine,
     photo: "/soutien_scolaire_photo.png",
     tone: "violet",
-    points: ["Accompagnement personnalisé", "Remise à niveau", "Suivi régulier"],
   },
 ] as const;
 
@@ -247,27 +242,27 @@ function Hero() {
         <div className="hz-hero-copy">
           <div className="hz-eyebrow">
             <Star size={14} className="hz-eyebrow-star" fill="currentColor" />
-            <span>UNE ÉCOLE DE LANGUES ET DE SOUTIEN SCOLAIRE</span>
+            <span>{t("hz.hero.eyebrow")}</span>
           </div>
 
           <h1 className="hz-title">
-            Apprendre aujourd'hui,
+            {t("hz.hero.title_1")}
             <br />
-            créer <span className="hz-script-wrap"><em className="hz-script">demain.</em><span className="hz-brush-stroke" /></span>
+            {t("hz.hero.title_2")} <span className="hz-script-wrap"><em className="hz-script">{t("hz.hero.title_accent")}</em><span className="hz-brush-stroke" /></span>
           </h1>
 
           <p className="hz-lead">
-            De la primaire au lycée, en passant par le soutien scolaire, <strong>Horizon Skills Academy</strong> accompagne chaque élève vers l'excellence avec bienveillance et innovation.
+            {t("hz.hero.lead_1")} <strong>{SCHOOL.name}</strong> {t("hz.hero.lead_2")}
           </p>
 
           <div className="hz-cta-row">
             <a href="#programmes" className="hz-btn hz-btn-gold">
-              <span>Découvrir nos programmes</span>
+              <span>{t("hz.hero.cta_programs")}</span>
               <ArrowRight size={18} className="hz-btn-arrow" />
             </a>
             <a href="#about" className="hz-btn hz-btn-plain">
               <span className="hz-play"><Play size={14} fill="currentColor" /></span>
-              <span>Voir la vidéo</span>
+              <span>{t("hz.hero.cta_video")}</span>
             </a>
           </div>
         </div>
@@ -279,11 +274,11 @@ function Hero() {
           <img src="/climb2_clean.png" alt={t("hz.hero.art_alt")} className="hz-hero-img" width={1536} height={1024} />
 
           <div className="hz-hero-script" aria-hidden="true">
-            <span className="hz-word">Apprendre</span>
-            <span className="hz-word">Explorer</span>
-            <span className="hz-word">Grandir</span>
+            <span className="hz-word">{t("hz.hero.w1")}</span>
+            <span className="hz-word">{t("hz.hero.w2")}</span>
+            <span className="hz-word">{t("hz.hero.w3")}</span>
             <span className="hz-word hz-word-accent">
-              Réussir
+              {t("hz.hero.w4")}
               <svg className="hz-word-underline" viewBox="0 0 70 8" fill="none">
                 <path d="M2 3 Q 35 7, 68 2" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
                 <path d="M8 6 Q 35 9, 60 5" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" />
@@ -301,7 +296,7 @@ function Hero() {
             <span className="hz-hero-card-mark"><ShieldCheck size={20} /></span>
             <figcaption>
               <p>
-                <strong>Un accompagnement personnalisé</strong> pour révéler le potentiel de chaque élève.
+                <strong>{t("hz.hero.card_strong")}</strong> {t("hz.hero.card_rest")}
               </p>
               <div className="hz-hero-card-foot">
                 <span className="hz-avatars" aria-hidden="true">
@@ -310,7 +305,7 @@ function Hero() {
                   <img src="/teacher_classroom.jpg" alt="" />
                 </span>
                 <span className="hz-hero-card-pill">
-                  <strong>+500 élèves</strong> déjà inscrits
+                  <strong>{t("hz.hero.pill_strong")}</strong> {t("hz.hero.pill_rest")}
                 </span>
               </div>
             </figcaption>
@@ -320,12 +315,12 @@ function Hero() {
 
       {/* Floating stats strip */}
       <dl className="hz-stats">
-        {STATS.map(({ icon: Icon, key, val, label, tone }) => (
+        {STATS.map(({ icon: Icon, key, val, tone }) => (
           <div className="hz-stat" key={key}>
             <span className={"hz-stat-icon hz-stat-" + tone}><Icon size={22} /></span>
             <div className="hz-stat-body">
               <dt>{val}</dt>
-              <dd>{label}</dd>
+              <dd>{t("hz.stats." + key)}</dd>
             </div>
           </div>
         ))}
@@ -344,36 +339,36 @@ function About() {
         <img src="/constantine_classy_classroom.jpg" alt={t("hz.about.photo_alt")} loading="lazy" />
         <span className="hz-about-seal">
           <strong>4+</strong>
-          <span>Années d'expérience</span>
+          <span>{t("hz.about.years")}</span>
         </span>
       </div>
 
       <div className="hz-about-copy">
-        <span className="hz-kicker">QUI SOMMES-NOUS</span>
+        <span className="hz-kicker">{t("hz.about.kicker")}</span>
         <h2 className="hz-h2">
-          Une école où chaque élève <em className="hz-script">compte.</em>
+          {t("hz.about.h2_1")} <em className="hz-script">{t("hz.about.h2_accent")}</em>
         </h2>
         <p className="hz-body">
-          Horizon Skills Academy allie une pédagogie exigeante à un accompagnement sincère. Des groupes réduits, des enseignants qui connaissent chaque élève par son nom, et une méthode pensée pour les années scolaires algériennes — pour des progrès que l'on voit vraiment.
+          {t("hz.about.body")}
         </p>
 
         <ul className="hz-checklist">
           <li>
             <span className="hz-check"><ShieldCheck size={14} /></span>
-            <span>Des groupes volontairement réduits, pour que personne ne reste au fond de la classe.</span>
+            <span>{t("hz.about.p1")}</span>
           </li>
           <li>
             <span className="hz-check"><ShieldCheck size={14} /></span>
-            <span>Un suivi transmis aux parents : présences, progression et devoirs, en toute clarté.</span>
+            <span>{t("hz.about.p2")}</span>
           </li>
           <li>
             <span className="hz-check"><ShieldCheck size={14} /></span>
-            <span>Un programme calé sur le calendrier scolaire algérien, du primaire au baccalauréat.</span>
+            <span>{t("hz.about.p3")}</span>
           </li>
         </ul>
 
         <a href="#contact" className="hz-btn hz-btn-navy">
-          <span>Prendre contact</span>
+          <span>{t("hz.about.cta")}</span>
           <ArrowRight size={18} className="hz-btn-arrow" />
         </a>
       </div>
@@ -384,60 +379,48 @@ function About() {
 /* ------------------------------------------------------------------ Programmes */
 
 function Programmes() {
-  const subjects = useData((s) => s.subjects);
-
+  const { t } = useTranslation();
   return (
     <section className="hz-section hz-programmes" id="programmes">
       <header className="hz-section-head">
         <div className="hz-prog-head-wrap">
           <DotsGridPattern cols={3} rows={3} />
-          <h2 className="hz-h2">Nos programmes</h2>
+          <h2 className="hz-h2">{t("hz.prog.title")}</h2>
           <PaperPlaneDoodle />
         </div>
         <p className="hz-body hz-prog-lead">
-          Des parcours adaptés à chaque âge et chaque niveau pour <span className="hz-lead-blue">apprendre</span>, <span className="hz-lead-blue">progresser</span> et <span className="hz-lead-gold">réussir</span> avec confiance.
+          {t("hz.prog.lead_1")} <span className="hz-lead-blue">{t("hz.prog.w_learn")}</span>, <span className="hz-lead-blue">{t("hz.prog.w_progress")}</span> {t("hz.prog.and")} <span className="hz-lead-gold">{t("hz.prog.w_succeed")}</span> {t("hz.prog.lead_2")}
         </p>
       </header>
 
       <div className="hz-prog-grid">
-        {PROGRAMMES.map(({ key, title, age, icon: Icon, photo, tone, points }) => (
+        {PROGRAMMES.map(({ key, icon: Icon, photo, tone }) => (
           <article className="hz-prog-card" key={key}>
             <div className="hz-prog-media">
-              <img src={photo} alt={title} loading="lazy" />
+              <img src={photo} alt={t("hz.progs." + key + ".title")} loading="lazy" />
               <span className={"hz-prog-icon hz-tone-" + tone}><Icon size={20} /></span>
             </div>
-            <h3>{title}</h3>
-            <p className={"hz-prog-age hz-tone-text-" + tone}>{age}</p>
+            <h3>{t("hz.progs." + key + ".title")}</h3>
+            <p className={"hz-prog-age hz-tone-text-" + tone}>{t("hz.progs." + key + ".age")}</p>
             <ul className="hz-prog-points">
-              {points.map((p, idx) => (
-                <li key={idx}>{p}</li>
+              {[1, 2, 3].map((n) => (
+                <li key={n}>{t(`hz.progs.${key}.p${n}`)}</li>
               ))}
             </ul>
             <a href="#contact" className="hz-prog-btn">
               <span className="hz-prog-arrow"><ArrowRight size={14} /></span>
-              <span>Voir plus</span>
+              <span>{t("hz.prog.see_more")}</span>
             </a>
           </article>
         ))}
       </div>
-
-      {subjects.length > 0 && (
-        <div className="hz-subjects">
-          <span className="hz-subjects-label">Matières enseignées :</span>
-          <ul>
-            {subjects.map((s) => (
-              <li key={s.id}>{s.name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {/* Dark navy bottom banner */}
       <div className="hz-prog-band">
         <div className="hz-prog-band-left">
           <span className="hz-prog-band-mark"><Trophy size={26} /></span>
           <p className="hz-prog-band-lead">
-            Un accompagnement personnalisé pour <strong>révéler le potentiel</strong> de chaque élève.
+            {t("hz.prog.band_1")} <strong>{t("hz.prog.band_strong")}</strong> {t("hz.prog.band_2")}
           </p>
         </div>
 
@@ -445,10 +428,10 @@ function Programmes() {
 
         <div className="hz-prog-band-right">
           <p>
-            Vous ne savez pas quel programme choisir ? Notre équipe vous guide vers le parcours le plus adapté.
+            {t("hz.prog.band_q")}
           </p>
           <a href="#contact" className="hz-btn hz-btn-gold">
-            <span>Nous contacter</span>
+            <span>{t("hz.prog.band_cta")}</span>
             <ArrowRight size={18} className="hz-btn-arrow" />
           </a>
         </div>
@@ -466,7 +449,7 @@ function Methods() {
       <header className="hz-section-head">
         <span className="hz-kicker">{t("hz.methods.kicker")}</span>
         <h2 className="hz-h2">
-          Apprendre autrement, apprendre <em className="hz-script">mieux.</em>
+          {t("hz.methods.h2_1")} <em className="hz-script">{t("hz.methods.h2_accent")}</em>
         </h2>
         <p className="hz-body">{t("hz.methods.lead")}</p>
       </header>
@@ -490,6 +473,7 @@ function Methods() {
 const EMPTY_FORM = { firstName: "", lastName: "", email: "", phone: "", topic: "", message: "" };
 
 function Contact() {
+  const { t } = useTranslation();
   const [form, setForm] = useState(EMPTY_FORM);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
@@ -517,10 +501,10 @@ function Contact() {
         <div className="hz-contact-head">
           <DotsGridPattern cols={4} rows={3} />
           <h2 className="hz-h2">
-            Contactez-nous,
+            {t("hz.contact.h2_1")}
             <br />
             <span className="hz-script-wrap">
-              <em className="hz-script">nous sommes là pour vous.</em>
+              <em className="hz-script">{t("hz.contact.h2_accent")}</em>
               <span className="hz-brush-stroke-blue" />
             </span>
           </h2>
@@ -528,47 +512,57 @@ function Contact() {
         </div>
 
         <p className="hz-body">
-          Une question, un besoin d'information ou une demande particulière ? Notre équipe vous répond avec plaisir.
+          {t("hz.contact.body")}
         </p>
 
         <ul className="hz-contact-list">
           <li>
             <span className="hz-contact-icon"><Phone size={18} /></span>
             <div>
-              <strong>Téléphone</strong>
+              <strong>{t("contact.phone")}</strong>
               <a href={PHONE_HREF}>{PHONE_DISPLAY}</a>
             </div>
           </li>
           <li>
             <span className="hz-contact-icon"><Mail size={18} /></span>
             <div>
-              <strong>Email</strong>
+              <strong>{t("contact.email")}</strong>
               <a href={`mailto:${SCHOOL_EMAIL}`}>{SCHOOL_EMAIL}</a>
             </div>
           </li>
           <li>
             <span className="hz-contact-icon"><MapPin size={18} /></span>
             <div>
-              <strong>Adresse</strong>
-              <span>Cité Daksi, Constantine, Algérie</span>
+              <strong>{t("contact.location")}</strong>
+              <span>{SCHOOL.address}</span>
             </div>
           </li>
         </ul>
 
-        {/* Stylized Google Map Preview Widget */}
+        {/* Vignette de reperage, pas une carte : les traits sont decoratifs.
+            Elle ne portait que des noms de rues inventes — avenue de l'ALN,
+            universite Salah Boubnider — a des centaines de metres du centre.
+            Ne restent donc que des informations verifiables : la rue reelle, le
+            nom de l'etablissement, l'adresse et le plus code. Le clic ouvre le
+            repere exact sur Google Maps. */}
         <a className="hz-map-card" href={MAPS_URL} target="_blank" rel="noreferrer noopener">
           <div className="hz-map-mockup">
             <div className="hz-map-road hz-map-road-1" />
             <div className="hz-map-road hz-map-road-2" />
             <div className="hz-map-road hz-map-road-3" />
-            <span className="hz-map-badge hz-map-b1">W133</span>
-            <span className="hz-map-label hz-map-l1">Cité Daksi</span>
-            <span className="hz-map-label hz-map-l2">Avenue de l'ALN</span>
-            <span className="hz-map-label hz-map-l3">Université Salah Boubnider</span>
+            <span className="hz-map-label hz-map-l1">{t("hz.contact.street")}</span>
             <div className="hz-map-marker">
               <MapPin size={22} fill="#ef4444" color="#ffffff" />
-              <strong>Horizon Skills Academy</strong>
+              <strong>{SCHOOL.name}</strong>
             </div>
+          </div>
+          <div className="hz-map-foot">
+            <span>
+              <b>{SCHOOL.address}</b>
+              <em>{SCHOOL.plusCode}</em>
+            </span>
+            {/* Ce bloc n'est pas traduit : tout Contact() est en francais en dur. */}
+            <span className="hz-map-open">{t("footer.directions")}</span>
           </div>
         </a>
       </div>
@@ -577,13 +571,13 @@ function Contact() {
         <form className="hz-contact-form" onSubmit={submit}>
           <h3 className="hz-form-title">
             <span className="hz-title-bar" />
-            <span>Envoyez-nous un message</span>
+            <span>{t("hz.form.title")}</span>
           </h3>
 
           <div className="hz-field-row">
             <label className="hz-field">
               <input
-                placeholder="Prénom"
+                placeholder={t("contact.lbl_fname")}
                 value={form.firstName}
                 onChange={(e) => set("firstName", e.target.value)}
                 required
@@ -591,7 +585,7 @@ function Contact() {
             </label>
             <label className="hz-field">
               <input
-                placeholder="Nom"
+                placeholder={t("contact.lbl_lname")}
                 value={form.lastName}
                 onChange={(e) => set("lastName", e.target.value)}
                 required
@@ -603,7 +597,7 @@ function Contact() {
             <label className="hz-field">
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={t("contact.lbl_email")}
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
                 required
@@ -612,7 +606,7 @@ function Contact() {
             <label className="hz-field">
               <input
                 type="tel"
-                placeholder="Téléphone"
+                placeholder={t("auth.phone")}
                 value={form.phone}
                 onChange={(e) => set("phone", e.target.value)}
               />
@@ -621,13 +615,16 @@ function Contact() {
 
           <label className="hz-field">
             <select value={form.topic} onChange={(e) => set("topic", e.target.value)}>
-              <option value="">Sujet de votre demande</option>
-              {PROGRAMMES.map(({ key, title }) => (
-                <option key={key} value={title}>
-                  {title}
+              <option value="">{t("hz.form.subject")}</option>
+              {/* La valeur envoyee reste la cle, en clair et stable : le
+                  message recu par l'ecole ne doit pas dependre de la langue
+                  du visiteur. */}
+              {PROGRAMMES.map(({ key }) => (
+                <option key={key} value={key}>
+                  {t("hz.progs." + key + ".title")}
                 </option>
               ))}
-              <option value="Autre demande">Autre demande</option>
+              <option value="Autre demande">{t("hz.form.subject_other")}</option>
             </select>
           </label>
 
@@ -636,27 +633,27 @@ function Contact() {
               rows={5}
               value={form.message}
               onChange={(e) => set("message", e.target.value)}
-              placeholder="Votre message"
+              placeholder={t("contact.message_placeholder")}
               required
             />
           </label>
 
-          {state === "sent" && <p className="hz-form-ok">Message envoyé avec succès ! Nous vous répondrons rapidement.</p>}
+          {state === "sent" && <p className="hz-form-ok">{t("hz.form.sent")}</p>}
           {state === "error" && (
             <p className="hz-form-err">
-              {EMAIL_ENABLED ? "L'envoi a échoué. Appelez-nous au" : "L'envoi par e-mail n'est pas configuré. Appelez-nous au"}{" "}
+              {EMAIL_ENABLED ? t("hz.form.err_send") : t("hz.form.err_config")}{" "}
               <a href={PHONE_HREF}>{PHONE_DISPLAY}</a>
             </p>
           )}
 
           <button type="submit" className="hz-btn hz-btn-gold hz-btn-block" disabled={!valid || state === "sending"}>
-            <span>{state === "sending" ? "Envoi en cours..." : "Envoyer le message"}</span>
+            <span>{state === "sending" ? t("hz.form.sending") : t("contact.submit")}</span>
             <ArrowRight size={18} className="hz-btn-arrow" />
           </button>
 
           <p className="hz-form-note">
             <Lock size={14} />
-            <span>Vos données sont confidentielles et ne seront jamais partagées.</span>
+            <span>{t("hz.form.privacy")}</span>
           </p>
         </form>
       </div>
@@ -667,6 +664,7 @@ function Contact() {
 /* ------------------------------------------------------------------ Footer */
 
 function Footer() {
+  const { t } = useTranslation();
   const [nlEmail, setNlEmail] = useState("");
   const [nlSent, setNlSent] = useState(false);
 
@@ -686,32 +684,30 @@ function Footer() {
               <strong>HORIZON</strong>
             </span>
           </a>
-          <p>
-            Horizon Skills Academy est votre partenaire d'excellence à Constantine. Nous allions pédagogie innovante et encadrement sur-mesure pour révéler le potentiel de chaque élève et façonner les leaders de demain.
-          </p>
+          <p>{t("footer.desc")}</p>
         </div>
 
         <nav className="hz-footer-col">
-          <h4>Explorer</h4>
+          <h4>{t("hz.footer.explore")}</h4>
           <ul>
             {SECTIONS.map(({ id, labelKey }) => (
-              <li key={id}><a href={`#${id}`}>{labelKey.includes("hero") ? "Accueil" : labelKey.includes("about") ? "À propos" : labelKey.includes("programmes") ? "Nos programmes" : labelKey.includes("methodes") ? "Méthodes" : labelKey.includes("news") ? "Actualités" : "Contact"}</a></li>
+              <li key={id}><a href={`#${id}`}>{t(labelKey)}</a></li>
             ))}
           </ul>
         </nav>
 
         <div className="hz-footer-col">
-          <h4>Nous joindre</h4>
+          <h4>{t("footer.reach")}</h4>
           <ul className="hz-footer-contact-list">
             <li><a href={PHONE_HREF}><Phone size={15} /> <span>{PHONE_DISPLAY}</span></a></li>
             <li><a href={`mailto:${SCHOOL_EMAIL}`}><Mail size={15} /> <span>{SCHOOL_EMAIL}</span></a></li>
-            <li><a href={MAPS_URL} target="_blank" rel="noreferrer noopener"><MapPin size={15} /> <span>Cité Daksi, Constantine, Algérie</span></a></li>
-            <li className="hz-footer-dir"><a href={MAPS_URL} target="_blank" rel="noreferrer noopener">Itinéraire</a></li>
+            <li><a href={MAPS_URL} target="_blank" rel="noreferrer noopener"><MapPin size={15} /> <span>{SCHOOL.address}</span></a></li>
+            <li className="hz-footer-dir"><a href={MAPS_URL} target="_blank" rel="noreferrer noopener">{t("footer.directions")}</a></li>
           </ul>
         </div>
 
         <div className="hz-footer-col">
-          <h4>Suivez-nous</h4>
+          <h4>{t("hz.footer.follow")}</h4>
           <div className="hz-social-links">
             <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hz-social-btn hz-social-fb" aria-label="Facebook">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -725,19 +721,19 @@ function Footer() {
           </div>
 
           <div className="hz-newsletter-box">
-            <p className="hz-nl-title">Restez informé de nos actualités</p>
+            <p className="hz-nl-title">{t("hz.footer.nl_title")}</p>
             {nlSent ? (
-              <p className="hz-nl-ok"><Check size={16} /> Merci pour votre inscription !</p>
+              <p className="hz-nl-ok"><Check size={16} /> {t("hz.footer.nl_ok")}</p>
             ) : (
               <form onSubmit={submitNewsletter} className="hz-nl-form">
                 <input
                   type="email"
-                  placeholder="Votre email"
+                  placeholder={t("hz.footer.nl_ph")}
                   value={nlEmail}
                   onChange={(e) => setNlEmail(e.target.value)}
                   required
                 />
-                <button type="submit" aria-label="S'inscrire">
+                <button type="submit" aria-label={t("hz.footer.nl_cta")}>
                   <Send size={15} />
                 </button>
               </form>

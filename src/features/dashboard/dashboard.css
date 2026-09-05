@@ -31,7 +31,7 @@
   font-size: clamp(1.4rem, 2.2vw, 1.85rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-sub {
   margin: 0.35rem 0 0;
@@ -51,15 +51,15 @@
   gap: 0.5rem;
   padding: 0.6rem 1.15rem;
   border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 37, 71, 0.1);
-  box-shadow: 0 2px 8px rgba(15, 37, 71, 0.04);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   font-size: 0.86rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   white-space: nowrap;
 }
-.dash-today-pill svg { color: #1b63ad; }
+.dash-today-pill svg { color: var(--primary); }
 
 /* ------------------------------------------------------------- 4 Tuiles Statistiques */
 
@@ -75,8 +75,8 @@
   gap: 1rem;
   padding: 1.25rem 1.35rem;
   border-radius: 20px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 37, 71, 0.07);
+  background: var(--surface);
+  border: 1px solid var(--border);
   box-shadow: 0 4px 16px rgba(15, 37, 71, 0.04);
 }
 
@@ -88,11 +88,13 @@
   height: 3.2rem;
   border-radius: 16px;
 }
-.dash-tile-icon.tone-gold   { background: #fef3c7; color: #d97706; }
-.dash-tile-icon.tone-navy   { background: #edf5fd; color: #1b63ad; }
-.dash-tile-icon.tone-green  { background: #ecfdf5; color: #059669; }
-.dash-tile-icon.tone-violet { background: #f3e8ff; color: #7c3aed; }
-.dash-tile-icon.tone-danger { background: #fef2f2; color: #dc2626; }
+/* Cinq teintes franchement differentes : quatre tuiles cote a cote doivent se
+   distinguer au premier regard, pas se ressembler en degrade de bleu. */
+.dash-tile-icon.tone-gold   { background: var(--viv-amber-soft);   color: var(--viv-amber); }
+.dash-tile-icon.tone-navy   { background: var(--viv-indigo-soft);  color: var(--viv-indigo); }
+.dash-tile-icon.tone-green  { background: var(--viv-emerald-soft); color: var(--viv-emerald); }
+.dash-tile-icon.tone-violet { background: var(--viv-violet-soft);  color: var(--viv-violet); }
+.dash-tile-icon.tone-danger { background: var(--viv-rose-soft);    color: var(--viv-rose); }
 
 .dash-tile-body {
   display: flex;
@@ -103,7 +105,7 @@
   font-size: clamp(1.4rem, 1.8vw, 1.75rem);
   font-weight: 800;
   line-height: 1.1;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-tile-lbl {
   font-size: 0.82rem;
@@ -155,8 +157,8 @@
 .dash-panel {
   padding: 1.35rem 1.4rem;
   border-radius: 20px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 37, 71, 0.07);
+  background: var(--surface);
+  border: 1px solid var(--border);
   box-shadow: 0 4px 16px rgba(15, 37, 71, 0.04);
 }
 
@@ -171,7 +173,7 @@
   margin: 0;
   font-size: 1.05rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-panel-link {
   display: inline-flex;
@@ -218,9 +220,9 @@
   height: 2.75rem;
   border-radius: 12px;
 }
-.dash-class-icon.tone-gold  { background: #fef3c7; color: #d97706; }
-.dash-class-icon.tone-navy  { background: #edf5fd; color: #1b63ad; }
-.dash-class-icon.tone-green { background: #ecfdf5; color: #059669; }
+.dash-class-icon.tone-gold  { background: var(--viv-amber-soft);   color: var(--viv-amber); }
+.dash-class-icon.tone-navy  { background: var(--viv-indigo-soft);  color: var(--viv-indigo); }
+.dash-class-icon.tone-green { background: var(--viv-emerald-soft); color: var(--viv-emerald); }
 
 .dash-class-info {
   display: flex;
@@ -230,7 +232,7 @@
 .dash-class-info strong {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-class-info span {
   font-size: 0.78rem;
@@ -262,7 +264,7 @@
   color: #94a3b8;
   cursor: pointer;
 }
-.dash-class-more:hover { color: #0f172a; background: #f1f5f9; }
+.dash-class-more:hover { color: var(--text); background: #f1f5f9; }
 
 /* ------------------------------------------------------------- Activités récentes */
 
@@ -288,9 +290,9 @@
   border-radius: 10px;
   margin-top: 0.1rem;
 }
-.dash-activity-icon.tone-green { background: #ecfdf5; color: #059669; }
-.dash-activity-icon.tone-navy  { background: #edf5fd; color: #1b63ad; }
-.dash-activity-icon.tone-gold  { background: #fef3c7; color: #d97706; }
+.dash-activity-icon.tone-green { background: var(--viv-emerald-soft); color: var(--viv-emerald); }
+.dash-activity-icon.tone-navy  { background: var(--viv-indigo-soft);  color: var(--viv-indigo); }
+.dash-activity-icon.tone-gold  { background: var(--viv-amber-soft);   color: var(--viv-amber); }
 
 .dash-activity-content {
   flex: 1;
@@ -300,7 +302,7 @@
   display: block;
   font-size: 0.88rem;
   font-weight: 750;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-activity-content p {
   margin: 0.15rem 0 0;
@@ -358,7 +360,7 @@
   display: block;
   font-size: 0.92rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-course-details span {
   font-size: 0.78rem;
@@ -390,7 +392,7 @@
 .dash-progress-pct {
   font-size: 0.78rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
   min-width: 32px;
   text-align: end;
 }
@@ -418,8 +420,8 @@
   height: 2.4rem;
   border-radius: 12px;
 }
-.dash-homework-icon.tone-navy  { background: #edf5fd; color: #1b63ad; }
-.dash-homework-icon.tone-green { background: #ecfdf5; color: #059669; }
+.dash-homework-icon.tone-navy  { background: var(--viv-indigo-soft);  color: var(--viv-indigo); }
+.dash-homework-icon.tone-green { background: var(--viv-emerald-soft); color: var(--viv-emerald); }
 
 .dash-homework-details {
   flex: 1;
@@ -429,7 +431,7 @@
   display: block;
   font-size: 0.88rem;
   font-weight: 750;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-homework-details p {
   margin: 0.15rem 0 0;
@@ -484,7 +486,7 @@
   display: block;
   font-size: 0.88rem;
   font-weight: 750;
-  color: #0f172a;
+  color: var(--text);
 }
 .dash-cal-content span {
   display: block;
@@ -556,7 +558,7 @@
   padding: 0.75rem 1rem;
   border-radius: 12px;
   background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.86rem;
   font-weight: 800;
   text-decoration: none;
@@ -577,4 +579,469 @@
 @media (max-width: 760px) {
   .dash-tiles { grid-template-columns: minmax(0, 1fr); }
   .dash-main-cols { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ============================================================
+   ADMIN DASHBOARD — KPI row, three columns, weekly trend
+   ============================================================ */
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.dash-kpi {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.dash-kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-md, 0 10px 24px rgba(15,37,71,.1)); }
+.dash-kpi-icon {
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  flex: none;
+  border-radius: 13px;
+}
+.dash-kpi-label { display: block; font-size: 0.76rem; color: var(--muted); font-weight: 600; }
+.dash-kpi strong { display: block; font-size: 1.55rem; line-height: 1.15; }
+.dash-kpi em { font-style: normal; font-size: 0.7rem; color: var(--muted); }
+.dash-kpi.navy  { background: color-mix(in srgb, var(--viv-violet-soft) 55%, #fff); }
+.dash-kpi.navy  .dash-kpi-icon { background: var(--viv-violet-soft); color: var(--viv-violet); }
+.dash-kpi.green { background: color-mix(in srgb, var(--viv-emerald-soft) 55%, #fff); }
+.dash-kpi.green .dash-kpi-icon { background: var(--viv-emerald-soft); color: var(--viv-emerald); }
+.dash-kpi.sky   { background: color-mix(in srgb, var(--viv-sky-soft) 55%, #fff); }
+.dash-kpi.sky   .dash-kpi-icon { background: var(--viv-sky-soft); color: var(--viv-sky); }
+.dash-kpi.gold  { background: color-mix(in srgb, var(--viv-amber-soft) 55%, #fff); }
+.dash-kpi.gold  .dash-kpi-icon { background: var(--viv-amber-soft); color: var(--viv-amber); }
+.dash-kpi.teal  { background: color-mix(in srgb, var(--viv-teal-soft) 55%, #fff); }
+.dash-kpi.teal  .dash-kpi-icon { background: var(--viv-teal-soft); color: var(--viv-teal); }
+
+.dash-grid3 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.dash-col { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+
+/* Today's sessions as a timeline. */
+.dash-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.dash-timeline li { display: flex; align-items: center; gap: 0.7rem; }
+.dash-time {
+  flex: none;
+  width: 6.5rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.dash-session-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+}
+.dash-session-card:hover { border-color: var(--primary); background: var(--surface-2); }
+.dash-session-id { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dash-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 10px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-align: center;
+}
+.dash-count b { font-size: 0.95rem; }
+.dash-count.ok      { background: #e7f7ee; color: #12703f; }
+.dash-count.no      { background: #fdeaea; color: #a01c1c; }
+.dash-count.pending { background: var(--surface-2); color: var(--muted); padding-inline: 0.7rem; }
+.dash-new-session { width: 100%; justify-content: center; margin-top: 0.6rem; }
+
+/* Tomorrow's slot list. */
+.dash-slots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.dash-slots li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.dash-slots li:last-child { border-bottom: 0; }
+.dash-slots-total { margin: 0.5rem 0 0; }
+
+/* Quick actions. */
+.dash-quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
+.dash-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-decoration: none;
+  color: inherit;
+}
+.dash-quick-btn:hover { border-color: var(--primary); background: var(--surface-2); }
+.dash-quick-icon { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 9px; flex: none; }
+/* Six actions rapides, six teintes distinctes : violet et sarcelle etaient
+   auparavant la meme couleur, ce qui rendait deux boutons interchangeables. */
+.tone-navy   .dash-quick-icon { background: var(--viv-indigo-soft);  color: var(--viv-indigo); }
+.tone-green  .dash-quick-icon { background: var(--viv-emerald-soft); color: var(--viv-emerald); }
+.tone-gold   .dash-quick-icon { background: var(--viv-amber-soft);   color: var(--viv-amber); }
+.tone-violet .dash-quick-icon { background: var(--viv-violet-soft);  color: var(--viv-violet); }
+.tone-teal   .dash-quick-icon { background: var(--viv-teal-soft);    color: var(--viv-teal); }
+.tone-sky    .dash-quick-icon { background: var(--viv-sky-soft);     color: var(--viv-sky); }
+
+/* Finance summary. */
+.dash-fin-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.dash-fin-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.dash-bar-track { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.dash-bar { display: block; height: 100%; border-radius: 999px; }
+.dash-bar.ok { background: #12b76a; }
+.dash-bar.no { background: #e5484d; }
+
+/* Top debts. */
+.dash-debts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.dash-debts li { display: flex; align-items: center; gap: 0.6rem; padding: 0.42rem 0; font-size: 0.84rem; }
+.dash-rank {
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--surface-2);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+.dash-debt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Weekly attendance trend. */
+.dash-trend { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1.25rem; align-items: center; }
+.dash-chart { width: 100%; height: 140px; overflow: visible; }
+.dash-grid-line { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.dash-line {
+  fill: none;
+  stroke: #5b5bd6;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.dash-dot { fill: #5b5bd6; }
+.dash-chart-x {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+.dash-trend-side { text-align: center; display: flex; flex-direction: column; gap: 0.15rem; }
+.dash-trend-side strong { font-size: 2.1rem; line-height: 1; }
+.dash-delta { font-size: 0.75rem; font-weight: 700; }
+.dash-delta.up   { color: #12703f; }
+.dash-delta.down { color: #a01c1c; }
+
+@media (max-width: 1200px) {
+  .dash-grid3 { grid-template-columns: minmax(0, 1fr); }
+  .dash-trend { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- Tomorrow's schedule with conflict flags ------------------------------ */
+.dash-panel-sub { margin: -0.35rem 0 0.6rem; }
+.dash-panel-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-inline-start: 0.5rem;
+}
+.dash-sched th { font-size: 0.68rem; letter-spacing: 0.03em; }
+.dash-sched td { font-size: 0.82rem; vertical-align: middle; }
+.dash-sched-time { font-weight: 700; white-space: nowrap; }
+.dash-sched tr.clash td { background: #fff5f5; }
+
+.dash-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.dash-status.ok  { background: #e7f7ee; color: #12703f; }
+.dash-status.bad { background: #fdeaea; color: #a01c1c; }
+
+/* --- Daily reminders checklist -------------------------------------------- */
+.dash-tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.dash-tasks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.dash-tasks li:last-child { border-bottom: 0; }
+.dash-tasks input { margin-top: 0.15rem; width: 1rem; height: 1rem; flex: none; cursor: pointer; }
+.dash-tasks label { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; cursor: pointer; }
+.dash-tasks label strong { font-size: 0.85rem; font-weight: 650; }
+.dash-tasks li.is-done label strong { text-decoration: line-through; color: var(--muted); }
+.dash-tasks li.is-done { opacity: 0.6; }
+.dash-task-go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 8px;
+  color: var(--muted);
+}
+.dash-task-go:hover { background: var(--surface-2); color: var(--primary); }
+
+/* ==========================================================================
+   Tableau de bord — vignettes chiffrees, illustrations et bandeau financier.
+   Palette de la page vitrine : navy, ciel, or.
+   ========================================================================== */
+
+/* Les deux mini-graphiques logent dans le coin de leur carte. */
+.dash-kpi { position: relative; overflow: hidden; }
+.dash-spark {
+  position: absolute;
+  inset-inline-end: 14px;
+  inset-block-end: 12px;
+  width: 74px;
+  height: 26px;
+  color: var(--primary);
+  opacity: 0.75;
+}
+.dash-bars {
+  position: absolute;
+  inset-inline-end: 14px;
+  inset-block-end: 12px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  width: 62px;
+  height: 28px;
+}
+.dash-bars i {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: var(--gold-400);
+  opacity: 0.85;
+}
+
+/* Panneau des rappels : la cloche reste un filigrane, jamais un contenu. */
+.dash-panel { position: relative; overflow: hidden; }
+.dash-bell-art {
+  position: absolute;
+  inset-inline-end: -10px;
+  inset-block-end: -14px;
+  width: 120px;
+  color: var(--primary);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Journee sans seance : l'illustration porte le message. */
+.dash-today-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-block: 10px 4px;
+  text-align: center;
+}
+.dash-today-art { width: 130px; }
+
+/* ------------------------------------------------------ bandeau financier */
+.dash-fin-band {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(115deg, var(--sky-100), var(--surface) 52%, var(--gold-100));
+  box-shadow: var(--shadow-sm);
+}
+.dash-wallet-art { width: 104px; flex: none; }
+.dash-fin-body { flex: 1; min-width: 0; }
+
+.dash-fin-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block-end: 14px;
+}
+.dash-fin-head h2 { margin: 0; font-size: 1.02rem; font-weight: 750; }
+
+.dash-fin-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  gap: 26px;
+  align-items: center;
+}
+.dash-fin-figs { display: flex; flex-direction: column; gap: 10px; }
+.dash-fin-bars { display: flex; flex-direction: column; gap: 10px; }
+
+/* Anneau : le pourcentage se lit au centre, sans legende separee. */
+.dash-donut { position: relative; width: 104px; height: 104px; flex: none; }
+.dash-donut svg { width: 100%; height: 100%; }
+.dash-donut-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.dash-donut-text strong { font-size: 1.15rem; font-weight: 800; }
+.dash-donut-text span { font-size: 0.7rem; color: var(--muted); }
+
+@media (max-width: 900px) {
+  .dash-fin-band { flex-wrap: wrap; padding: 16px; }
+  .dash-wallet-art { width: 78px; }
+  .dash-fin-cols { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .dash-donut { margin-inline: auto; }
+}
+@media (max-width: 760px) {
+  .dash-bell-art { display: none; }
+  .dash-spark, .dash-bars { position: static; margin-block-start: 8px; }
+}
+
+/* ==========================================================================
+   Tableau de bord enseignant — vignettes a courbe, panneaux vides illustres,
+   apercu de la semaine. Palette navy + or de la page vitrine.
+   ========================================================================== */
+
+/* La vignette accueille une courbe sous les chiffres. */
+.dash-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  padding-block-end: 0;
+}
+.dash-tile-head { display: flex; align-items: flex-start; gap: 0.85rem; }
+.dash-tile .sparkline {
+  display: block;
+  width: calc(100% + 2.4rem);
+  height: 40px;
+  margin-inline: -1.2rem;
+  margin-block-start: auto;
+}
+
+/* ---------------------------------------------------- panneau sans contenu */
+.dash-blank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-block: 22px 8px;
+  text-align: center;
+}
+.dash-blank-art {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin-block-end: 8px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.dash-blank strong { font-size: 0.95rem; font-weight: 750; }
+.dash-blank p { margin: 0; max-width: 30ch; font-size: 0.84rem; line-height: 1.5; color: var(--muted); }
+.dash-blank .btn { margin-block-start: 12px; }
+
+/* -------------------------------------------------------- apercu rapide */
+
+
+
+@media (max-width: 760px) {
+  .dash-tile .sparkline { height: 30px; }
+}
+
+/* --------------------------------------------------------------------------
+   Tableau de bord enseignant — mise en page de la maquette :
+   quatre vignettes, puis TROIS panneaux de meme largeur, puis « Apercu
+   rapide » (2/3) a cote de la carte de remerciement (1/3).
+   -------------------------------------------------------------------------- */
+.dash-tri {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* Vignette a fond pastel : la teinte porte toute la carte, pas seulement la
+   pastille de l'icone. */
+.dash-tile.tinted { border-color: transparent; }
+.dash-tile.tinted.tone-gold   { background: color-mix(in srgb, var(--viv-amber-soft) 45%, #fff); }
+.dash-tile.tinted.tone-navy   { background: color-mix(in srgb, var(--viv-indigo-soft) 45%, #fff); }
+.dash-tile.tinted.tone-green  { background: color-mix(in srgb, var(--viv-emerald-soft) 45%, #fff); }
+.dash-tile.tinted.tone-violet { background: color-mix(in srgb, var(--viv-violet-soft) 45%, #fff); }
+.dash-tile.tinted.tone-danger { background: color-mix(in srgb, var(--viv-rose-soft) 45%, #fff); }
+
+/* Selecteur de periode de l'apercu. */
+
+/* Tuiles de l'apercu : fond pastel, comme la maquette. */
+
+/* L'illustration des panneaux vides est plus genereuse que la pastille
+   d'origine : c'est elle qui porte le vide. */
+.dash-blank-art { width: 104px; height: 104px; }
+.dash-blank-art svg { width: 40px; height: 40px; }
+
+@media (max-width: 1100px) {
+  .dash-tri { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .dash-tri { grid-template-columns: minmax(0, 1fr); }
+  .dash-blank-art { width: 84px; height: 84px; }
 }

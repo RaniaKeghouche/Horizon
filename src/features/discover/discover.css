@@ -1,0 +1,1654 @@
+/* ============================================================
+   Page de decouverte (tableau de bord eleve + catalogue public)
+   ============================================================
+
+   Palette : navy / or / ciel — la meme que la page vitrine, pour qu'un visiteur
+   qui vient du site ne change pas d'univers en se connectant. Le violet de la
+   maquette d'origine n'existe pas dans les tokens et jurerait avec l'accueil.
+
+   Le ton « joyeux » vient d'elements mesures, pas de couleurs criardes :
+   pastilles teintees par matiere, degrades doux, coins tres arrondis, et une
+   seule couleur chaude (l'or) reservee aux actions.
+
+   Tout est en proprietes logiques (inline-start/end) : l'arabe est la langue
+   par defaut et la page se retourne en entier.
+   ============================================================ */
+
+.disc {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ---------------------------------------------------------- barre de filtres */
+
+/* Les criteres tiennent dans une carte, comme un formulaire de recherche :
+   cycle et texte sur la premiere ligne, matiere et tri sur la seconde. */
+.disc-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+}
+.disc-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.disc-filter-row + .disc-filter-row {
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+}
+.disc-filter-k {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex: none;
+}
+
+.disc-chips,
+.disc-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* La liste des matieres grandit avec le catalogue : elle defile au lieu de
+   pousser le tri sur une ligne de plus. */
+.disc-chips.subjects {
+  flex: 1;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.disc-chips.subjects::-webkit-scrollbar {
+  display: none;
+}
+
+/* Pastille de matiere : fond blanc au repos, teinte de la matiere une fois
+   choisie — la couleur ne sert qu'a montrer la selection. */
+.disc-pill {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.disc-pill:hover {
+  border-color: var(--primary-2);
+  color: var(--primary);
+}
+.disc-pill.on {
+  background: var(--tile-bg, var(--primary-soft));
+  border-color: var(--tile-fg, var(--primary-2));
+  color: var(--tile-fg, var(--primary-dark));
+}
+
+.disc-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1;
+  min-width: 12rem;
+  max-width: 22rem;
+  margin-inline-start: auto;
+  height: 2.4rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.disc-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.83rem;
+}
+
+.disc-chip-n {
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.63rem;
+  font-style: normal;
+  font-weight: 800;
+}
+.disc-chip.on .disc-chip-n {
+  background: var(--primary-dark);
+}
+
+.disc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.disc-chip:hover {
+  color: var(--primary);
+  border-color: var(--primary-2);
+  transform: translateY(-1px);
+}
+.disc-chip.on {
+  background: var(--primary-soft);
+  border-color: var(--primary-2);
+  color: var(--primary-dark);
+}
+.disc-chip svg {
+  opacity: 0.8;
+}
+
+.disc-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  margin-inline-start: auto;
+  padding: 0 0.75rem;
+  height: 2.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+}
+.disc-select-k {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.disc-select select {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding-inline-end: 0.25rem;
+  max-width: 11rem;
+  cursor: pointer;
+}
+.disc-select select:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* L'appel a l'action reprend l'or de la vitrine : une seule par ecran. */
+.disc-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.4rem;
+  padding: 0 0.55rem 0 1rem;
+  padding-inline-start: 1rem;
+  padding-inline-end: 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--gold-100);
+  border: 1px solid var(--gold-300);
+  color: var(--gold-700);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.disc-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px var(--color-cta-shadow);
+}
+.disc-cta-arrow {
+  background: var(--gold-400);
+  color: var(--navy-900);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem;
+  box-sizing: content-box;
+}
+/* La fleche pointe vers la suite de la lecture, elle doit donc se retourner. */
+[dir="rtl"] .disc-cta-arrow {
+  transform: scaleX(-1);
+}
+
+/* ------------------------------------------------------------------ gabarit */
+
+.disc-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21rem;
+  gap: 1.25rem;
+  align-items: start;
+}
+.disc-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  /* La ligne de groupe se replie d'apres la largeur de CETTE colonne, pas d'apres
+     celle de la fenetre : entre la barre laterale et la colonne de droite, elle
+     est deja etroite sur un ecran large, et une requete media ne le voit pas. */
+  container-type: inline-size;
+  container-name: discmain;
+}
+.disc-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ------------------------------------------------------- titres de sections */
+
+.disc-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.25rem;
+}
+.disc-sec-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.disc-sec-head p {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.disc-sec-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.disc-sec-icon.gold {
+  background: var(--gold-100);
+  color: var(--gold-600);
+}
+.disc-twinkle {
+  color: var(--gold-500);
+}
+.disc-sec-end {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+}
+.disc-rail-btn {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--primary);
+  cursor: pointer;
+}
+.disc-rail-btn:hover {
+  background: var(--primary-soft);
+}
+[dir="rtl"] .disc-rail-btn svg {
+  transform: scaleX(-1);
+}
+
+.disc-count,
+.disc-clear {
+  margin-inline-start: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.disc-clear {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+}
+.disc-clear:hover {
+  border-color: var(--primary-2);
+}
+
+/* --------------------------------------------------------- cartes enseignant */
+
+/* Defilement horizontal plutot qu'un retour a la ligne : la rangee garde sa
+   hauteur quel que soit le nombre d'enseignants, et le reste de la page ne
+   descend pas sous la ligne de flottaison quand l'ecole en recrute. */
+.disc-rail {
+  position: relative;
+}
+.disc-teachers {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 13.5rem;
+  gap: 0.85rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.disc-teachers::-webkit-scrollbar {
+  height: 6px;
+}
+.disc-teachers::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+
+/* Bouton de defilement : une molette verticale ne fait pas avancer la rangee. */
+.disc-rail-next {
+  position: absolute;
+  inset-inline-end: -0.55rem;
+  top: 45%;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.disc-rail-next:hover {
+  background: var(--primary-soft);
+}
+[dir="rtl"] .disc-rail-next svg {
+  transform: scaleX(-1);
+}
+
+.disc-teacher {
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease),
+    border-color var(--dur-base) var(--ease);
+}
+.disc-teacher:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+.disc-teacher.on {
+  border-color: var(--tile-fg, var(--primary));
+  box-shadow: var(--shadow);
+}
+
+/* Pas de photo dans la base : des initiales sur la teinte de la matiere
+   enseignee, ce qui donne a chaque enseignant une couleur stable. */
+.disc-teacher-top {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 0.55rem;
+}
+/* Pastille carree plutot que ronde : elle se lit comme un dossier, et les
+   initiales y tiennent mieux qu'un cercle a la meme surface. */
+.disc-ava {
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 14px;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+.disc-teacher-badge {
+  margin-inline-start: auto;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.disc-teacher-name {
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.disc-teacher-subj {
+  font-size: 0.79rem;
+  font-weight: 700;
+  color: var(--tile-fg, var(--primary));
+}
+.disc-teacher-facts {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.disc-teacher-facts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.disc-teacher-price {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+.disc-teacher-price b {
+  color: var(--gold-600);
+}
+.disc-teacher-btn {
+  margin-top: 0.75rem;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--tile-bg, var(--border));
+  background: var(--tile-bg, var(--surface-2));
+  color: var(--tile-fg, var(--primary-dark));
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter var(--dur-fast) var(--ease);
+}
+.disc-teacher-btn:hover {
+  filter: brightness(0.96);
+}
+.disc-teacher-btn.on {
+  border-color: transparent;
+  color: #fff;
+}
+[dir="rtl"] .disc-teacher-btn svg {
+  transform: scaleX(-1);
+}
+
+/* ---------------------------------------------------------- lignes de groupe */
+
+.disc-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+/* Une ligne = une matiere, avec un enseignant, a un niveau. Tous les creneaux de
+   ce cours tiennent dans la colonne « Creneaux », d'ou la place qui lui est
+   donnee : c'est la seule colonne qui grandit avec les donnees. */
+.disc-group {
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 1.4fr) auto auto minmax(10rem, 1.1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.disc-group:hover {
+  border-color: var(--tile-fg, var(--primary-2));
+  box-shadow: var(--shadow-sm);
+}
+
+/* La pastille reprend la teinte de la matiere : la meme matiere garde la meme
+   couleur sur l'emploi du temps et dans le repertoire. */
+.disc-group-tile {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 16px;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+}
+
+.disc-group-id {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.disc-group-id strong {
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.disc-group-teacher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+/* Une vignette d'enseignant, comme sur la maquette : sans photo dans la base,
+   ce sont ses initiales. */
+.disc-mini-ava {
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  font-size: 0.55rem;
+  font-weight: 800;
+  flex: none;
+}
+.disc-group-level {
+  align-self: flex-start;
+  margin-top: 0.1rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.disc-group-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+}
+.disc-fact-k {
+  font-size: 0.67rem;
+  color: var(--muted);
+}
+.disc-group-fact b {
+  color: var(--text);
+  font-size: 0.85rem;
+}
+.disc-group-fact b.is-low {
+  color: var(--color-warning);
+}
+.disc-group-fact b.is-full {
+  color: var(--danger);
+}
+
+.disc-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+/* Chaque pastille est un groupe reel. Celle qui est pleine le dit et refuse le
+   clic, plutot que de laisser reserver une place qui n'existe pas. */
+.disc-slot {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.32rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--sky-100);
+  color: var(--navy-700);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.disc-slot em {
+  font-style: normal;
+  font-weight: 800;
+}
+.disc-slot:hover {
+  background: var(--sky-300);
+}
+.disc-slot.on {
+  border-color: var(--tile-fg, var(--primary));
+  background: var(--tile-bg, var(--sky-100));
+  color: var(--tile-fg, var(--navy-700));
+}
+.disc-slot.full {
+  background: rgba(180, 35, 24, 0.08);
+  color: var(--danger);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.disc-group-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.disc-group-price b {
+  color: var(--gold-600);
+  font-size: 0.95rem;
+}
+.disc-group-price span {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+/* Le fond est pose en style inline avec la teinte de la matiere : la ligne se
+   lit d'un bloc, pastille et action de la meme couleur. */
+.disc-book {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 8.5rem;
+  padding: 0.65rem 1.1rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.disc-book:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+.disc-book.done {
+  background: rgba(7, 108, 61, 0.1);
+  color: var(--success);
+  cursor: default;
+}
+.disc-book.full {
+  background: var(--surface-2);
+  color: var(--muted);
+  cursor: default;
+}
+.disc-book.done:hover,
+.disc-book.full:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.disc-more {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.disc-more:hover {
+  border-color: var(--primary-2);
+  background: var(--primary-soft);
+}
+
+.disc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.25rem 1rem;
+  color: var(--muted);
+  text-align: center;
+}
+.disc-empty svg {
+  color: var(--primary-2);
+}
+.disc-empty strong {
+  color: var(--text);
+}
+.disc-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* ------------------------------------------------------- colonne de droite */
+
+.disc-panel {
+  padding: 1rem;
+}
+.disc-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+.disc-panel-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.disc-panel-head a {
+  margin-inline-start: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+.disc-panel-head a:hover {
+  text-decoration: underline;
+}
+.disc-panel-icon {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.disc-panel-icon.gold {
+  background: var(--gold-100);
+  color: var(--gold-600);
+}
+.disc-panel-n {
+  margin-inline-start: auto;
+  padding: 0.12rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+/* Un vide qui explique quoi faire, plutot qu'une ligne de texte gris. */
+.disc-picks-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.4rem 0.75rem;
+  text-align: center;
+}
+.disc-picks-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--primary-2);
+  margin-bottom: 0.15rem;
+}
+.disc-picks-empty strong {
+  font-size: 0.87rem;
+  color: var(--text);
+}
+.disc-picks-empty p {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.disc-panel-empty {
+  margin: 0;
+  padding: 0.9rem 0;
+  font-size: 0.83rem;
+  color: var(--muted);
+  text-align: center;
+}
+.disc-panel-note {
+  margin: 0.35rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: var(--gold-100);
+  color: var(--gold-700);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+/* La liste ne doit jamais pousser la page : au-dela de cinq lignes elle defile. */
+.disc-agenda,
+.disc-news {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.disc-ag-day {
+  margin: 0.4rem 0 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.disc-ag-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.disc-ag-time {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  white-space: nowrap;
+}
+.disc-ag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  /* Teinte de la matiere : la meme couleur que sa pastille dans la liste des
+     groupes, pour relier les deux d'un coup d'oeil. */
+  background: var(--tile-fg, var(--gold-400));
+  flex: none;
+}
+.disc-ag-row strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+.disc-ag-row span:last-child {
+  font-size: 0.73rem;
+  color: var(--muted);
+}
+.disc-panel-btn {
+  margin-top: 0.35rem;
+  display: block;
+  padding: 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+.disc-panel-btn:hover {
+  background: var(--sky-300);
+}
+
+.disc-news-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.disc-news-row strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+.disc-news-row p {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+/* Depuis quand : ce qui distingue une annonce d'hier d'une d'il y a un mois. */
+.disc-news-age {
+  margin-inline-start: auto;
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.disc-news-icon {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9px;
+  flex: none;
+}
+.disc-news-row.tone-gold .disc-news-icon {
+  background: var(--gold-100);
+  color: var(--gold-600);
+}
+.disc-news-row.tone-sky .disc-news-icon {
+  background: var(--sky-100);
+  color: var(--navy-600);
+}
+
+/* Carte d'aide : le seul bloc sombre de la page, comme le pied de la vitrine.
+   Un bouton, et les coordonnees dans une fenetre — voir ContactCard. */
+.disc-help {
+  position: relative;
+  overflow: hidden;
+  padding: 1.15rem;
+  border-radius: var(--radius-lg);
+  background: var(--hero-grad);
+  color: #fff;
+}
+.disc-help-art {
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--gold-300);
+}
+.disc-help h3 {
+  margin: 0.6rem 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.disc-help p {
+  margin: 0 0 0.95rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--sky-300);
+}
+.disc-help-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.15rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-cta);
+  color: var(--navy-900);
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.disc-help-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px var(--color-cta-shadow);
+}
+
+/* ---------------------------------------------- la fenetre des coordonnees */
+
+.ct-lead {
+  margin: 0 0 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.ct-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ct-list li {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+.ct-row {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.ct-row:hover {
+  border-color: var(--primary-2);
+  background: var(--primary-soft);
+}
+/* Une couleur par canal : on repere le bon d'un coup d'oeil. */
+.ct-icon {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 11px;
+  flex: none;
+}
+.ct-icon.phone { background: var(--viv-indigo-soft); color: var(--viv-indigo); }
+.ct-icon.whatsapp { background: var(--viv-emerald-soft); color: var(--viv-emerald); }
+.ct-icon.email { background: var(--viv-amber-soft); color: var(--viv-amber); }
+.ct-icon.address { background: var(--viv-rose-soft); color: var(--viv-rose); }
+
+.ct-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.35;
+}
+.ct-text em {
+  font-style: normal;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* Une adresse e-mail longue coupe plutot que d'elargir la fenetre. */
+.ct-text b {
+  font-size: 0.88rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.ct-out {
+  margin-inline-start: auto;
+  color: var(--muted);
+  flex: none;
+}
+[dir="rtl"] .ct-out {
+  transform: scaleX(-1);
+}
+
+/* Sur un ordinateur, tel: et mailto: n'aboutissent souvent nulle part :
+   copier est alors le geste utile. */
+.ct-copy {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  flex: none;
+}
+.ct-copy:hover {
+  background: var(--surface-2);
+  color: var(--primary);
+}
+.ct-hours {
+  margin: 0.9rem 0 0;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------ responsive */
+
+@media (max-width: 1100px) {
+  .disc-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .disc-side {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    align-items: start;
+  }
+}
+
+/* En dessous, la ligne de groupe se plie en carte : six colonnes ne tiennent
+   pas dans une colonne etroite sans reduire le texte au point de le rendre
+   illisible, ni couper le bouton « Reserver ». */
+@container discmain (max-width: 720px) {
+  .disc-group {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "tile  id"
+      "level seats"
+      "slot  slot"
+      "price book";
+    gap: 0.7rem 0.85rem;
+  }
+  .disc-group-tile { grid-area: tile; }
+  .disc-group-id { grid-area: id; }
+  /* Des classes explicites plutot que :nth-of-type — celui-ci compte par nom de
+     balise, et .disc-group-id est un <div> lui aussi : la numerotation etait
+     donc decalee d'un cran et les colonnes se retrouvaient interverties. */
+  .disc-fact-level { grid-area: level; }
+  .disc-fact-seats { grid-area: seats; }
+  .disc-fact-slot { grid-area: slot; }
+  .disc-group-price {
+    grid-area: price;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .disc-book {
+    grid-area: book;
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .disc-search,
+  .disc-select {
+    margin-inline-start: 0;
+    max-width: none;
+    width: 100%;
+  }
+  .disc-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.35rem;
+  }
+  .disc-chip {
+    white-space: nowrap;
+  }
+  .disc-tools {
+    width: 100%;
+  }
+  .disc-cta {
+    flex: 1;
+    justify-content: center;
+  }
+  .disc-teachers {
+    grid-auto-columns: 11.5rem;
+  }
+}
+
+/* ============================================================
+   Portail des comptes en attente (GuestShell)
+   ============================================================
+   Une mise en page de portail administratif, pas le shell applicatif : bandeau
+   institutionnel, navigation horizontale, etat du dossier en evidence. Palette
+   navy / or / ciel, celle de la page vitrine.
+   ============================================================ */
+
+.guest-portal {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ------------------------------------------------- bandeau institutionnel */
+
+.gp-official {
+  background: var(--navy-950);
+  color: var(--sky-300);
+  font-size: 0.72rem;
+}
+.gp-official-in {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.45rem 1.5rem;
+}
+.gp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.14rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--gold-400);
+  color: var(--navy-950);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex: none;
+}
+.gp-official-title {
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+.gp-official-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--sky-300);
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.gp-official-item:hover {
+  color: var(--gold-300);
+}
+.gp-official-end {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-inline-start: auto;
+}
+
+/* ---------------------------------------------------- navigation du haut */
+
+.gp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.gp-nav-in {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.6rem 1.5rem;
+}
+.gp-brand {
+  flex: none;
+  padding: 0;
+  background: none;
+}
+.gp-role {
+  flex: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.gp-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gp-links::-webkit-scrollbar {
+  display: none;
+}
+.gp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.gp-link:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.gp-link.active {
+  background: var(--primary-soft);
+  border-color: var(--primary-2);
+  color: var(--primary-dark);
+}
+/* Une page encore fermee reste visible pour dire ce qui arrive — mais elle ne
+   fait jamais semblant d'etre cliquable. */
+.gp-link.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+/* Le cadenas seul : la barre est bornee a 1400px, trois libelles « En attente »
+   n'y tiennent pas, et l'infobulle porte deja l'explication complete. */
+.gp-lock {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem;
+  border-radius: var(--radius-pill);
+  background: var(--gold-100);
+  color: var(--gold-700);
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.gp-nav-end {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-inline-start: auto;
+}
+.gp-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gp-icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.gp-icon-btn.danger:hover {
+  background: rgba(180, 35, 24, 0.08);
+  color: var(--danger);
+  border-color: rgba(180, 35, 24, 0.3);
+}
+.gp-user {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.7rem 0.25rem 0.3rem;
+  padding-inline-start: 0.3rem;
+  padding-inline-end: 0.7rem;
+  border: 1px solid var(--gold-300);
+  border-radius: var(--radius-pill);
+  background: var(--gold-100);
+}
+.gp-user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.gp-user-meta strong {
+  font-size: 0.78rem;
+  color: var(--text);
+}
+.gp-user-meta em {
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--gold-700);
+}
+
+.gp-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* ------------------------------------------------------- le dossier (hero) */
+
+.gp-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.5rem 1.7rem;
+  border-radius: var(--radius-lg);
+  background: var(--hero-grad);
+  color: #fff;
+}
+.gp-hero-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--sky-300);
+}
+.gp-hero-ref b {
+  opacity: 0.5;
+}
+.gp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold-400);
+}
+.gp-hero h1 {
+  margin: 0.7rem 0 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+/* Le prenom ressort : c'est ce que l'oeil cherche en arrivant. */
+.gp-name {
+  color: var(--gold-300);
+}
+.gp-hero p {
+  margin: 0.55rem 0 0;
+  font-size: 0.87rem;
+  line-height: 1.6;
+  color: var(--sky-300);
+  max-width: 52ch;
+}
+.gp-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.1rem;
+}
+.gp-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-cta);
+  color: var(--navy-900);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.gp-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px var(--color-cta-shadow);
+}
+[dir="rtl"] .gp-cta svg {
+  transform: scaleX(-1);
+}
+.gp-since {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-pill);
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: var(--sky-300);
+}
+
+/* --------------------------------------------------- avancement du dossier */
+
+.gp-progress {
+  padding: 1.1rem;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.gp-progress-k {
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sky-500);
+}
+.gp-progress-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+.gp-progress-top strong {
+  font-size: 0.85rem;
+  color: #fff;
+}
+.gp-pct {
+  margin-inline-start: auto;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--gold-300);
+}
+.gp-bar {
+  height: 7px;
+  margin: 0.7rem 0 0.85rem;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+.gp-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--sky-500), var(--gold-400));
+  transition: width var(--dur-slow) var(--ease);
+}
+[dir="rtl"] .gp-bar i {
+  background: linear-gradient(270deg, var(--sky-500), var(--gold-400));
+}
+.gp-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.gp-steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--sky-300);
+}
+.gp-step-mark {
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--sky-300);
+  flex: none;
+}
+.gp-steps li.done .gp-step-mark {
+  background: var(--success);
+  color: #fff;
+}
+.gp-step-label {
+  min-width: 0;
+}
+.gp-steps li em {
+  margin-inline-start: auto;
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold-300);
+}
+.gp-steps li.done em {
+  color: var(--success);
+  filter: brightness(1.7);
+}
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 1100px) {
+  .gp-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gp-role {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .gp-official-in {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.8rem;
+    padding-inline: 1rem;
+  }
+  .gp-official-end {
+    margin-inline-start: 0;
+  }
+  .gp-nav-in {
+    flex-wrap: wrap;
+    padding: 0.6rem 1rem;
+  }
+  .gp-links {
+    order: 3;
+    width: 100%;
+  }
+  .gp-nav-end {
+    gap: 0.3rem;
+  }
+  .gp-page {
+    padding: 1rem 1rem 2.5rem;
+  }
+  .gp-hero {
+    padding: 1.2rem;
+  }
+  .gp-hero h1 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 780px) {
+  /* global.css masque « HORIZON » sur petit ecran et ne garde que la ligne
+     « SKILLS ACADEMY », ce qui ampute le nom. Sur le portail on garde le nom
+     et on retire la sous-ligne : c'est le nom qui identifie l'ecole. */
+  .guest-portal .brand-name {
+    display: block;
+  }
+  .guest-portal .brand-sub {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .gp-official-title,
+  .gp-user-meta {
+    display: none;
+  }
+  .gp-lang span {
+    display: none;
+  }
+  .gp-hero-actions .gp-cta {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Meme message que sur la page des cours : voir courses.css. */
+.disc-failed {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  background: rgba(180, 35, 24, 0.07);
+  color: var(--danger);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}

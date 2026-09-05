@@ -1,0 +1,154 @@
+/* Notifications — grande carte respirante, pastille colorée, filigrane discret.
+   Toute la gamme reste dans le bleu de l'identité : navy → bleu → ciel → cyan
+   → sarcelle → bleuet. Aucune teinte chaude, contrairement à la maquette. */
+
+.notif-page { position: relative; }
+
+/* Le petit trait + point sous le titre, comme la maquette. */
+.notif-accent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block: 10px 4px;
+}
+.notif-accent i {
+  display: block;
+  width: 34px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--primary-grad);
+}
+.notif-accent b {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+}
+
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ------------------------------------------------------------------ carte */
+.card.notif {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 22px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+.notif:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--primary);
+}
+.notif.read { opacity: 0.62; }
+.notif.read:hover { opacity: 0.85; }
+
+/* Pastille : fond teinté, icône de la même famille, coins très arrondis. */
+.notif-icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.notif-text {
+  font-size: 0.97rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text);
+}
+.notif-time {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Filigrane : décoratif, il ne doit jamais gêner la lecture du message. */
+.notif-doodle {
+  position: absolute;
+  inset-inline-end: 78px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  width: 96px;
+  height: 56px;
+  color: var(--tile-fg);
+  opacity: 0.13;
+  pointer-events: none;
+}
+.notif .dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+/* La cloche géante en bas de page, purement décorative. */
+.notif-mascot {
+  position: fixed;
+  inset-block-end: -18px;
+  inset-inline-end: 8px;
+  width: 190px;
+  color: var(--primary);
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+}
+.notif-mascot-badge {
+  position: fixed;
+  inset-block-end: 132px;
+  inset-inline-end: 30px;
+  min-width: 30px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (max-width: 900px) {
+  .notif-doodle,
+  .notif-mascot,
+  .notif-mascot-badge { display: none; }
+  .card.notif { gap: 14px; padding: 16px; }
+  .notif-icon { width: 44px; height: 44px; border-radius: 13px; }
+}
+
+/* Sombre : les pastilles claires resteraient trop vives sur du navy. On garde
+   la même famille de teintes, posée en voile sur la surface. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .notif-icon {
+    background: color-mix(in srgb, var(--tile-fg) 26%, transparent);
+    color: color-mix(in srgb, var(--tile-bg) 85%, var(--tile-fg));
+  }
+}
+:root[data-theme="dark"] .notif-icon {
+  background: color-mix(in srgb, var(--tile-fg) 26%, transparent);
+  color: color-mix(in srgb, var(--tile-bg) 85%, var(--tile-fg));
+}

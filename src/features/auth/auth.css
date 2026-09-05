@@ -582,34 +582,165 @@
 }
 .au-footer-links a:hover { text-decoration: underline; }
 
-/* ------------------------------------------------------------- Mode succès */
+/* ------------------------------------------------------------- Mode succès
+   L'ecran de confirmation d'inscription. L'identifiant genere est la SEULE
+   facon de revenir (aucune adresse e-mail n'est collectee) : il est donc
+   presente en grand, copiable d'un clic, et l'attente de validation est dite
+   explicitement plutot qu'en petite note. */
 
 .reg-done {
   text-align: center;
-  padding-block: 1rem;
+  padding-block: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
 .reg-done-mark {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 4rem;
-  height: 4rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: 50%;
-  background: #ecfdf5;
-  color: #059669;
-  margin: 0 auto 1.25rem;
+  background: var(--primary-soft);
+  color: var(--primary);
+  margin-block-end: 1.35rem;
 }
-.reg-username {
-  display: inline-block;
-  padding: 0.6rem 1.4rem;
-  border-radius: 12px;
-  background: #edf5fd;
-  color: #1e3f75;
-  font-size: 1.25rem;
+.reg-confetti {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 90px;
+  pointer-events: none;
+}
+
+.reg-done-title {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
   font-weight: 800;
-  letter-spacing: 0.04em;
-  margin: 0.5rem 0;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
-.reg-muted { color: #64748b; margin: 0; }
+.reg-done-bar {
+  display: block;
+  width: 56px;
+  height: 4px;
+  margin: 0.7rem auto 1.1rem;
+  border-radius: var(--radius-pill);
+  background: var(--primary-grad);
+}
+
+/* Identifiant + bouton copier */
+.reg-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-block-start: 0.5rem;
+  padding: 0.85rem 0.85rem 0.85rem 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+.reg-id strong {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}
+.reg-copy {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--primary);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.reg-copy:hover { background: var(--primary-soft); }
+.reg-copied {
+  display: block;
+  min-height: 1.1rem;
+  margin-block-start: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+/* Trait pointille + pastille horloge, entre l'identifiant et l'attente. */
+.reg-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-block: 0.35rem 0.9rem;
+}
+.reg-link-dash {
+  flex: 1;
+  height: 0;
+  border-block-start: 2px dashed var(--border);
+}
+.reg-link-badge {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  color: var(--gold-600);
+}
+
+/* Bandeau d'attente */
+.reg-wait {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--gold);
+  border-radius: 14px;
+  background: var(--gold-100);
+  text-align: start;
+}
+.reg-wait-icon { flex: none; color: var(--gold-600); margin-block-start: 1px; }
+.reg-wait strong { display: block; font-size: 0.9rem; color: var(--text); }
+.reg-wait p { margin: 3px 0 0; font-size: 0.82rem; line-height: 1.45; color: var(--muted); }
+
+.reg-inbox { width: 132px; margin-block: 1.1rem 1.3rem; }
+
+.reg-done-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+[dir="rtl"] .reg-done-btn svg { transform: scaleX(-1); }
+
+.reg-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 1.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.reg-secure svg { color: var(--primary); }
+
+.reg-muted { color: var(--muted); margin: 0; }
 
 /* ------------------------------------------------------------- Responsive */
 
@@ -623,4 +754,87 @@
   .reg-pwd-rules { grid-template-columns: minmax(0, 1fr); }
   .au-social-grid { grid-template-columns: minmax(0, 1fr); }
   .au-footer { justify-content: center; text-align: center; }
+}
+
+/* Inline "add a subject we don't list yet" row on the sign-up form. */
+.reg-newsubject {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.au-input-plain {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(15, 37, 71, 0.14);
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.au-input-plain:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16);
+}
+
+/* A subject that does not exist yet — visually distinct from the catalogue
+   chips so the teacher can see which ones they are about to create. */
+.reg-chip-new {
+  background: #fff7e6;
+  color: #92400e;
+  border-color: rgba(180, 83, 9, 0.28);
+  border-style: dashed;
+}
+
+/* Refus : même mise en page que la confirmation, pastille en rouge. */
+.reg-done-mark.refused {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+/* ============================================================
+   « Il manque encore… »
+   ============================================================
+   Un bouton grise sans explication est une impasse : on relit son formulaire,
+   on ne voit rien d'anormal, et on abandonne. Ce bloc nomme le champ qui
+   retient l'inscription.
+   ============================================================ */
+
+.reg-missing {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--gold-300);
+  border-radius: var(--radius);
+  background: var(--gold-100);
+}
+.reg-missing-icon {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 8px;
+  background: var(--gold-300);
+  color: var(--gold-700);
+  flex: none;
+}
+.reg-missing strong {
+  display: block;
+  font-size: 0.83rem;
+  color: var(--gold-700);
+}
+.reg-missing ul {
+  margin: 0.3rem 0 0;
+  padding-inline-start: 1.1rem;
+  font-size: 0.79rem;
+  line-height: 1.6;
+  color: var(--gold-700);
 }

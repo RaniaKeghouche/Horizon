@@ -1,6 +1,8 @@
+import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import { useData } from "../data/store";
-import { DAY_LABEL, LEVEL_LABEL, LEVEL_GROUPS } from "../lib/labels";
+import { LEVEL_LABEL } from "../lib/labels";
+import { useLabels } from "../lib/useLabels";
 import type { ClassRoom, StudentLevel } from "../lib/types";
 
 export interface GroupFilters {
@@ -44,6 +46,8 @@ export default function GroupPicker({
   /** Hide the group list when the page filters by something else (e.g. students). */
   showGroups?: boolean;
 }) {
+  const L = useLabels();
+  const { t } = useTranslation();
   const { subjects, teachers } = useData();
 
   const subjName = (id: string) => subjects.find((s) => s.id === id)?.name ?? "?";
@@ -93,7 +97,7 @@ export default function GroupPicker({
         <div className="gp-current">
           <span className="gp-current-subject">{subjName(current.subjectId)}</span>
           <span className="muted small">
-            {LEVEL_LABEL[current.level]} · {DAY_LABEL[current.dayOfWeek]} {current.timeSlot} ·{" "}
+            {LEVEL_LABEL[current.level]} · {L.day(current.dayOfWeek)} {current.timeSlot} ·{" "}
             {teacherName(current.teacherId)}
           </span>
         </div>
@@ -121,7 +125,7 @@ export default function GroupPicker({
           <span className="muted small">Niveau</span>
           <select className="input" value={filters.level} onChange={(e) => set({ level: e.target.value })}>
             <option value="">Tous ({opts.levels.length})</option>
-            {LEVEL_GROUPS.map((g) => {
+            {L.levelGroups().map((g) => {
               const avail = g.levels.filter((l) => opts.levels.includes(l));
               if (avail.length === 0) return null;
               return (
@@ -136,7 +140,7 @@ export default function GroupPicker({
         </label>
 
         <label className="field">
-          <span className="muted small">Matière</span>
+          <span className="muted small">{t("nav.subjects")}</span>
           <select className="input" value={filters.subjectId} onChange={(e) => set({ subjectId: e.target.value })}>
             <option value="">Toutes ({opts.subjects.length})</option>
             {opts.subjects.map((id) => (
@@ -155,7 +159,7 @@ export default function GroupPicker({
       {showGroups && (
         <div className="gp-groups">
           {matching.length === 0 ? (
-            <span className="muted small">Aucun groupe avec ces filtres.</span>
+            <span className="muted small">{t("grp.none_filter")}</span>
           ) : (
             matching.map((c) => (
               <button
@@ -168,7 +172,7 @@ export default function GroupPicker({
               >
                 <strong>{subjName(c.subjectId)}</strong>
                 <span>
-                  {LEVEL_LABEL[c.level]} · {DAY_LABEL[c.dayOfWeek]} {c.timeSlot}
+                  {LEVEL_LABEL[c.level]} · {L.day(c.dayOfWeek)} {c.timeSlot}
                 </span>
                 <span className="gp-chip-teacher">{teacherName(c.teacherId)}</span>
               </button>

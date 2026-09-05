@@ -83,6 +83,19 @@ drop policy if exists "enrolreq write" on public."enrollmentRequests";
 create policy "enrolreq write" on public."enrollmentRequests" for all to authenticated using (true) with check (true);
 
 -- ---------------------------------------------------------------------------
--- 6. Rollback for the demo data (see DELETE-DEMO-DATA.sql) — kept separate so
+-- 6. Per-student remarks on a session ("Remarque" column on Faire l'appel).
+--    Shape: {"<studentId>": "arrivé en retard", ...}
+-- ---------------------------------------------------------------------------
+alter table public.sessions
+  add column if not exists "studentNotes" jsonb default '{}'::jsonb;
+-- ---------------------------------------------------------------------------
+-- Note written when a payment is collected ("payé en 2 fois", "chèque"...).
+-- ---------------------------------------------------------------------------
+alter table public.payments
+  add column if not exists "note" text;
+
+
+-- ---------------------------------------------------------------------------
+-- 7. Rollback for the demo data (see DELETE-DEMO-DATA.sql) — kept separate so
 --    you can drop the mock rows without touching the schema.
 -- ---------------------------------------------------------------------------

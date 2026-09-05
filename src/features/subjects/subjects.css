@@ -1,0 +1,210 @@
+/* Matières — grille de cartes à pastille colorée.
+   Palette reprise de la page vitrine : navy, ciel et or. Chaque matière garde
+   sa teinte (tirée de son nom, cf. tintOf) pour rester reconnaissable. */
+
+/* ---------------------------------------------------------------- en-tête */
+.sub-head { align-items: center; }
+.sub-head-icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.sub-head .page-title { flex: 1; min-width: 200px; }
+.sub-head h1 { display: inline-flex; align-items: flex-start; gap: 4px; }
+.sub-spark { color: var(--gold); margin-block-start: 2px; }
+
+.sub-art {
+  width: 150px;
+  flex: none;
+  margin-inline: auto;
+}
+
+/* ---------------------------------------------------------- barre d'ajout */
+.sub-add {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.sub-add-field { flex: 1; min-width: 0; }
+.sub-add .btn { flex: none; }
+
+/* ------------------------------------------------------------------ cartes */
+.sub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.sub-card {
+  position: relative;
+  /* Les cartes sont toutes `position: relative` : sans rang explicite, celle
+     dont le menu est ouvert passe SOUS les suivantes, qui se peignent apres
+     elle. On la remonte le temps de l'ouverture. */
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  /* Un voile de la teinte de la matière, pour que la carte entière la porte
+     sans jamais nuire au contraste du texte. */
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 80%, transparent), transparent 55%),
+    var(--surface);
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+.sub-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--tile-fg);
+}
+
+.sub-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-block-end: 8px;
+  border-radius: 50%;
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+}
+
+.sub-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 750;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.sub-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.sub-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.sub-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-start: 12px;
+}
+
+.sub-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.sub-count.empty {
+  background: color-mix(in srgb, var(--muted) 13%, transparent);
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------- menu "..." */
+.sub-card.menu-open { z-index: 5; }
+
+.sub-menu-wrap { position: relative; flex: none; }
+.sub-menu-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.sub-menu-btn:hover { background: var(--primary-soft); color: var(--primary); }
+
+.sub-menu {
+  position: absolute;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-end: 0;
+  z-index: 10;
+  min-width: 190px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.sub-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 650;
+  color: var(--text);
+  text-align: start;
+  cursor: pointer;
+}
+.sub-menu-item:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+.sub-menu-item:disabled { opacity: 0.45; cursor: default; }
+.sub-menu-note {
+  margin: 4px 11px 6px;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------ bandeau de bas de page */
+.sub-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(120deg, var(--sky-100), var(--surface) 55%, var(--gold-100));
+  box-shadow: var(--shadow-sm);
+}
+.sub-banner-text { flex: 1; min-width: 0; }
+.sub-banner h3 { margin: 0 0 5px; font-size: 1rem; font-weight: 750; }
+.sub-banner p { margin: 0; font-size: 0.86rem; color: var(--muted); line-height: 1.5; }
+.sub-banner-art { width: 68px; flex: none; }
+.sub-banner-art.plant { width: 58px; }
+
+@media (max-width: 760px) {
+  .sub-art { display: none; }
+  .sub-add { flex-wrap: wrap; }
+  .sub-add-field { flex: 1 1 100%; }
+  .sub-add .btn { flex: 1 1 auto; justify-content: center; }
+  .sub-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .sub-banner { flex-wrap: wrap; padding: 16px; }
+  .sub-banner-art.plant { display: none; }
+}

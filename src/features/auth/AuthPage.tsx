@@ -101,7 +101,7 @@ export default function AuthPage() {
               <h1>
                 Rejoignez
                 <br />
-                <span className="au-script">Horizon dès aujourd'hui !</span>
+                <span className="au-script">{t("login.join_today")}</span>
               </h1>
             ) : (
               <h1>
@@ -137,11 +137,11 @@ export default function AuthPage() {
                   <span className="au-title-bar" />
                   <span>Connexion</span>
                 </h2>
-                <p className="au-subtitle">Accédez à votre compte</p>
+                <p className="au-subtitle">{t("login.subtitle_access")}</p>
 
                 {DEMO_MODE && (
                   <div className="au-demo">
-                    <p className="au-demo-hint">Mode démo — choisissez un profil :</p>
+                    <p className="au-demo-hint">{t("login.demo_pick")}</p>
                     <div className="au-demo-roles">
                       {DEMO_ROLES.map(({ role, icon: Icon }) => (
                         <button key={role} type="button" onClick={() => loginAs(role)}>
@@ -159,7 +159,7 @@ export default function AuthPage() {
                     <div className="au-input">
                       <input
                         type="text"
-                        placeholder="Votre email ou identifiant"
+                        placeholder={t("login.id_ph")}
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
                         required
@@ -175,7 +175,7 @@ export default function AuthPage() {
                     <div className="au-input">
                       <input
                         type={showPassword ? "text" : "password"}
-                        placeholder="Votre mot de passe"
+                        placeholder={t("login.pwd_ph")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -190,8 +190,13 @@ export default function AuthPage() {
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+                    {/* Il n'y a pas de reinitialisation en libre-service :
+                        les comptes utilisent une adresse interne generee
+                        (prenom.nom@horizon.app), qui ne recoit aucun courriel.
+                        Le lien menait donc nulle part ; il conduit desormais au
+                        bloc de contact du site, seule voie reelle. */}
                     <div className="au-forgot-row">
-                      <a href="#" className="au-forgot">Mot de passe oublié ?</a>
+                      <a href="/login#contact" className="au-forgot">{t("login.forgot")}</a>
                     </div>
                   </div>
 
@@ -204,7 +209,7 @@ export default function AuthPage() {
                 </form>
 
                 <div className="au-divider">
-                  <span>ou continuer avec</span>
+                  <span>{t("auth.or_continue")}</span>
                 </div>
 
                 <div className="au-social-grid">
@@ -232,11 +237,8 @@ export default function AuthPage() {
         {/* Nom et année tirés de l'i18n / de l'horloge : le pied de page affichait
             « © 2024 » en dur, qui aurait vieilli sans que personne ne le voie. */}
         <p>© {new Date().getFullYear()} {t("app.name")}. {t("hz.footer.rights")}</p>
-        <div className="au-footer-links">
-          <a href="#">{t("footer.legal")}</a>
-          <span>|</span>
-          <a href="#">{t("footer.privacy")}</a>
-        </div>
+        {/* Mentions legales et politique de confidentialite n'existent pas
+            encore : deux liens vers « # » valaient moins que pas de liens. */}
       </footer>
     </div>
   );

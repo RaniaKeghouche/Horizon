@@ -96,8 +96,8 @@ const teachers: Teacher[] = [
 // The centre has five physical rooms; classes only clash when they share one.
 const rooms: Room[] = [
   { id: "rm_big", name: "Grande salle", capacity: 20, kind: "large" },
-  { id: "rm_1", name: "Salle 1", capacity: 12, kind: "standard" },
-  { id: "rm_2", name: "Salle 2", capacity: 12, kind: "standard" },
+  { id: "rm_1", name: "Classe 1", capacity: 12, kind: "standard" },
+  { id: "rm_2", name: "Classe 2", capacity: 12, kind: "standard" },
   { id: "rm_indiv", name: "Salle individuelle", capacity: 2, kind: "individual" },
   { id: "rm_office", name: "Bureau", capacity: 4, kind: "office" },
 ];
@@ -205,7 +205,7 @@ const classes: ClassRoom[] = [
     level: "3as",
     sessionType: "group",
     dayOfWeek: "monday",
-    timeSlot: "17:00-18:30",
+    timeSlot: "16:00-18:00",
     maxStudents: 15,
     pricePerSession: 2700,
     schoolCutMode: "percentage",
@@ -222,7 +222,7 @@ const classes: ClassRoom[] = [
     level: "3as",
     sessionType: "group_special",
     dayOfWeek: "wednesday",
-    timeSlot: "18:30-20:00",
+    timeSlot: "18:00-20:00",
     maxStudents: 12,
     pricePerSession: 2700,
     schoolCutMode: "percentage",
@@ -239,7 +239,7 @@ const classes: ClassRoom[] = [
     level: "3as",
     sessionType: "one_on_one",
     dayOfWeek: "tuesday",
-    timeSlot: "15:30-17:00",
+    timeSlot: "14:00-16:00",
     maxStudents: 4,
     pricePerSession: 2700,
     schoolCutMode: "percentage",
@@ -367,7 +367,7 @@ const activityLog: ActivityLog[] = [
 
 // ---- Slot requests ----
 const slotRequests: TeacherSlotRequest[] = [
-  { id: "sr1", teacherId: "t1", subjectId: "sub_english", dayOfWeek: "thursday", timeSlot: "17:00-18:30", status: "pending", createdAt: now - 3 * DAY },
+  { id: "sr1", teacherId: "t1", subjectId: "sub_english", dayOfWeek: "thursday", timeSlot: "16:00-18:00", status: "pending", createdAt: now - 3 * DAY },
 ];
 
 // Two pending self-registration requests so the admin can test approve/reject.

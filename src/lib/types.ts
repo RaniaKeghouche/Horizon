@@ -149,6 +149,12 @@ export interface Session {
   sessionNumber?: number; // "session X of Y" for the billing period
   notes?: string; // teacher note visible to parent/student
   attendance: Record<string, AttendanceState>; // studentId -> state
+  /** Seance supplementaire : rattrapage, revision d'examen, cours ajoute a la
+   *  demande des eleves. Elle ne tombe pas sur le creneau hebdomadaire du
+   *  groupe, et il peut y en avoir plusieurs le meme jour — c'est ce qui la
+   *  distingue d'une seance ordinaire, laquelle est unique par groupe et par
+   *  date. Elle est facturee comme les autres : la seance a bien eu lieu. */
+  isExtra?: boolean;
 }
 
 export interface Payment {
@@ -164,6 +170,8 @@ export interface Payment {
   teacherCut: number;
   reminderCount: number; // number of automated reminders sent
   lastReminderAt?: number;
+  /** Free note written when the money was taken ("payé en 2 fois", "chèque"...). */
+  note?: string;
 }
 
 export interface AppNotification {
@@ -209,6 +217,13 @@ export interface RegistrationRequest {
   subjects?: string[];
   // student-chosen preferred group (class) — the admin assigns it officially on approval
   preferredClassId?: string;
+  /** Groupes reperes par le candidat AVANT sa validation.
+   *
+   *  Un compte en attente n'a pas encore de fiche eleve : il ne peut donc pas
+   *  porter d'EnrollmentRequest, qui pointe sur un studentId. Ses reservations
+   *  attendent donc ici, sur sa propre demande d'inscription, et sont
+   *  converties en vraies demandes d'inscription par approveRegistration(). */
+  wantedClassIds?: string[];
   status: "pending" | "approved" | "rejected";
   createdAt: number;
   reviewedAt?: number;

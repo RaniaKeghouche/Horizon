@@ -87,23 +87,38 @@ h2 { font-size: 1.25rem; margin: 0; }
 .badge-soft { background: transparent; border: 1px dashed var(--border); color: var(--muted); }
 
 /* ---- App shell ---- */
-.app-shell { display: grid; grid-template-columns: 264px 1fr; min-height: 100vh; }
+.app-shell { display: grid; grid-template-columns: 276px 1fr; min-height: 100vh; }
 .sidebar {
   background: linear-gradient(180deg, #0b1a33 0%, #08132a 100%);
   color: var(--sb-text);
   display: flex; flex-direction: column; padding: 1.25rem 1rem; gap: 0.85rem;
   position: sticky; top: 0; height: 100vh;
 }
+/* Le lockup de la page vitrine s'ecrit en navy sur blanc : pose tel quel sur la
+   barre laterale sombre, le mot « HORIZON » disparaissait. On lui rend donc son
+   fond clair, ce qui garde exactement la marque du site public. */
 .brand {
-  display: flex; align-items: center; gap: 0.75rem; padding: 0.2rem 0.4rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  /* Une marque ne se retourne pas : en arabe le reste de l'interface passe en
+     RTL, mais le lockup garde le sigle a gauche du nom, comme sur la vitrine. */
+  direction: ltr;
+  padding: 0.7rem 0.6rem;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(8, 19, 42, 0.28);
 }
-.brand-logo-img { display: block; border-radius: 8px; flex: none; }
-.brand-text-col { display: flex; flex-direction: column; line-height: 1.05; }
+.brand-logo-img { display: block; border-radius: 8px; flex: none; width: 38px; height: 38px; }
+.brand-text-col { display: flex; flex-direction: column; gap: 2px; line-height: 1; flex: none; }
 .brand-name {
-  font-size: 1.15rem; font-weight: 800; letter-spacing: 0.12em; color: #ffffff;
+  font-size: 1.6rem; font-weight: 800; letter-spacing: 0.02em; color: var(--navy-900);
+  white-space: nowrap;
 }
 .brand-sub {
-  font-size: 0.58rem; font-weight: 800; letter-spacing: 0.18em; color: #f59e0b;
+  /* Meme lockup que la page vitrine : « HORIZON » puis « SKILLS ACADEMY » en or,
+     serres l'un sous l'autre. Seule difference imposee par le fond navy de la
+     barre : le nom passe en blanc la ou la vitrine l'ecrit en navy. */
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.15em; color: var(--gold-500);
+  white-space: nowrap;
 }
 
 .sidebar-role-tag {
@@ -168,9 +183,6 @@ h2 { font-size: 1.25rem; margin: 0; }
 .side-user-meta span { font-size: 0.72rem; color: #94a3b8; }
 .side-user-caret { color: #94a3b8; flex: none; }
 
-.sidebar-footer { flex: none; display: flex; flex-direction: column; gap: 0.4rem; }
-.sidebar-footer .btn-ghost { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #cbd5e1; box-shadow: none; font-size: 0.86rem; padding: 0.5rem 0.8rem; }
-.sidebar-footer .btn-ghost:hover { background: rgba(255,255,255,0.12); color: #fff; }
 
 .avatar {
   width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
@@ -179,35 +191,39 @@ h2 { font-size: 1.25rem; margin: 0; }
 .avatar.lg { width: 46px; height: 46px; font-size: 1rem; }
 
 /* ---- Content / topbar ---- */
-.content { display: flex; flex-direction: column; min-width: 0; background: #f8fafc; }
+.content { display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
 .topbar {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 0.9rem 1.75rem; position: sticky; top: 0; z-index: 5;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px); border-bottom: 1px solid rgba(15, 37, 71, 0.07);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
 }
-.topbar-greeting { font-weight: 800; font-size: 1.08rem; color: #0f172a; }
+.topbar-greeting { font-weight: 800; font-size: 1.08rem; color: var(--text); }
 .topbar-right { display: flex; align-items: center; gap: 0.75rem; }
 .search-box { display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; border: 1px solid rgba(15, 37, 71, 0.08); border-radius: 999px; padding: 0.45rem 0.95rem; }
-.search-box input { border: none; background: transparent; color: #0f172a; outline: none; font-size: 0.88rem; width: 170px; }
+.search-box input { border: none; background: transparent; color: var(--text); outline: none; font-size: 0.88rem; width: 170px; }
 .search-box input::placeholder { color: #94a3b8; }
 .topbar-user { display: flex; align-items: center; gap: 0.5rem; }
 .bell { position: relative; width: 2.3rem; height: 2.3rem; display: grid; place-items: center; border-radius: 50%; background: #ffffff; border: 1px solid rgba(15, 37, 71, 0.1); }
+/* Pastille chiffree de la cloche.
+   `right` etait physique : en arabe la pastille restait a droite alors que la
+   cloche se lit a gauche. L'anneau blanc en dur trouait le theme sombre. */
 .dot-count {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: #f59e0b;
-  color: #0f172a;
-  font-size: 0.65rem;
+  top: -3px;
+  inset-inline-end: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.66rem;
   font-weight: 800;
+  line-height: 1;
   display: grid;
   place-items: center;
-  box-shadow: 0 0 0 2px #ffffff;
+  box-shadow: 0 0 0 2px var(--surface);
 }
 /* User menu (top-right) — always-visible logout */
 .user-menu { position: relative; }
@@ -227,7 +243,7 @@ h2 { font-size: 1.25rem; margin: 0; }
 .menu-item:hover { background: var(--primary-soft); }
 .menu-item.danger { color: var(--danger); }
 .menu-item.danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
-.bell .dot { position: absolute; top: 2px; inset-inline-end: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); }
+.bell .dot:not(.dot-count) { position: absolute; top: 2px; inset-inline-end: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); }
 .page { padding: 1.5rem; overflow: auto; }
 .center-screen { min-height: 100vh; display: grid; place-items: center; font-size: 2rem; color: var(--primary); }
 
@@ -423,28 +439,18 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .history-marks { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
 /* ---- Notifications ---- */
-.notif { display: flex; align-items: center; gap: 0.9rem; padding: 0.95rem 1.1rem; cursor: pointer; box-shadow: var(--shadow-sm); }
-.notif.read { opacity: 0.6; }
-.notif-icon { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 12px; background: var(--primary-soft); font-size: 1.25rem; }
-.notif-body { flex: 1; }
-.notif .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+/* .notif* : voir src/features/notifications/notifications.css */
 
-/* ---- Schedule grid ---- */
+/* ---- Schedule grid ----
+   L'apparence de la grille vit desormais dans
+   src/features/schedule/schedule.css : les regles qui etaient ici peignaient la
+   case occupee en degrade navy avec du texte blanc centre, ce qui ecrasait la
+   carte teintee par matiere. Seul reste ici le conteneur qui defile, partage
+   avec les autres tableaux larges. */
 .teacher-pick { display: flex; align-items: center; gap: 0.5rem; }
 .teacher-pick .input { width: auto; }
-.schedule-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 0.5rem; }
-.schedule-grid { border-collapse: separate; border-spacing: 6px; width: 100%; min-width: 760px; }
-.schedule-grid thead th { padding: 0.6rem; background: transparent; color: var(--muted); font-size: 0.85rem; }
-.slot-time { padding: 0.5rem; font-size: 0.8rem; white-space: nowrap; color: var(--muted); font-weight: 650; }
-.cell { height: 60px; border-radius: 12px; cursor: pointer; background: var(--surface-2); border: 1px dashed transparent; }
-.cell-free { color: var(--success); font-size: 1.5rem; font-weight: 700; border-color: color-mix(in srgb, var(--success) 40%, transparent); }
-.cell-free:hover { background: color-mix(in srgb, var(--success) 12%, transparent); }
-.cell-busy { background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 7px, var(--border) 7px, var(--border) 8px); cursor: not-allowed; }
-.cell-booked { background: var(--primary-grad); box-shadow: 0 8px 20px rgba(91,83,232,0.3); padding: 0; }
-.cell-class { width: 100%; height: 100%; border: none; background: transparent; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 0.05rem; align-items: center; justify-content: center; padding: 0.3rem; }
-.cell-subj { font-size: 0.82rem; font-weight: 650; }
-.cell-meta { font-size: 0.72rem; color: rgba(255,255,255,0.85); }
-.cell-cap { font-size: 0.7rem; color: rgba(255,255,255,0.75); }
+.schedule-wrap { overflow-x: auto; }
+.schedule-grid { min-width: 880px; }
 
 /* ---- Landing / login (Desk to Dreams Creative UI) ---- */
 .landing {
@@ -594,7 +600,12 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
    resolves the ink to #203b71 — a measured distance of 6 from --navy-600 — so
    the mark sits with the navy wordmark and leaves gold reserved for CTAs.
    To restore the original colours, delete the filter declaration below. */
-.brand-logo-img,
+/* NB : `.brand-logo-img` a ete retire de cette liste. Le traitement ci-dessous
+   vise l'ANCIEN logo magenta (horizon-logo.png) : la duotone le ramenait au
+   navy, et la pastille blanche ronde lui donnait un fond. Applique au sigle
+   actuel — un hexagone navy deja aux couleurs de la maison — il ecrasait l'or
+   du H et rognait l'hexagone en disque, d'ou le « fond bleu » derriere le
+   logo de la barre laterale. */
 .footer-logo,
 .auth-logo {
   width: 46px;
@@ -701,7 +712,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .nav-cta:active { transform: translateY(0) scale(0.985); }
 .hamburger-btn {
   background: transparent; border: none; font-size: 1.5rem; display: none;
-  color: #0f172a; cursor: pointer; padding: 0.25rem; line-height: 1;
+  color: var(--text); cursor: pointer; padding: 0.25rem; line-height: 1;
   align-items: center; justify-content: center;
 }
 
@@ -741,7 +752,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   padding: 0.85rem 1rem;
   border-radius: 14px;
   text-decoration: none;
-  color: #1e293b;
+  color: var(--text);
   font-weight: 650;
   font-size: 1rem;
   text-align: start;
@@ -750,7 +761,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   cursor: pointer;
 }
 .mobile-nav a:hover,
-.mobile-nav .link-btn:hover { background: rgba(15, 37, 71, 0.08); color: #0f2547; }
+.mobile-nav .link-btn:hover { background: rgba(15, 37, 71, 0.08); color: var(--text); }
 .mobile-nav .nav-cta {
   margin-top: 0.25rem;
   text-align: center;
@@ -944,8 +955,8 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.04), inset 0 0 0 1px rgba(255,255,255,0.5);
 }
 .benefit-stat { display: flex; flex-direction: column; gap: 0.1rem; }
-.stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; color: #0f172a; }
-.benefit-stat .stat-label { font-size: 0.8rem; font-weight: 700; color: #0f2547; text-transform: uppercase; letter-spacing: 1.5px; }
+.stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; color: var(--text); }
+.benefit-stat .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 1.5px; }
 
 .hero-visual { position: relative; display: grid; place-items: center; width: 100%; height: 100%; z-index: 2; }
 .dreams-image {
@@ -1043,7 +1054,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
      above the plain `.section-title` override in the 900px block, so a fixed
      size here would stay 2.8rem all the way down to a phone. */
   font-size: clamp(1.75rem, 4vw, 2.8rem);
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: clamp(2.25rem, 5vw, 5rem);
   font-weight: 800;
   position: relative;
@@ -1118,7 +1129,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   place-items: center;
   font-size: 1.25rem;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  color: #0f172a;
+  color: var(--text);
 }
 
 /* Marquee */
@@ -1141,7 +1152,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .marquee-track span {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #0f2547;
+  color: var(--text);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1170,18 +1181,18 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .landing-panel { padding: 4rem 1rem 6rem; position: relative; z-index: 2; background: transparent; }
 .login-card2 { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); border-radius: 16px; padding: 2.5rem; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 25px 50px rgba(15, 23, 42, 0.08); }
 
-.login-title { margin: 0; text-align: center; font-weight: 800; color: #0f172a; font-size: 1.8rem; font-family: 'Playfair Display', serif; }
+.login-title { margin: 0; text-align: center; font-weight: 800; color: var(--text); font-size: 1.8rem; font-family: 'Playfair Display', serif; }
 .demo-login-panel { margin-bottom: 1.5rem; }
 .demo-hint { text-align: center; color: #64748b; margin: 0 0 0.85rem; font-size: 0.88rem; }
 .role-picker { display: flex; flex-direction: column; gap: 0.6rem; }
 .role-btn {
   border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 14px;
   justify-content: flex-start; gap: 0.85rem; padding: 0.75rem 0.9rem;
-  font-size: 0.98rem; font-weight: 650; color: #0f172a;
+  font-size: 0.98rem; font-weight: 650; color: var(--text);
   box-shadow: none; transition: all 0.2s ease;
 }
 .role-btn:hover {
-  background: #fff; border-color: #0f2547; color: #0f2547;
+  background: #fff; border-color: var(--text); color: var(--text);
   transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15, 37, 71, 0.14);
 }
 .role-icon {
@@ -1190,38 +1201,15 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   color: #fff; font-size: 1.1rem; box-shadow: 0 6px 16px rgba(15, 37, 71, 0.3);
 }
 
-/* Registration: segmented student/teacher switch (was inline-styled). */
-.reg-role-switch {
-  display: flex; gap: 0.35rem; margin-bottom: 1.5rem;
-  background: #f1f5f9; padding: 0.28rem; border-radius: 999px;
-}
-.reg-role-switch button {
-  flex: 1; border: none; background: transparent; color: #64748b;
-  font-weight: 600; font-size: 0.92rem; padding: 0.6rem; border-radius: 999px;
-  cursor: pointer; transition: all 0.2s ease;
-}
-.reg-role-switch button:hover { color: #0f172a; }
-.reg-role-switch button.on {
-  background: #fff; color: #0f172a; font-weight: 700;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
-}
+/* L'ecran de confirmation d'inscription appartient desormais a auth.css :
+   les regles qui vivaient ici dataient de la version « grosse coche verte » et
+   ecrasaient les nouvelles (pastille verte, identifiant sans bouton copier).
+   `.reg-username` n'a plus de balise porteuse. */
 
-/* Registration success screen. */
-.reg-done { text-align: center; margin-top: 1.5rem; }
-.reg-done-mark {
-  width: 68px; height: 68px; margin: 0 auto 1.1rem;
-  border-radius: 50%; display: grid; place-items: center;
-  background: linear-gradient(135deg, #34d17f, #12b76a);
-  color: #fff; box-shadow: 0 14px 30px rgba(18, 183, 106, 0.32);
-}
-.reg-username {
-  font-size: 1.3rem; font-weight: 800; color: #0f2547;
-  background: #eef6fc; border: 1px dashed #c8e4f4;
-  padding: 0.85rem; border-radius: 12px; user-select: all; margin: 0.5rem 0 0;
-}
-
-/* Registration on the glass panel — replaces hardcoded light-theme inline colours. */
-.reg-muted { color: rgba(255, 255, 255, 0.72); margin: 0; }
+/* Registration form. These were written for a dark glass panel that no longer
+   exists — on today's white card they rendered white-on-white (the role switch
+   and the select were literally invisible), so they are light-theme now. */
+.reg-muted { color: #64748b; margin: 0; }
 .reg-muted.small { font-size: 0.85rem; }
 .reg-select {
   width: 100%;
@@ -1229,27 +1217,29 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   padding-inline-start: 2.75rem;
   padding-inline-end: 1rem;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 1px solid rgba(15, 37, 71, 0.18);
   border-radius: 0;
   background: transparent;
-  color: #fff;
+  color: var(--text);
   font-size: 1rem;
   appearance: none;
   cursor: pointer;
 }
 .reg-select:focus { outline: none; border-bottom-color: var(--gold); box-shadow: 0 1px 0 0 var(--gold); }
 /* Native dropdowns render on the OS surface, so options need readable colours. */
-.reg-select option, .reg-select optgroup { color: #0f172a; background: #fff; }
+.reg-select option, .reg-select optgroup { color: var(--text); background: #fff; }
 .reg-chip {
   display: inline-flex; align-items: center; gap: 0.4rem;
-  background: rgba(255, 255, 255, 0.16); color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #edf5fd; color: var(--primary);
+  border: 1px solid rgba(30, 63, 117, 0.2);
   border-radius: 999px; padding: 0.3rem 0.75rem;
   font-size: 0.85rem; font-weight: 600;
 }
-.reg-chip-x { background: none; border: none; color: var(--gold-lift); cursor: pointer; padding: 0; font-size: 1rem; }
-.reg-done .reg-username { background: rgba(255, 255, 255, 0.14); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
-.reg-done .link-btn { color: var(--gold-lift); }
+.reg-chip-x { background: none; border: none; color: #b45309; cursor: pointer; padding: 0; font-size: 1rem; }
+/* .reg-done .reg-username is deliberately NOT overridden: auth.css styles it as
+   navy on pale blue, and the generated login is the one value the new user has
+   to be able to read. */
+.reg-done .link-btn { color: var(--primary); }
 .or-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-size: 0.85rem; }
 .or-divider::before, .or-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 .link-btn { background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 0.9rem; text-align: center; }
@@ -1390,7 +1380,11 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 
 /* Laptop widths: give the content back some room from the sidebar. */
 @media (max-width: 1440px) {
-  .app-shell { grid-template-columns: 236px 1fr; }
+  .app-shell { grid-template-columns: 248px 1fr; }
+  .brand { gap: 0.5rem; padding: 0.6rem 0.5rem; }
+  .brand-logo-img { width: 33px; height: 33px; }
+  .brand-name { font-size: 1.35rem; letter-spacing: 0.01em; }
+  .brand-sub { font-size: 0.62rem; letter-spacing: 0.12em; }
   .topbar { padding: 0.75rem 1.25rem; }
   .page { padding: 1.25rem; }
   .search-box input { width: 120px; }
@@ -1399,14 +1393,14 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 /* Short viewports — the whole point of the "fits a 14-inch laptop" pass.
    At full size the sidebar needs ~760px of nav plus ~295px of chrome, so it only
    stops scrolling above ~1055px of viewport. Below that the shell tightens in three
-   stages. Stage 1 is structural: drop the side-user block and lay the footer out as
-   two icon buttons — both are already duplicated by the topbar avatar menu, and
-   together they hand ~190px straight back to the nav. */
+   stages. Stage 1 resserre le pied : la carte utilisateur perd sa deuxieme ligne
+   et la bascule de theme son intitule. Elle etait autrefois masquee ici, mais
+   elle porte desormais la langue et la deconnexion — les deux boutons de pied
+   qui la doublaient n'existent plus. */
 @media (max-height: 1060px) {
-  .side-user { display: none; }
-  .sidebar-footer { flex-direction: row; gap: 0.4rem; }
-  .sidebar-footer .btn { flex: 1; padding: 0.45rem; }
-  .sidebar-footer .btn-label { display: none; }
+  .side-user { padding-block: 0.45rem; }
+  .side-user-meta span { display: none; }
+  .sidebar-theme { padding-block: 0.45rem; }
   .nav-link { padding: 0.45rem 0.8rem; }
   .nav-section-head { padding: 0.25rem 0.8rem; }
 }
@@ -1422,7 +1416,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   .nav-section-head { padding: 0.2rem 0.75rem; font-size: 0.66rem; }
   .nav-link { padding: 0.34rem 0.75rem; gap: 0.6rem; font-size: 0.88rem; border-radius: 10px; }
   .nav-icon { font-size: 1rem; width: 1.3rem; }
-  .sidebar-footer .btn { padding: 0.42rem; }
+  .sidebar-theme { padding-block: 0.42rem; }
 
   .topbar { padding: 0.55rem 1.25rem; }
   .topbar-greeting { font-size: 0.98rem; }
@@ -1451,12 +1445,16 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 /* Tablet: collapse sidebar to an icon rail */
 @media (max-width: 1024px) and (min-width: 761px) {
   .app-shell { grid-template-columns: 78px 1fr; }
-  .brand-name, .nav-link > span:last-child, .side-user-meta { display: none; }
-  .brand, .nav-link { justify-content: center; }
-  .side-user { justify-content: center; }
-  .sidebar-footer { flex-direction: column; }
-  .sidebar-footer .btn { gap: 0; padding: 0.6rem; }
-  .sidebar-footer .btn-label { display: none; }
+  .brand-text-col,
+  .sidebar-role-tag,
+  .nav-section-head,
+  .nav-label,
+  .nav-caret,
+  .side-user-meta,
+  .side-user-caret,
+  .sidebar-theme-label,
+  .sidebar-switch { display: none; }
+  .brand, .nav-link, .side-user, .sidebar-theme { justify-content: center; }
 }
 /* Phone: sidebar becomes a top icon bar */
 @media (max-width: 760px) {
@@ -1472,10 +1470,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   .nav-link { padding: 0.55rem 0.65rem; }
   .nav-link > span:last-child { display: none; }
   .nav-icon { width: auto; font-size: 1.25rem; }
-  .side-user { display: none; }
-  .sidebar-footer { flex-direction: row; }
-  .sidebar-footer .btn { gap: 0; padding: 0.55rem 0.7rem; }
-  .sidebar-footer .btn-label { display: none; }
+  .side-user-wrap { display: none; }
   .search-box { display: none; }
   .topbar { padding: 0.7rem 1rem; }
   .topbar-greeting { font-size: 0.95rem; }
@@ -1497,7 +1492,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   font-family: 'Playfair Display', serif;
   font-size: 3rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: 2rem;
 }
 .contact-cloud-wrapper {
@@ -1530,7 +1525,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   width: 220px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   transition: transform 0.3s ease;
-  color: #0f172a;
+  color: var(--text);
   text-align: left;
 }
 .c-card:hover {
@@ -1554,7 +1549,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 }
 .c-card.active .c-icon {
   background: white;
-  color: #0f2547;
+  color: var(--text);
 }
 .c-card p {
   font-weight: 700;
@@ -1579,7 +1574,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .contact-form-side label {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -1591,7 +1586,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   border-radius: 12px;
   font-family: inherit;
   font-size: 1rem;
-  color: #0f172a;
+  color: var(--text);
 }
 .contact-form-side input:focus, .contact-form-side textarea:focus {
   outline: 2px solid #f59e0b;
@@ -1620,7 +1615,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .c-info-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.8rem;
-  color: #0f2547;
+  color: var(--text);
   font-weight: 800;
 }
 .c-info-desc {
@@ -1642,7 +1637,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 }
 .c-social-text {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.9rem;
 }
 .c-social-icons {
@@ -1905,7 +1900,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   font-family: 'Playfair Display', serif;
   font-size: 3rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: 2rem;
 }
 .contact-cloud-wrapper {
@@ -2025,7 +2020,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .contact-form-side label {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -2037,7 +2032,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   border-radius: 12px;
   font-family: inherit;
   font-size: 1rem;
-  color: #0f172a;
+  color: var(--text);
 }
 .contact-form-side input:focus, .contact-form-side textarea:focus {
   outline: 2px solid #f59e0b;
@@ -2066,7 +2061,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .c-info-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.8rem;
-  color: #0f2547;
+  color: var(--text);
   font-weight: 800;
 }
 .c-info-desc {
@@ -2088,7 +2083,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 }
 .c-social-text {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.9rem;
 }
 .c-social-icons {
@@ -2234,20 +2229,20 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   transition: color 0.2s;
 }
 .auth-back-link:hover {
-  color: #0f172a;
+  color: var(--text);
 }
 .auth-logo { width: 38px; height: 38px; border-radius: 50%; }
 .auth-brand-text {
   font-family: 'Playfair Display', serif;
   font-weight: 800;
   font-size: 1.6rem;
-  color: #0f172a;
+  color: var(--text);
 }
 .auth-title {
   font-family: 'Playfair Display', serif;
   font-size: 2.2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: 2rem;
 }
 .auth-form-group {
@@ -2257,7 +2252,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   display: block;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: 0.5rem;
 }
 .auth-label-row {
@@ -2268,7 +2263,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 }
 .auth-forgot-link {
   font-size: 0.85rem;
-  color: #0f2547;
+  color: var(--text);
   text-decoration: none;
   font-weight: 600;
 }
@@ -2294,12 +2289,12 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   font-size: 1rem;
-  color: #0f172a;
+  color: var(--text);
   transition: all 0.2s;
 }
 .auth-input-wrapper input:focus {
   outline: none;
-  border-color: #0f2547;
+  border-color: var(--text);
   background: white;
   box-shadow: 0 0 0 4px rgba(15, 37, 71, 0.1);
 }
@@ -2313,7 +2308,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   padding: 0;
   display: flex;
 }
-.auth-toggle-password:hover { color: #0f2547; }
+.auth-toggle-password:hover { color: var(--text); }
 .auth-checkbox-group {
   display: flex;
   align-items: center;
@@ -2323,7 +2318,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .auth-checkbox-group input {
   width: 16px;
   height: 16px;
-  accent-color: #0f2547;
+  accent-color: var(--text);
 }
 .auth-checkbox-group label {
   font-size: 0.9rem;
@@ -2550,7 +2545,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   background: linear-gradient(135deg, #1e3f75, #c8922a);
 }
 .hfc-body { display: flex; flex-direction: column; line-height: 1.25; }
-.hfc-body strong { font-size: 0.88rem; color: #0f172a; }
+.hfc-body strong { font-size: 0.88rem; color: var(--text); }
 .hfc-body span { font-size: 0.74rem; color: #64748b; }
 .avatar-group {
   display: flex;
@@ -2576,7 +2571,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   line-height: 1.4;
 }
 .trust-text strong {
-  color: #0f172a;
+  color: var(--text);
   font-weight: 800;
 }
 
@@ -2610,7 +2605,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .auth-register-text button {
   background: none;
   border: none;
-  color: #0f2547;
+  color: var(--text);
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -2778,12 +2773,6 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   box-shadow: none;
 }
 .role-icon { background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.3); }
-/* Registration flow shares the panel. */
-.reg-role-switch { background: rgba(255, 255, 255, 0.12); }
-.reg-role-switch button { color: rgba(255, 255, 255, 0.7); }
-.reg-role-switch button:hover { color: #fff; }
-.reg-role-switch button.on { background: #fff; color: var(--ink); }
-.reg-username { background: rgba(255, 255, 255, 0.14); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
 
 .auth-showcase-logo {
   width: 140px;
@@ -2867,7 +2856,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  color: #0f172a;
+  color: var(--text);
   padding: 5rem 1.5rem 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   position: relative;
@@ -2893,7 +2882,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   font-weight: 800;
   font-size: 1.6rem;
   letter-spacing: 0.05em;
-  color: #0f172a;
+  color: var(--text);
 }
 .footer-desc {
   color: #475569;
@@ -2905,7 +2894,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   font-weight: 700;
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
-  color: #0f172a;
+  color: var(--text);
 }
 .footer-links-group {
   display: flex;
@@ -2926,7 +2915,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   transition: color 0.2s;
 }
 .footer-links-group a:hover {
-  color: #0f2547;
+  color: var(--text);
 }
 .f-social-icons {
   display: flex;
@@ -2937,7 +2926,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   height: 40px;
   border-radius: 50%;
   background: rgba(15, 37, 71, 0.1);
-  color: #0f2547;
+  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3015,7 +3004,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   font-family: 'Playfair Display', serif;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   margin: 0;
 }
 
@@ -3047,7 +3036,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   flex-shrink: 0;
 }
 
-.c-icon-new.c-indigo { background: #eef6fc; color: #0f2547; }
+.c-icon-new.c-indigo { background: #eef6fc; color: var(--text); }
 .c-icon-new.c-pink { background: #fdf2f8; color: #c8922a; }
 .c-icon-new.c-cyan { background: #e0f2fe; color: #9fd2ea; }
 
@@ -3060,7 +3049,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
 .c-item-new strong {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -3116,7 +3105,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   gap: 0.4rem;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .contact-form-card-new input,
@@ -3127,7 +3116,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   border-radius: 8px;
   border: none;
   background: #f1f5f9;
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.95rem;
   outline: none;
   transition: all 0.2s;
@@ -4110,4 +4099,864 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   .auth-emblem { gap: 0.7rem; padding: 1rem; }
   .auth-emblem img { width: 68px; height: 68px; padding: 7px; }
   .auth-slogan { font-size: 1rem; }
+}
+
+/* ============================================================
+   ATTENDANCE — marking table
+   ============================================================ */
+.att-table td { vertical-align: middle; }
+.att-table tr.off { opacity: 0.45; }
+
+/* One-click present/absent toggle. */
+.att-status {
+  min-width: 6.5rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.att-status.ok { background: #e7f7ee; color: #12703f; border-color: #b7e6cc; }
+.att-status.no { background: #fdeaea; color: #a01c1c; border-color: #f3c2c2; }
+.att-status.na { background: var(--surface-2); color: var(--muted); cursor: default; }
+.att-status:not(.na):hover { filter: brightness(0.96); }
+
+.input.sm { padding: 0.35rem 0.55rem; font-size: 0.85rem; }
+
+.att-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.att-sum {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.att-sum strong { font-size: 1.05rem; color: var(--text); }
+.att-sum.ok  { background: #e7f7ee; border-color: #b7e6cc; }
+.att-sum.ok strong { color: #12703f; }
+.att-sum.no  { background: #fdeaea; border-color: #f3c2c2; }
+.att-sum.no strong { color: #a01c1c; }
+.att-sum.warn { background: #fff7e6; border-color: #f2d79b; }
+.att-sum.warn strong { color: #92400e; }
+
+/* ============================================================
+   PAIEMENTS — KPI row and the student ledger
+   ============================================================ */
+.pay-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+.pay-kpi { position: relative; display: flex; align-items: flex-start; gap: 0.85rem; overflow: hidden; }
+.pay-kpi-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pay-kpi-body > strong { display: block; font-size: 1.7rem; line-height: 1.15; letter-spacing: -0.02em; }
+.pay-kpi-foot { display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.74rem; font-weight: 650; }
+
+.pay-progress { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.pay-progress-fill { display: block; height: 100%; border-radius: 999px; background: #f0920b; }
+
+.pay-split-figs { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.pay-split-figs > div { display: flex; flex-direction: column; gap: 0.1rem; }
+.pay-split-figs strong { font-size: 1.35rem; line-height: 1.15; }
+.pay-split-figs span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.pay-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.pay-dot.school { background: #0b1a33; }
+.pay-dot.teacher { background: #f0920b; }
+.pay-splitbar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--surface-2); }
+.pay-splitbar .school { background: #0b1a33; }
+.pay-splitbar .teacher { background: #f0920b; }
+
+.pay-ledger-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.pay-ledger-title { margin: 0; font-size: 1.1rem; }
+.pay-ledger-head p { margin: 0.15rem 0 0; }
+
+.pay-filters {
+  display: grid;
+  grid-template-columns: minmax(11rem, 1.4fr) repeat(3, minmax(8rem, 1fr));
+  gap: 0.7rem;
+  align-items: end;
+}
+
+/* Row tint carries the state: red when late, green once settled. */
+.pay-ledger tbody tr.late td { background: #fff6f6; }
+.pay-ledger tbody tr.settled td { background: #f6fdf9; }
+.pay-ledger td { vertical-align: middle; }
+
+/* Four dots = the four sessions of the running cycle. */
+.pay-dots { display: inline-flex; align-items: center; gap: 0.28rem; }
+.pay-dot-step {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e2e6ee;
+  display: inline-block;
+}
+.pay-dot-step.paid { background: #12b76a; }
+.pay-dot-step.due { background: #0b1a33; }
+.pay-dots em {
+  font-style: normal;
+  margin-inline-start: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.pay-debt { display: flex; flex-direction: column; line-height: 1.25; }
+.pay-debt em { font-style: normal; font-size: 0.68rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.2rem; }
+
+.pay-actions { display: flex; gap: 0.35rem; align-items: center; }
+.pay-record {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.32rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pay-record:hover:not(:disabled) { border-color: var(--text); background: #0b1a33; color: #fff; }
+.pay-record.urgent { background: #f0920b; border-color: #f0920b; color: #fff; }
+.pay-record.urgent:hover { background: #d97f06; border-color: #d97f06; }
+.pay-record:disabled { opacity: 0.45; cursor: not-allowed; }
+.pay-detail {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.pay-detail:hover { border-color: var(--primary); color: var(--primary); }
+
+@media (max-width: 900px) {
+  .pay-filters { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ============================================================
+   PAYMENT DIALOG — choose what is being settled, and note it
+   ============================================================ */
+.pay-dialog-sub { margin: -0.25rem 0 0.85rem; }
+.pay-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.pay-dialog-list {
+  list-style: none;
+  margin: 0 0 0.9rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 15rem;
+  overflow-y: auto;
+}
+.pay-dialog-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.pay-dialog-list li.on { border-color: #f2d79b; background: #fffaf0; }
+.pay-dialog-list input { width: 1.05rem; height: 1.05rem; flex: none; cursor: pointer; }
+.pay-dialog-list label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.pay-dialog-amount { flex: none; white-space: nowrap; }
+
+.pay-dialog-note span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.pay-dialog-note textarea { resize: vertical; }
+
+.pay-dialog-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.pay-dialog-total > span:first-child { display: inline-flex; align-items: center; gap: 0.35rem; }
+.pay-dialog-figures { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+.pay-dialog-figures strong { font-size: 1.15rem; color: var(--text); }
+.pay-dialog-figures em { font-style: normal; font-size: 0.72rem; font-weight: 700; }
+.pay-owing-note { align-self: center; }
+
+/* ============================================================
+   PAIE — teacher ledger: overview table + detail panel
+   ============================================================ */
+.pay-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.pay-teachers tbody tr { cursor: pointer; }
+.pay-teachers tbody tr:hover td { background: var(--surface-2); }
+.pay-teachers tbody tr.on td { background: var(--primary-soft); }
+.pay-teachers td { vertical-align: middle; }
+
+.pay-breakdown { display: flex; flex-direction: column; gap: 0.3rem; min-width: 11rem; }
+.pay-breakdown > span:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.pay-splitbar .ready { background: var(--success); }
+.pay-splitbar .locked { background: color-mix(in srgb, var(--gold) 55%, var(--surface-2)); }
+
+.pay-review {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pay-review:hover { border-color: var(--primary); color: var(--primary); }
+.pay-review.on { background: #f0920b; border-color: #f0920b; color: #fff; }
+
+.pay-detail-panel { display: flex; flex-direction: column; gap: 0.6rem; }
+.pay-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+.pay-cleared { font-size: 2.1rem; line-height: 1.1; letter-spacing: -0.02em; }
+.pay-execute { width: 100%; justify-content: center; }
+
+/* One row per student: what they generate and whether the teacher was paid. */
+.pay-students { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.pay-students li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.pay-students li.settled { background: #f4fbf7; border-color: #cdead9; }
+.pay-students li.owed { background: #fffaf0; border-color: #f2d79b; }
+.pay-students li.locked { background: #fbfbfc; opacity: 0.85; }
+.pay-students .att-name-col { flex: 1; min-width: 0; }
+.pay-student-figs { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+.pay-tag {
+  font-style: normal;
+  font-size: 0.64rem;
+  font-weight: 800;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.pay-tag.settled { background: #e7f7ee; color: #12703f; }
+.pay-tag.owed { background: #fff3d6; color: #92400e; }
+.pay-tag.locked { background: #fdeaea; color: #a01c1c; }
+
+@media (max-width: 1100px) {
+  .pay-board { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ==========================================================================
+   Réactivité — forme tactile
+   Sous 760 px, Shell.tsx bascule déjà sur MobileLayout : ce bloc ne corrige
+   donc pas la coque mais le CONTENU des pages, qui restait dessiné pour un
+   écran large.
+   ========================================================================== */
+
+/* Une barre d'actions doit pouvoir passer à la ligne à toute largeur : trois
+   boutons plus un sélecteur débordent bien avant le seuil téléphone. */
+.row-actions { flex-wrap: wrap; }
+
+@media (max-width: 760px) {
+  /* En-tête de page : le titre puis les actions, chacun sur toute la largeur.
+     En ligne, les actions poussaient l'en-tête au-delà de l'écran. */
+  .page-head { flex-direction: column; align-items: stretch; gap: 0.85rem; }
+  .page-head .row-actions { width: 100%; justify-content: flex-start; }
+  .page-head .row-actions > .btn { flex: 1 1 auto; justify-content: center; }
+
+  /* Deux champs date côte à côte ne tiennent pas dans 390 px. */
+  .att-range { display: flex; flex-wrap: wrap; width: 100%; }
+  .att-range .input { flex: 1 1 130px; min-width: 0; }
+
+  .grid-cards { grid-template-columns: 1fr; }
+  .toolbar { flex-wrap: wrap; }
+
+  /* ---------------------------------------------------------------------
+     Tableaux repliés en cartes. Le conteneur cesse de défiler : chaque ligne
+     devient une fiche, chaque cellule porte le nom de sa colonne (posé par
+     StackedTable dans data-label).
+     --------------------------------------------------------------------- */
+  .stack-sm { overflow-x: visible; }
+  .stack-sm .table,
+  .stack-sm .table tbody,
+  .stack-sm .table tr,
+  .stack-sm .table td { display: block; width: 100%; }
+  .stack-sm .table thead { display: none; }
+
+  .stack-sm .table tr {
+    margin-block-end: 0.7rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .stack-sm .table tr:last-child { margin-block-end: 0; }
+
+  .stack-sm .table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    padding: 0.35rem 0;
+    border: 0;
+    text-align: start;
+  }
+  .stack-sm .table td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  /* Sans en-tête (colonne d'actions), pas d'intitulé : la cellule occupe
+     toute la largeur au lieu de s'aligner sur une étiquette vide. */
+  .stack-sm .table td:not([data-label])::before { display: none; }
+  .stack-sm .table td:not([data-label]) { justify-content: flex-end; }
+
+  /* La première cellule fait office de titre de fiche. */
+  .stack-sm .table td:first-child {
+    padding-block-end: 0.55rem;
+    margin-block-end: 0.35rem;
+    border-block-end: 1px solid var(--border);
+    font-weight: 650;
+  }
+  .stack-sm .table td:first-child::before { display: none; }
+  .stack-sm .table td:first-child { justify-content: flex-start; }
+
+  /* Le contenu riche des cellules (identité, étiquettes) doit rester à droite
+     de son intitulé sans le repousser hors de l'écran. */
+  .stack-sm .table td > * { min-width: 0; }
+  .stack-sm .table .cell-tags { flex-wrap: wrap; justify-content: flex-end; }
+  .stack-sm .table .row-actions { justify-content: flex-end; }
+}
+
+/* La main du bonjour est une icône, pas un émoji : rendu identique sur tous
+   les systèmes, et elle suit la couleur du texte. */
+.greet-wave {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-inline-start: 0.35rem;
+  color: var(--gold);
+}
+
+/* ==========================================================================
+   Coque — barre laterale et barre du haut
+   Reprend l'identite de la page vitrine : degrade navy, accent or, pastilles
+   arrondies. Complete les regles historiques plus haut dans ce fichier.
+   ========================================================================== */
+
+/* ------------------------------------------------------------ barre laterale */
+.brand { position: relative; }
+/* Hors du cartouche blanc : il appartient a la barre, pas a la marque. */
+/* Le chevron designe « vers le bord », pas « vers la gauche » : il suit donc le
+   sens de lecture, et pivote quand le rail est deja replie. */
+
+/* Element actif : pastille pleine au degrade de la marque, plus un chevron. */
+.nav-link { position: relative; }
+.nav-link.active {
+  background: linear-gradient(135deg, var(--navy-600), var(--navy-800));
+  box-shadow: 0 6px 18px rgba(8, 19, 42, 0.45);
+}
+.nav-label { flex: 1; min-width: 0; }
+.nav-caret { flex: none; opacity: 0; color: var(--gold); transition: opacity var(--dur-fast) var(--ease); }
+.nav-link.active .nav-caret { opacity: 1; }
+[dir="rtl"] .nav-caret { transform: scaleX(-1); }
+
+.nav-badge {
+  flex: none;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Carte utilisateur : pastille de presence sur l'avatar. */
+.side-user {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font: inherit;
+  text-align: start;
+}
+.side-avatar { position: relative; }
+.side-online {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid var(--navy-900);
+}
+
+/* Bascule de theme, au pied de la barre. */
+.sidebar-theme {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--sb-text);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.sidebar-theme:hover { background: rgba(255, 255, 255, 0.11); }
+.sidebar-theme-icon { display: grid; place-items: center; color: var(--gold); flex: none; }
+.sidebar-theme-label { flex: 1; min-width: 0; text-align: start; }
+.sidebar-switch {
+  flex: none;
+  width: 38px;
+  height: 21px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.18);
+  transition: background var(--dur-base) var(--ease);
+}
+.sidebar-switch i {
+  display: block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--dur-base) var(--ease);
+}
+.sidebar-switch.on { background: var(--gold); }
+.sidebar-switch.on i { transform: translateX(17px); }
+[dir="rtl"] .sidebar-switch.on i { transform: translateX(-17px); }
+
+/* ------------------------------------------------- barre laterale repliee */
+.app-shell.rail { grid-template-columns: 86px 1fr; }
+.app-shell.rail .brand { justify-content: center; padding: 0.45rem; }
+.app-shell.rail .brand-text-col,
+.app-shell.rail .sidebar-role-tag,
+.app-shell.rail .nav-section-head,
+.app-shell.rail .nav-label,
+.app-shell.rail .nav-caret,
+.app-shell.rail .side-user-meta,
+.app-shell.rail .side-user-caret,
+.app-shell.rail .sidebar-theme-label,
+.app-shell.rail .sidebar-switch { display: none; }
+.app-shell.rail .nav-link,
+.app-shell.rail .side-user,
+.app-shell.rail .sidebar-theme { justify-content: center; padding-inline: 0.5rem; }
+.app-shell.rail .nav-badge {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 6px;
+  min-width: 16px;
+  padding: 0 4px;
+  font-size: 0.6rem;
+}
+
+/* --------------------------------------------------------- barre du haut */
+.topbar-burger {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--primary);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.topbar-burger:hover { background: var(--primary-soft); }
+
+.topbar-greeting { display: flex; align-items: center; gap: 0.3rem; flex: 1; min-width: 0; }
+.topbar-greeting b { color: var(--primary); font-weight: 800; }
+
+/* Le raccourci affiche n'a de sens que s'il fonctionne : cf. le gestionnaire
+   Ctrl/⌘ + K dans AppLayout. */
+.search-kbd {
+  flex: none;
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.topbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.topbar-user-btn:hover { color: var(--primary); }
+
+@media (max-width: 1100px) {
+  .search-box input { width: 120px; }
+  .search-kbd { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Thème sombre — surfaces
+   Les jetons basculent seuls (tokens.css) ; ce bloc rattrape les surfaces
+   ecrites en dur avant l'existence de la bascule. On ne touche qu'aux FONDS
+   de structure : les pastilles d'accent (vert, or, navy) restent lumineuses,
+   c'est leur role.
+   -------------------------------------------------------------------------- */
+:root[data-theme="dark"] .dash-panel,
+:root[data-theme="dark"] .dash-kpi,
+:root[data-theme="dark"] .dash-kpi.navy,
+:root[data-theme="dark"] .dash-kpi.green,
+:root[data-theme="dark"] .dash-kpi.sky,
+:root[data-theme="dark"] .dash-kpi.gold,
+:root[data-theme="dark"] .dash-kpi.teal {
+  background: var(--surface);
+  border-color: var(--border);
+}
+:root[data-theme="dark"] .dash-quick-btn,
+:root[data-theme="dark"] .sub-menu-btn,
+:root[data-theme="dark"] .dir-page-btn,
+:root[data-theme="dark"] .grp-monthbtn,
+:root[data-theme="dark"] .grp-date,
+:root[data-theme="dark"] .grp-picker-shell,
+:root[data-theme="dark"] .tea-groups li {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+/* Les bandeaux illustres sont peints en degrade clair : on les rejoue en
+   sombre plutot que de les laisser trouer la page. */
+:root[data-theme="dark"] .sub-banner,
+:root[data-theme="dark"] .dash-fin-band {
+  background: linear-gradient(115deg, var(--surface-2), var(--surface) 60%, var(--surface-2));
+}
+:root[data-theme="dark"] .grp-promo { background: var(--surface-2); }
+/* Fiches repliees en cartes sur telephone. */
+:root[data-theme="dark"] .stack-sm .table tr { background: var(--surface-2); }
+
+/* En sombre, --primary devient clair : les commandes qui s'en servent comme
+   FOND doivent alors ecrire en foncé, pas en blanc. */
+:root[data-theme="dark"] .dir-view-btn.on,
+:root[data-theme="dark"] .dir-page-btn.on,
+:root[data-theme="dark"] .grp-viewtab.on,
+:root[data-theme="dark"] .grp-seeall:hover,
+:root[data-theme="dark"] .notif .dot { color: var(--navy-950); }
+
+/* ==========================================================================
+   Paie — en-tete illustre, vignettes chiffrees, actions rapides.
+   Palette de la page vitrine : navy, or, ciel.
+   ========================================================================== */
+.pay-head { align-items: center; }
+.pay-head-icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.pay-head .page-title { flex: 1; min-width: 200px; }
+
+/* Selecteur de mois : c'est lui qui date le versement enregistre. */
+.pay-month {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+.pay-month select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 650;
+  color: var(--text);
+  cursor: pointer;
+}
+.pay-month select:focus { outline: none; }
+
+.pay-kpi-icon {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+}
+.pay-kpi-body { flex: 1; min-width: 0; }
+.pay-spark {
+  position: absolute;
+  inset-inline-end: 14px;
+  inset-block-end: 12px;
+  width: 76px;
+  height: 26px;
+  opacity: 0.8;
+}
+
+
+@media (max-width: 760px) {
+  .pay-kpi-body > strong { font-size: 1.4rem; }
+  .pay-spark { display: none; }
+}
+
+/* ==========================================================================
+   Listes de panneau : hauteur bornée
+   Une liste alimentee par les donnees (groupes, seances, eleves, demandes)
+   n'a pas de longueur previsible. Sans borne, dix lignes suffisent a etirer la
+   carte qui la contient et a desaligner tout ce qui l'entoure. Chacune defile
+   donc dans sa propre boite plutot que d'etirer la page.
+
+   N'entrent PAS dans cette liste les grilles de pleine page (repertoires,
+   notifications, matieres) : la page defile deja, les borner ferait deux
+   ascenseurs imbriques.
+
+   `overscroll-behavior: contain` evite que la molette, arrivee en bas de la
+   liste, se mette a faire defiler la page derriere.
+   ========================================================================== */
+.att-group-list,
+.att-cycles,
+.att-alerts,
+.pay-students,
+.grp-roster,
+.grp-sessions,
+.sch-req-list,
+.dash-classes-list,
+.dash-activities-list,
+.dash-calendar-list,
+.dash-homework-list,
+.dash-timeline,
+.dash-student-courses,
+.checkbox-list,
+.reg-picked,
+.sync-banner-list {
+  max-height: 22rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Un peu d'air pour que la barre de defilement ne colle pas au contenu. */
+  padding-inline-end: 2px;
+}
+
+/* Barre de defilement discrete, dans le ton des bordures. */
+.att-group-list::-webkit-scrollbar,
+.att-cycles::-webkit-scrollbar,
+.att-alerts::-webkit-scrollbar,
+.pay-students::-webkit-scrollbar,
+.grp-roster::-webkit-scrollbar,
+.grp-sessions::-webkit-scrollbar,
+.sch-req-list::-webkit-scrollbar,
+.dash-classes-list::-webkit-scrollbar,
+.dash-activities-list::-webkit-scrollbar,
+.dash-calendar-list::-webkit-scrollbar,
+.dash-homework-list::-webkit-scrollbar,
+.dash-timeline::-webkit-scrollbar,
+.dash-student-courses::-webkit-scrollbar,
+.checkbox-list::-webkit-scrollbar,
+.reg-picked::-webkit-scrollbar,
+.sync-banner-list::-webkit-scrollbar { width: 6px; }
+
+.att-group-list::-webkit-scrollbar-thumb,
+.att-cycles::-webkit-scrollbar-thumb,
+.att-alerts::-webkit-scrollbar-thumb,
+.pay-students::-webkit-scrollbar-thumb,
+.grp-roster::-webkit-scrollbar-thumb,
+.grp-sessions::-webkit-scrollbar-thumb,
+.sch-req-list::-webkit-scrollbar-thumb,
+.dash-classes-list::-webkit-scrollbar-thumb,
+.dash-activities-list::-webkit-scrollbar-thumb,
+.dash-calendar-list::-webkit-scrollbar-thumb,
+.dash-homework-list::-webkit-scrollbar-thumb,
+.dash-timeline::-webkit-scrollbar-thumb,
+.dash-student-courses::-webkit-scrollbar-thumb,
+.checkbox-list::-webkit-scrollbar-thumb,
+.reg-picked::-webkit-scrollbar-thumb,
+.sync-banner-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}
+
+/* Les rangees de pastilles cochables restent basses : au-dela on ne voit plus
+   le reste du formulaire. */
+.checkbox-list,
+.reg-picked { max-height: 11rem; }
+.sync-banner-list { max-height: 9rem; }
+
+/* La liste des groupes de « Faire l'appel » vit dans une colonne collante :
+   elle peut s'offrir davantage de hauteur. */
+.att-group-list { max-height: 26rem; }
+
+/* Sur telephone les colonnes s'empilent : une liste haute repousserait le
+   contenu principal hors de l'ecran. */
+@media (max-width: 760px) {
+  .att-group-list { max-height: 15rem; }
+  .att-cycles,
+  .att-alerts,
+  .pay-students,
+  .grp-roster,
+  .grp-sessions,
+  .sch-req-list,
+  .dash-classes-list,
+  .dash-activities-list,
+  .dash-calendar-list,
+  .dash-homework-list,
+  .dash-timeline,
+  .dash-student-courses { max-height: 18rem; }
+}
+
+/* ==========================================================================
+   Tableaux de donnees : hauteur bornée + en-tete collant
+   Un annuaire grandit sans limite. Passe une dizaine de lignes, la carte
+   s'etirait jusqu'a pousser tout le reste hors de l'ecran ; on fait donc
+   defiler le tableau DANS sa carte, en gardant les noms de colonnes visibles.
+
+   Ne vise que `.stack-sm`, la classe posee par StackedTable sur les vrais
+   tableaux de donnees — pas les tableaux de mise en page.
+   ========================================================================== */
+.table-wrap.stack-sm {
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* L'en-tete reste lisible pendant le defilement. `border-collapse: collapse`
+   fait disparaitre les bordures des cellules collantes : on les redessine en
+   ombre, sinon l'en-tete flotte sans separation au-dessus des lignes. */
+.table-wrap.stack-sm thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.table-wrap.stack-sm::-webkit-scrollbar { width: 8px; height: 8px; }
+.table-wrap.stack-sm::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}
+
+@media (max-width: 760px) {
+  /* En cartes empilees, l'en-tete est masque : plus rien a coller, et une
+     hauteur plus courte evite d'enfermer la page dans un long ascenseur. */
+  .table-wrap.stack-sm { max-height: 26rem; }
+}
+
+/* ============================================================
+   Chiffres et numeros en interface arabe
+   ============================================================
+   Un numero ecrit par groupes — 0553 36 62 04 — est reordonne par l'algorithme
+   bidirectionnel quand la page passe en RTL : il s'affichait « 04 62 36 0553 ».
+   Ce n'est pas un detail de mise en page, c'est un mauvais numero montre a
+   l'utilisateur.
+
+   `unicode-bidi: isolate` sort la valeur du flux bidirectionnel et `direction:
+   ltr` lui rend son sens de lecture, sans toucher au reste de la phrase.
+   ============================================================ */
+
+a[href^="tel:"],
+a[href^="https://wa.me"],
+.num,
+.cell-phone,
+.att-phone-col,
+.ct-text b,
+.hz-pill-phone {
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+
+/* Dans une colonne de tableau, l'isolation ne doit pas recentrer la valeur :
+   elle reste alignee sur le bord de lecture de la langue. */
+[dir="rtl"] .att-phone-col,
+[dir="rtl"] .num {
+  text-align: right;
 }

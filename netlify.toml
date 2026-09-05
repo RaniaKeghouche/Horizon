@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# L'application tient dans une seule page : sans cette regle, ouvrir
+# /payments directement (ou rafraichir la page) renverrait une erreur 404,
+# car aucun fichier de ce nom n'existe sur le serveur.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

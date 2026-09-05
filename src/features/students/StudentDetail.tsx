@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
+import { useAuth } from "../auth/AuthContext";
 import { computeStudentBilling } from "../../lib/billing";
 import { defaultPrice } from "../../lib/payments";
 import { formatDA } from "../../lib/format";
 import { Phone, Users, Bell, X, Ticket } from "lucide-react";
-import { LEVEL_LABEL, SESSION_TYPE_LABEL } from "../../lib/labels";
+import { LEVEL_LABEL } from "../../lib/labels";
+import { useLabels } from "../../lib/useLabels";
 import type { Student } from "../../lib/types";
 
 export default function StudentDetail({
@@ -17,7 +19,12 @@ export default function StudentDetail({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const L = useLabels();
   const { subjects, teachers, classes, enrollments, sessions, payments } = useData();
+  const { role } = useAuth();
+  /** Inscrire, deplacer, desinscrire, gerer l'attente : actes d'administration.
+   *  La base les refuse a un enseignant, l'interface ne doit donc pas les offrir. */
+  const canManage = role === "admin";
   const adminAssign = useData((s) => s.adminAssign);
   const moveStudent = useData((s) => s.moveStudent);
   const unenroll = useData((s) => s.unenroll);
@@ -82,29 +89,33 @@ export default function StudentDetail({
             </div>
             <div className="billing-amounts">
               {s.amountDue > 0 ? (
-                <span className="pill pill-danger">Dû : {formatDA(s.amountDue)}</span>
+                <span className="pill pill-danger">{t("pmt.due")} : {formatDA(s.amountDue)}</span>
               ) : (
-                <span className="pill pill-ok">À jour</span>
+                <span className="pill pill-ok">{t("stu.up_to_date")}</span>
               )}
               {s.reminderCount > 0 && (
                 <span className="muted small"><Bell size={12} /> {t("pmt.reminders", { n: s.reminderCount })}</span>
               )}
-              <select
-                className="input move-select"
-                value=""
-                title={t("sd.change_group")}
-                onChange={(e) => e.target.value && moveStudent(s.enrollmentId, e.target.value)}
-              >
-                <option value="">↔ Changer de groupe…</option>
-                {enrollable.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {subjectName(c.subjectId)} · {t(`days.${c.dayOfWeek}`)} {c.timeSlot}
-                  </option>
-                ))}
-              </select>
-              <button className="icon-btn danger" title={t("sd.unenrol")} onClick={() => unenroll(s.enrollmentId)}>
-                <X size={16} />
-              </button>
+              {canManage && (
+                <>
+                  <select
+                    className="input move-select"
+                    value=""
+                    title={t("sd.change_group")}
+                    onChange={(e) => e.target.value && moveStudent(s.enrollmentId, e.target.value)}
+                  >
+                    <option value="">{t("sd.change_group")}</option>
+                    {enrollable.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {subjectName(c.subjectId)} · {t(`days.${c.dayOfWeek}`)} {c.timeSlot}
+                      </option>
+                    ))}
+                  </select>
+                  <button className="icon-btn danger" title={t("sd.unenrol")} onClick={() => unenroll(s.enrollmentId)}>
+                    <X size={16} />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))}
@@ -117,16 +128,20 @@ export default function StudentDetail({
         </strong>
       </div>
 
+      {/* Inscrire dans un groupe est un acte d'administration : la base le
+          refuse a un enseignant, on ne montre donc pas le formulaire. */}
+      {canManage && (
+      <>
       <h3 className="section-title">{t("sd.enrol_in")}</h3>
       {enrollable.length === 0 ? (
         <p className="muted">{t("sd.no_class")}</p>
       ) : (
         <div className="enroll-row">
           <select className="input" value={classId} onChange={(e) => onPickClass(e.target.value)}>
-            <option value="">— Choisir une classe —</option>
+            <option value="">{t("sd.pick_class")}</option>
             {enrollable.map((c) => (
               <option key={c.id} value={c.id}>
-                {subjectName(c.subjectId)} · {SESSION_TYPE_LABEL[c.sessionType]} ·{" "}
+                {subjectName(c.subjectId)} · {L.sessionType(c.sessionType)} ·{" "}
                 {t(`days.${c.dayOfWeek}`)} {c.timeSlot} ({c.currentStudents}/{c.maxStudents})
               </option>
             ))}
@@ -139,9 +154,11 @@ export default function StudentDetail({
             onChange={(e) => setPrice(Number(e.target.value))}
           />
           <button className="btn btn-primary" disabled={!classId || price <= 0} onClick={doEnroll}>
-            Inscrire
+            {t("sd.enrol_btn")}
           </button>
         </div>
+      )}
+      </>
       )}
 
       {fullClasses.length > 0 && (
@@ -160,13 +177,14 @@ export default function StudentDetail({
                     </div>
                     {pos >= 0 && <span className="pill pill-warn">En attente · position {pos + 1}</span>}
                   </div>
-                  {pos >= 0 ? (
-                    <button className="btn btn-ghost sm" onClick={() => leaveWaitlist(c.id, student.id)}>{t("sd.leave")}</button>
-                  ) : (
-                    <button className="btn btn-primary sm" onClick={() => joinWaitlist(c.id, student.id)}>
-                      <Ticket size={14} /> {t("sd.join_waitlist")}
-                    </button>
-                  )}
+                  {canManage &&
+                    (pos >= 0 ? (
+                      <button className="btn btn-ghost sm" onClick={() => leaveWaitlist(c.id, student.id)}>{t("sd.leave")}</button>
+                    ) : (
+                      <button className="btn btn-primary sm" onClick={() => joinWaitlist(c.id, student.id)}>
+                        <Ticket size={14} /> {t("sd.join_waitlist")}
+                      </button>
+                    ))}
                 </div>
               );
             })}

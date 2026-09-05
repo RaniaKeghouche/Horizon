@@ -1,0 +1,738 @@
+/* ============================================================
+   Mes presences (vue eleve)
+   ============================================================
+   Palette navy / or / ciel. Trois etats seulement — present, justifie, absent
+   — et la meme couleur pour chacun d'un bout a l'autre de la page : la grille
+   du mois, la liste des seances, l'anneau et la legende.
+
+   Proprietes logiques partout : l'arabe est la langue par defaut.
+   ============================================================ */
+
+.sat {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.sat-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.sat-head h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.sat-head p {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.sat-export {
+  margin-inline-start: auto;
+  flex: none;
+}
+
+/* --------------------------------------------------------------- les tuiles */
+
+.sat-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.8rem;
+}
+.sat-kpi {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.sat-kpi-icon {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 13px;
+  flex: none;
+}
+.sat-kpi.tone-navy .sat-kpi-icon {
+  background: var(--viv-violet-soft);
+  color: var(--viv-violet);
+}
+.sat-kpi.tone-green .sat-kpi-icon {
+  background: var(--viv-emerald-soft);
+  color: var(--viv-emerald);
+}
+.sat-kpi.tone-gold .sat-kpi-icon {
+  background: var(--viv-amber-soft);
+  color: var(--viv-amber);
+}
+.sat-kpi.tone-sky .sat-kpi-icon {
+  background: var(--viv-sky-soft);
+  color: var(--viv-sky);
+}
+.sat-kpi b {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.15;
+}
+.sat-kpi span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.sat-kpi em {
+  display: block;
+  margin-top: 0.1rem;
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* ------------------------------------------------------------------ gabarit */
+
+.sat-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 1.1rem;
+  align-items: start;
+}
+.sat-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+.sat-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* ---------------------------------------------------------- barre d'outils */
+
+.sat-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.8rem;
+}
+.sat-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.3rem;
+  padding: 0 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+}
+.sat-select select {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  max-width: 13rem;
+  cursor: pointer;
+}
+.sat-month {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 2.3rem;
+  padding: 0 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+.sat-month span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.sat-month button {
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--primary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.sat-month button:hover {
+  background: var(--primary-soft);
+}
+.sat-views {
+  display: inline-flex;
+  gap: 0.2rem;
+  margin-inline-start: auto;
+  padding: 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+.sat-views button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.79rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sat-views button.on {
+  background: var(--primary-grad);
+  color: #fff;
+}
+
+/* ------------------------------------------------------ la grille du mois */
+
+.sat-grid-card,
+.sat-recent {
+  padding: 1rem;
+}
+.sat-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+.sat-card-head h2 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.sat-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-inline-start: auto;
+  font-size: 0.73rem;
+  color: var(--muted);
+}
+.sat-clear {
+  margin-inline-start: auto;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 31 colonnes ne tiennent pas sur un ecran etroit : la grille defile
+   horizontalement, la colonne des matieres restant collee au bord. */
+.sat-grid-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.sat-grid {
+  border-collapse: separate;
+  border-spacing: 3px;
+}
+.sat-grid th,
+.sat-grid td {
+  padding: 0;
+}
+.sat-grid thead th {
+  min-width: 1.55rem;
+  text-align: center;
+  line-height: 1.1;
+}
+.sat-grid thead th em {
+  display: block;
+  font-style: normal;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.sat-grid thead th b {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.sat-grid thead th.on b {
+  color: var(--primary);
+}
+
+.sat-grid-side {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  min-width: 11rem;
+  padding-inline-end: 0.6rem;
+  background: var(--surface);
+  text-align: start;
+}
+.sat-grid tbody .sat-grid-side {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sat-row-tile {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 9px;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  flex: none;
+}
+.sat-row-id {
+  min-width: 0;
+}
+.sat-row-id strong {
+  display: block;
+  font-size: 0.79rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.sat-row-id em {
+  display: block;
+  font-style: normal;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.sat-cell {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: transparent;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.sat-cell:disabled {
+  cursor: default;
+}
+.sat-cell:not(:disabled):hover {
+  transform: scale(1.15);
+}
+.sat-cell.picked {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.sat-cell.present {
+  background: rgba(7, 108, 61, 0.15);
+  color: var(--success);
+}
+.sat-cell.excused {
+  background: var(--gold-100);
+  color: var(--gold-600);
+}
+.sat-cell.absent {
+  background: rgba(180, 35, 24, 0.13);
+  color: var(--danger);
+}
+.sat-cell.none i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.sat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.sat-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.sat-legend i,
+.sat-legend-list i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.sat-legend i.present,
+.sat-legend-list i.present {
+  background: var(--success);
+}
+.sat-legend i.excused,
+.sat-legend-list i.excused {
+  background: var(--gold-400);
+}
+.sat-legend i.absent,
+.sat-legend-list i.absent {
+  background: var(--danger);
+}
+.sat-legend i.none {
+  background: var(--border);
+}
+
+/* ------------------------------------------------------- dernieres seances */
+
+.sat-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.sat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.sat-row-icon {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 12px;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  flex: none;
+}
+.sat-row-main {
+  min-width: 0;
+  flex: 1;
+}
+.sat-row-main strong {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+.sat-row-main span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.sat-row-when {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+.sat-row-when svg {
+  color: var(--muted);
+}
+.sat-row-when em {
+  display: block;
+  font-style: normal;
+  font-size: 0.71rem;
+  color: var(--muted);
+}
+.sat-pill {
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.sat-pill.present {
+  background: rgba(7, 108, 61, 0.11);
+  color: var(--success);
+}
+.sat-pill.excused {
+  background: var(--gold-100);
+  color: var(--gold-700);
+}
+.sat-pill.absent {
+  background: rgba(180, 35, 24, 0.1);
+  color: var(--danger);
+}
+
+.sat-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: 0.7rem;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.81rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sat-more:hover {
+  background: var(--primary-soft);
+}
+.sat-more svg.up {
+  transform: rotate(180deg);
+}
+
+.sat-empty {
+  margin: 0;
+  padding: 1rem 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ------------------------------------------------------- colonne de droite */
+
+.sat-panel {
+  padding: 1rem;
+}
+.sat-panel h3 {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.sat-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.sat-donut {
+  width: 6.4rem;
+  height: 6.4rem;
+  flex: none;
+}
+.sat-arc-bg {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 12;
+}
+.sat-arc {
+  fill: none;
+  stroke-width: 12;
+}
+.sat-arc.present {
+  stroke: var(--success);
+}
+.sat-arc.excused {
+  stroke: var(--gold-400);
+}
+.sat-arc.absent {
+  stroke: var(--danger);
+}
+.sat-donut-n {
+  text-anchor: middle;
+  font-size: 17px;
+  font-weight: 800;
+  fill: var(--text);
+}
+.sat-donut-k {
+  text-anchor: middle;
+  font-size: 7.5px;
+  font-weight: 700;
+  fill: var(--muted);
+}
+
+.sat-legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.sat-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.77rem;
+  color: var(--muted);
+}
+.sat-legend-list b {
+  margin-inline-start: auto;
+  color: var(--text);
+}
+.sat-legend-list em {
+  font-style: normal;
+  font-size: 0.7rem;
+  color: var(--muted);
+  min-width: 2.4rem;
+  text-align: end;
+}
+
+.sat-groups {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.sat-groups li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.sat-group-tile {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 9px;
+  background: var(--tile-bg, var(--primary-soft));
+  color: var(--tile-fg, var(--primary));
+  flex: none;
+}
+.sat-groups strong {
+  display: block;
+  font-size: 0.79rem;
+  color: var(--text);
+}
+.sat-groups li > div span {
+  font-size: 0.71rem;
+  color: var(--muted);
+}
+.sat-groups b {
+  margin-inline-start: auto;
+  text-align: end;
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.sat-groups b em {
+  display: block;
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.sat-groups b.ok {
+  color: var(--success);
+}
+.sat-groups b.warn {
+  color: var(--color-warning);
+}
+.sat-groups b.no {
+  color: var(--danger);
+}
+.sat-groups b.idle {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.sat-motiv {
+  padding: 1.1rem;
+  border-radius: var(--radius-lg);
+  background: var(--hero-grad);
+  color: #fff;
+}
+.sat-motiv-icon {
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.13);
+  color: var(--gold-300);
+  margin-bottom: 0.6rem;
+}
+.sat-motiv h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.sat-motiv p {
+  margin: 0.3rem 0 0.9rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--sky-300);
+}
+.sat-motiv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.05rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-cta);
+  color: var(--navy-900);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+[dir="rtl"] .sat-motiv-btn svg {
+  transform: scaleX(-1);
+}
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 1100px) {
+  .sat-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sat-side {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 560px) {
+  .sat-head {
+    flex-wrap: wrap;
+  }
+  .sat-export {
+    margin-inline-start: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .sat-views {
+    margin-inline-start: 0;
+  }
+  .sat-row {
+    flex-wrap: wrap;
+  }
+  .sat-row-when {
+    order: 4;
+  }
+  .sat-grid-side {
+    min-width: 8.5rem;
+  }
+}

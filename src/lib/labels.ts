@@ -14,11 +14,17 @@ export const LEVEL_LABEL: Record<StudentLevel, string> = {
   "1as": "1AS", "2as": "2AS", "3as": "3AS",
 };
 
-// Niveaux regroupés par cycle (pour les menus déroulants avec optgroup).
-export const LEVEL_GROUPS: { label: string; levels: StudentLevel[] }[] = [
-  { label: "Primaire (5 ans)", levels: ["1ap", "2ap", "3ap", "4ap", "5ap"] },
-  { label: "CEM / Moyen (4 ans)", levels: ["1am", "2am", "3am", "4am"] },
-  { label: "Lycée / Secondaire (3 ans)", levels: ["1as", "2as", "3as"] },
+/**
+ * Les cycles algeriens et leurs niveaux, sans libelle.
+ *
+ * Le libelle est desormais une cle i18n (voir useLabels) : ecrit ici en dur, il
+ * restait en francais quelle que soit la langue choisie. La STRUCTURE, elle,
+ * n'a pas a etre traduite et reste donc ici.
+ */
+export const LEVEL_CYCLES: { key: "ap" | "am" | "as"; levels: StudentLevel[] }[] = [
+  { key: "ap", levels: ["1ap", "2ap", "3ap", "4ap", "5ap"] },
+  { key: "am", levels: ["1am", "2am", "3am", "4am"] },
+  { key: "as", levels: ["1as", "2as", "3as"] },
 ];
 
 export const STATUS_LABEL: Record<StudentStatus, string> = {
@@ -27,6 +33,14 @@ export const STATUS_LABEL: Record<StudentStatus, string> = {
   stopped: "Arrêté",
 };
 
+/**
+ * ATTENTION — ces tables restent en francais A DESSEIN.
+ *
+ * Elles ne servent plus a l'interface (voir lib/useLabels.ts) mais aux ecrits
+ * qui doivent rester stables : la sauvegarde Google Sheets et le texte des
+ * notifications enregistrees en base. Un message ecrit en arabe parce que
+ * l'enseignant avait bascule la langue serait illisible pour l'administration.
+ */
 export const SESSION_TYPE_LABEL: Record<SessionType, string> = {
   group: "Groupe",
   one_on_one: "Cours particulier",

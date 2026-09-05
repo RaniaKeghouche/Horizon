@@ -80,6 +80,31 @@
   --color-danger: #b42318;
   --color-warning: #b54708;
 
+
+  /* ---- Gamme vive ------------------------------------------------------
+     Reservee aux pastilles des tableaux de bord (tuiles de chiffres, icones de
+     matiere). La marque, elle, reste navy + or : ces teintes ne servent jamais
+     de fond de page ni de bouton principal.
+
+     Chaque paire est un fond tres clair et un trait fonce ; les traits sont
+     tous a 4.5:1 au moins sur leur fond, donc utilisables pour du texte. */
+  --viv-violet: #6d3bd4;
+  --viv-violet-soft: #efe8fd;
+  --viv-indigo: #3a4d9c;
+  --viv-indigo-soft: #e6e9fa;
+  --viv-sky: #0e6fa8;
+  --viv-sky-soft: #e2f1fb;
+  --viv-teal: #0a6a76;
+  --viv-teal-soft: #dbf1f2;
+  --viv-emerald: #0a7c48;
+  --viv-emerald-soft: #dcf5e8;
+  --viv-amber: #a1620a;
+  --viv-amber-soft: #fdf0d6;
+  --viv-rose: #b8265a;
+  --viv-rose-soft: #fce7ee;
+  --viv-coral: #b4402a;
+  --viv-coral-soft: #fdeae4;
+
   /* ---- Échelles -------------------------------------------------------- */
 
   /* Espacement sur une base de 4px. */
@@ -172,6 +197,7 @@
     --border: rgba(255, 255, 255, 0.09);
     --text: #edf2fa;
     --muted: var(--navy-300);
+    --primary: #8ab4e0;
     --primary-soft: rgba(45, 84, 144, 0.22);
     --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
     --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
@@ -193,6 +219,8 @@
   --border: rgba(255, 255, 255, 0.09);
   --text: #edf2fa;
   --muted: var(--navy-300);
+  /* Le navy d'accent disparait sur un fond navy : en sombre il s'eclaircit. */
+  --primary: #8ab4e0;
   --primary-soft: rgba(45, 84, 144, 0.22);
   --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
   --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);

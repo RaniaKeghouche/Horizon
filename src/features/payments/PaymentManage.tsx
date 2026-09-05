@@ -6,6 +6,7 @@ import { computeStudentBilling } from "../../lib/billing";
 import { printInvoice } from "../../lib/invoice";
 import { formatDA, formatDate } from "../../lib/format";
 import type { Student } from "../../lib/types";
+import StackedTable from "../../components/StackedTable";
 
 // Admin per-session payment manager (cahier §3.4): mark paid/unpaid, send reminders.
 export default function PaymentManage({ student, onClose }: { student: Student; onClose: () => void }) {
@@ -64,8 +65,7 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
         );
       })()}
 
-      <div className="card table-wrap">
-        <table className="table">
+      <StackedTable wrapClassName="card">
           <thead>
             <tr><th>{t("cf.subject")}</th><th>{t("payments.session")}</th><th>{t("pm.amount")}</th><th>{t("stu.status")}</th><th>{t("pm.reminders")}</th><th></th></tr>
           </thead>
@@ -99,8 +99,7 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
             ))}
             {myPayments.length === 0 && <tr><td colSpan={6} className="muted center">{t("pm.none")}</td></tr>}
           </tbody>
-        </table>
-      </div>
+      </StackedTable>
       <p className="muted small">
         Astuce : marquer une séance comme payée arrête automatiquement les relances de cette matière.
       </p>

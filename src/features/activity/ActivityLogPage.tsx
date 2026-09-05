@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollText } from "lucide-react";
 import { useData } from "../../data/store";
 import { formatDateTime } from "../../lib/format";
+import StackedTable from "../../components/StackedTable";
 
 // Full audit trail (cahier §9 — every action logged: who, what, when).
 export default function ActivityLogPage() {
@@ -40,8 +41,7 @@ export default function ActivityLogPage() {
           </div>
         </div>
       ) : (
-        <div className="card table-wrap">
-          <table className="table">
+        <StackedTable wrapClassName="card">
             <thead>
               <tr>
                 <th>{t("act.when")}</th>
@@ -60,8 +60,7 @@ export default function ActivityLogPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+        </StackedTable>
       )}
     </div>
   );

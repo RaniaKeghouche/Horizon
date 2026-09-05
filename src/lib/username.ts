@@ -2,7 +2,16 @@
 // a hidden internal e-mail `username@horizon.app`. Users only ever see their username.
 export const SYNTHETIC_DOMAIN = "horizon.app";
 
-/** Turn a full name into a base username, e.g. "Rania Keghouche" -> "rania.keghouche". */
+/**
+ * Identifiant tire du NOM COMPLET, et de rien d'autre.
+ * "Kettab Abdelmalek" -> "kettab.abdelmalek".
+ *
+ * Tous les mots du nom sont conserves. Les points remplacent les espaces et les
+ * accents tombent parce que l'identifiant sert de partie locale d'une adresse
+ * e-mail (Supabase Auth en exige une) : un espace ou un accent y est refuse.
+ * Aucun chiffre n'est ajoute — voir nextVariant pour le seul cas ou un suffixe
+ * devient inevitable.
+ */
 export function slugName(name: string): string {
   const s = name
     .trim()
@@ -14,9 +23,23 @@ export function slugName(name: string): string {
   return s || "user";
 }
 
+/**
+ * Deuxieme porteur du meme nom : "kettab.abdelmalek" -> "kettab.abdelmalek.2".
+ *
+ * Un suffixe LISIBLE et sequentiel, et seulement quand le nom est deja pris.
+ * L'inscription tirait auparavant trois chiffres au hasard des le premier
+ * conflit (« kettab.abdelmalek395 »), ce qui donnait un identifiant que
+ * personne ne reconnaissait comme son nom.
+ */
+export function nextVariant(base: string, attempt: number): string {
+  return attempt <= 1 ? base : `${base}.${attempt}`;
+}
+
 /** Resolve a login identifier (username OR real e-mail) to the auth e-mail. */
 export function toLoginEmail(identifier: string): string {
-  const id = identifier.trim();
+  // Insensible a la casse : l'identifiant est affiche en minuscules, mais on
+  // ne veut pas qu'une majuscule saisie a la connexion fasse echouer le login.
+  const id = identifier.trim().toLowerCase();
   return id.includes("@") ? id : `${id}@${SYNTHETIC_DOMAIN}`;
 }
 

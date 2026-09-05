@@ -444,10 +444,15 @@
   position: absolute;
   inset-block: 0;
   /* top: 0, bottom: 0 — full height of .hz-hero */
-  inset-inline-end: -2%;
-  /* slightly overflows right edge for full bleed */
-  width: 63%;
-  /* wider: shifted left, more of scene visible */
+
+  /* The containing block is .hz-hero-inner (position: relative), which sits
+     INSIDE the hero's gutter — so a plain `inset-inline-end: 0` stops one
+     gutter short of the screen and leaves a bare strip beside the sky. Pull the
+     art back out by exactly that gutter, and grow it by the same amount so the
+     inner edge of the image does not move. .hz-hero clips the overflow, so this
+     never creates a horizontal scrollbar. */
+  inset-inline-end: calc(-1 * var(--hz-gutter));
+  width: calc(63% + var(--hz-gutter));
   z-index: 1;
   pointer-events: none;
   overflow: visible;
@@ -528,7 +533,11 @@
 .hz-hero-script {
   position: absolute;
   top: 8%;
-  inset-inline-end: 3%;
+  /* The art is deliberately bled one gutter past the content edge, so overlays
+     inside it must add that gutter back — otherwise they ride out to the screen
+     edge. Anchoring to the gutter (not a % of the art) also keeps them in the
+     same place at every width. */
+  inset-inline-end: calc(var(--hz-gutter) - 0.6rem);
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -572,8 +581,9 @@
    Floats above the image, clear of left text and student body */
 .hz-hero-card {
   position: absolute;
-  inset-inline-end: 3%;
-  /* anchored from right of .hz-hero-art */
+  /* Anchored from the art's end edge, which is bled one gutter past the content
+     column — add the gutter back so the card stays inside the page margin. */
+  inset-inline-end: calc(var(--hz-gutter) - 0.6rem);
   inset-inline-start: auto;
   bottom: 12%;
   display: flex;
@@ -1050,44 +1060,6 @@
   background: #d97706;
 }
 
-.hz-subjects {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 2rem;
-  padding: 1rem 1.25rem;
-  border-radius: 16px;
-  background: #f8fafc;
-  border: 1px solid rgba(15, 37, 71, 0.08);
-}
-
-.hz-subjects-label {
-  font-size: 0.82rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #475569;
-}
-
-.hz-subjects ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.hz-subjects li {
-  padding: 0.3rem 0.8rem;
-  border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 37, 71, 0.1);
-  font-size: 0.82rem;
-  font-weight: 650;
-  color: #0f172a;
-}
-
 /* Bottom banner for programmes */
 .hz-prog-band {
   display: grid;
@@ -1300,6 +1272,49 @@
 .hz-map-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 16px 36px rgba(15, 37, 71, 0.1);
+}
+
+/* Sous la vignette : l'adresse et le plus code, c'est-a-dire ce qu'on recopie
+   pour venir. Les noms de rues fantaisistes qui flottaient sur la carte ont
+   disparu ; ce bandeau les remplace par du verifiable. */
+.hz-map-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-top: 1px solid rgba(15, 37, 71, 0.08);
+}
+.hz-map-foot b {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--navy-800);
+}
+.hz-map-foot em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+.hz-map-open {
+  margin-inline-start: auto;
+  flex: none;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: var(--gold-100);
+  color: var(--gold-700);
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .hz-map-foot {
+    flex-wrap: wrap;
+  }
+  .hz-map-open {
+    margin-inline-start: 0;
+  }
 }
 
 .hz-map-mockup {
@@ -1722,10 +1737,11 @@
   }
 
   .hz-hero-art {
-    width: 100%;
-    /* full width */
+    /* Stacked below the copy — bleed past the gutter on BOTH sides so the sky
+       runs the full width of the screen instead of floating in a box. */
+    width: calc(100% + 2 * var(--hz-gutter));
     height: min(46vw, 380px);
-    inset-inline-end: 0;
+    inset-inline-end: calc(-1 * var(--hz-gutter));
     inset-block: auto;
     /* reset block inset */
     bottom: 0;
@@ -1830,5 +1846,169 @@
 
   .hz-stat {
     border-inline-start: none !important;
+  }
+
+  /* La barre d'actions du menu (téléphone + connexion + langue) mesurait 440 px
+     dans un écran de 390 : le numéro passait sous le bouton hamburger. Sur
+     téléphone on garde la connexion et la langue — appeler reste possible
+     depuis la section contact. */
+  .hz-nav-actions {
+    /* Ne pas prendre l'espace de la marque : juste ne plus déborder. */
+    flex: 0 1 auto;
+    justify-content: flex-end;
+    min-width: 0;
+    gap: 0.4rem;
+  }
+  /* Le nom écrit se faisait rogner entre le hamburger et les actions : sur
+     téléphone on ne garde que le sigle, qui suffit à identifier la barre. */
+  .hz-brand { flex: none; }
+  .hz-brand-text { display: none; }
+
+  /* La carte flottante du héros se posait par-dessus « Voir la vidéo ».
+     Elle reste flottante — c'est le parti pris du dessin — mais descend au
+     pied du héros, sur l'illustration, où elle ne recouvre plus les boutons. */
+  .hz-hero-card {
+    inset-inline: var(--hz-gutter);
+    bottom: 1rem;
+    max-width: none;
+    z-index: 6;
+  }
+  .hz-pill-phone { display: none; }
+  .hz-nav-actions .hz-pill { padding: 0.45rem 0.7rem; font-size: 0.8rem; }
+
+  /* Griffonnages décoratifs du titre « Contact » : ils débordent de 3,5 rem,
+     ce qui ne laisse plus de marge à cette largeur. */
+  .hz-contact-head .hz-dots-grid,
+  .hz-contact-head .hz-doodle-plane {
+    display: none;
+  }
+}
+/* ============================================================================
+   ONE SECTION PER SCREEN
+   Each landing section fills exactly one viewport and clips its own content, so
+   you never see the next section bleeding into the current one. Scoped to
+   viewports that are both wide enough for the desktop layout and tall enough
+   that filling the screen does not mean squashing the content — phones and
+   short windows keep the natural flowing layout.
+   ========================================================================= */
+@media (min-width: 981px) and (min-height: 700px) {
+
+  /* The document is the scroll container. `proximity` rather than `mandatory`:
+     mandatory would fight the user if a section ever exceeds the viewport. */
+  :root:has(.hz) {
+    scroll-snap-type: y proximity;
+  }
+
+  /* The nav is sticky, so a section snapped to `start` would slide under it.
+     .hz-section already carries scroll-margin-top for the anchor links and the
+     snap position honours it — the hero just needs the same. Note: adding
+     scroll-padding-top on the root as well would offset it TWICE. */
+  .hz-hero {
+    scroll-margin-top: var(--hz-nav-h);
+  }
+
+  .hz-hero,
+  .hz-section {
+    /* svh, not vh: on mobile browsers vh includes the retractable toolbars and
+       overflows. Fallback first for anything without svh. */
+    min-height: calc(100vh - var(--hz-nav-h));
+    min-height: calc(100svh - var(--hz-nav-h));
+    scroll-snap-align: start;
+    /* nothing from a neighbouring section may show through */
+    overflow: clip;
+  }
+
+  /* Centre the content in whatever height is left over. The two-column sections
+     are already grids, so they only need the alignment. */
+  .hz-programmes,
+  .hz-methods {
+    display: grid;
+    align-content: center;
+  }
+
+  .hz-about,
+  .hz-contact {
+    align-content: center;
+  }
+
+  .hz-hero {
+    display: grid;
+    align-content: center;
+  }
+
+  /* The footer is genuinely short — a full empty screen for it would look
+     broken. Snap to its end so the page finishes cleanly instead. */
+  .hz-footer {
+    scroll-snap-align: end;
+  }
+
+  /* --- Fitting the tallest section (programmes) into one screen -------------
+     Its cost is the card artwork plus the stacked vertical rhythm, so both are
+     tied to viewport height rather than fixed pixels. */
+  .hz-section {
+    padding-block: clamp(1.25rem, 4vh, 3.5rem);
+  }
+
+  .hz-section-head {
+    margin-bottom: clamp(0.9rem, 2.2vh, 2.25rem);
+  }
+
+  .hz-prog-media {
+    height: clamp(4.5rem, 10vh, 10rem);
+  }
+
+  .hz-prog-card {
+    padding: clamp(0.8rem, 1.6vh, 1.25rem) 1.15rem clamp(0.9rem, 1.8vh, 1.4rem);
+  }
+
+  .hz-prog-points {
+    margin-bottom: clamp(0.6rem, 1.6vh, 1.25rem);
+  }
+
+  /* The hero carries its own inner min-height plus the stats strip; trim it so
+     the pair still lands inside one screen. */
+  .hz-hero-inner {
+    min-height: min(62vh, 620px);
+  }
+
+  /* Vertical rhythm inside programmes: the gap above the banner is what pushes
+     it past the fold, so tie it to viewport height too. */
+  .hz-prog-band {
+    margin-top: clamp(1rem, 2.8vh, 2.9rem);
+    padding-block: clamp(0.85rem, 2vh, 1.75rem);
+  }
+
+  /* --- Short viewports (≈720p laptops and half-height windows) -------------
+     Filling one screen is only worth it if the content still fits. Below ~800px
+     tall the default rhythm overflows, so tighten the text blocks that carry
+     the most slack before anything gets clipped. */
+  @media (max-height: 800px) {
+
+    .hz-section-head p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .hz-prog-media {
+      height: clamp(3.25rem, 8.5vh, 6rem);
+    }
+
+    .hz-prog-points li {
+      line-height: 1.35;
+    }
+
+    .hz-prog-band {
+      padding-block: 0.7rem;
+    }
+
+    .hz-contact-card {
+      padding: clamp(1rem, 2.4vh, 1.75rem);
+    }
+
+    /* Reclaim the last few pixels from the outer padding rather than from the
+       content itself. */
+    .hz-section {
+      padding-block: clamp(1rem, 3.4vh, 3.5rem);
+    }
   }
 }

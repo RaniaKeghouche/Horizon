@@ -1,0 +1,259 @@
+/* Emploi du temps — grille hebdomadaire.
+   Palette de la page vitrine : navy, or, ciel. Chaque matière porte la teinte
+   que lui donne src/lib/subjectLook.ts, la même que dans le répertoire des
+   matières. */
+
+/* ---------------------------------------------------------------- en-tête */
+.sch-head { align-items: center; }
+.sch-head-icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.sch-head .page-title { flex: 1; min-width: 200px; }
+
+.sch-pick { display: flex; align-items: center; gap: 9px; }
+.sch-pick-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+.sch-pick-box select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  padding-inline-end: 4px;
+  font: inherit;
+  font-weight: 650;
+  color: var(--text);
+  cursor: pointer;
+  max-width: 190px;
+}
+.sch-pick-box select:focus { outline: none; }
+
+/* ----------------------------------------------------------------- grille */
+.sch-board { padding: 10px; }
+
+.schedule-grid { border-collapse: separate; border-spacing: 6px; width: 100%; }
+
+.schedule-grid thead th {
+  padding: 10px 6px 4px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+}
+.sch-day { display: inline-flex; align-items: center; gap: 7px; }
+.sch-day svg { color: var(--primary); }
+
+.sch-corner { width: 132px; }
+.sch-corner span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-inline: auto;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--primary);
+}
+
+/* Colonne des heures : icône du moment de la journée + plage + libellé. */
+.schedule-grid tbody th.slot-time {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 10px;
+  background: transparent;
+  border: 0;
+  text-align: start;
+  white-space: nowrap;
+}
+.slot-icon { flex: none; color: var(--gold-500); }
+.slot-range { display: flex; flex-direction: column; gap: 1px; }
+.slot-range b { font-size: 0.82rem; font-weight: 750; color: var(--text); }
+.slot-range em { font-style: normal; font-size: 0.72rem; color: var(--muted); }
+
+.schedule-grid td.cell {
+  padding: 0;
+  border: 0;
+  vertical-align: top;
+}
+/* Plusieurs groupes peuvent partager un creneau (salles differentes) : la case
+   les empile et garde le « + » en dessous. */
+.cell-stack { display: flex; flex-direction: column; gap: 5px; min-height: 68px; }
+
+/* Créneau libre : une invitation discrète, pas un trou. */
+.cell-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  flex: 1;
+  min-height: 68px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.cell-empty:hover:not(:disabled) {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  border-style: solid;
+  color: var(--primary);
+}
+/* Occupé ailleurs (même enseignant ou même salle) : inerte et muet. */
+.cell-empty.busy { cursor: not-allowed; border-style: solid; opacity: 0.45; }
+/* Sous un groupe deja pose, le « + » se fait discret. */
+.cell-empty.tight { min-height: 30px; flex: none; }
+
+/* Créneau pris : carte à la teinte de la matière. */
+.cell-class {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 68px;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--tile-fg) 30%, transparent);
+  border-radius: 14px;
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.cell-class:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+.cell-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--tile-fg) 15%, transparent);
+}
+.cell-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cell-subj {
+  font-size: 0.84rem;
+  font-weight: 750;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cell-meta {
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--tile-fg) 78%, var(--muted));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* La salle est l'information qu'on cherche quand plusieurs groupes partagent
+   un creneau : elle a sa propre pastille et ne se fait jamais rogner. */
+.cell-room {
+  align-self: flex-start;
+  margin-block-start: 2px;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--tile-fg) 16%, transparent);
+  font-size: 0.68rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.cell-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  align-self: flex-end;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------- bandeau d'astuce */
+.sch-tip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(115deg, var(--sky-100), var(--surface) 55%, var(--gold-100));
+  box-shadow: var(--shadow-sm);
+}
+.sch-tip-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--gold-100);
+  color: var(--gold-600);
+}
+.sch-tip p { flex: 1; min-width: 0; margin: 0; font-size: 0.86rem; color: var(--muted); }
+.sch-tip strong { color: var(--text); }
+.sch-tip-art { width: 84px; flex: none; }
+
+@media (max-width: 900px) {
+  .sch-head-icon { display: none; }
+  .sch-pick-box select { max-width: 130px; }
+  .sch-corner { width: 96px; }
+  .schedule-grid tbody th.slot-time { padding: 8px 6px; }
+  .slot-range em { display: none; }
+  .sch-tip-art { display: none; }
+}
+
+/* ------------------------------------------------- demandes de creneau */
+.sch-requests { display: flex; flex-direction: column; gap: 12px; }
+.sch-req-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 750;
+}
+.sch-req-title svg { color: var(--gold-600); }
+.sch-req-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sch-req-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 14px;
+  border: 1px solid var(--gold);
+  border-radius: 14px;
+  background: var(--gold-100);
+}
+.sch-req-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sch-req-who em { font-style: normal; font-size: 0.8rem; color: var(--muted); }
+
+/* Horaire reel d'un groupe qui ne colle pas exactement a la ligne (creneaux
+   crees avant le passage aux seances de deux heures). */
+.cell-odd {
+  align-self: flex-start;
+  margin-block-start: 2px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--danger);
+}

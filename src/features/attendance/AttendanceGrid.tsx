@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { useData } from "../../data/store";
-import { ATTENDANCE_LABEL } from "../../lib/labels";
+import { useLabels } from "../../lib/useLabels";
 import type { AttendanceState } from "../../lib/types";
 
 /** Short mark shown in a cell, mirroring the paper/Sheets register. */
@@ -26,6 +27,8 @@ function shortDate(ms: number): string {
  * the sessions themselves, so it always matches what was marked.
  */
 export default function AttendanceGrid({ classId }: { classId: string }) {
+  const L = useLabels();
+  const { t } = useTranslation();
   const { students, enrollments, sessions } = useData();
 
   const roster = useMemo(
@@ -61,15 +64,15 @@ export default function AttendanceGrid({ classId }: { classId: string }) {
   }, [roster, cols]);
 
   if (cols.length === 0) {
-    return <p className="muted">Aucune séance enregistrée pour ce groupe.</p>;
+    return <p className="muted">{t("att.no_session_group")}</p>;
   }
 
   return (
     <>
       <div className="att-legend">
-        <span className="att-key att-present">P</span> {ATTENDANCE_LABEL.present}
-        <span className="att-key att-absent-paid">A</span> {ATTENDANCE_LABEL.absent_paid}
-        <span className="att-key att-absent-free">a</span> {ATTENDANCE_LABEL.absent_free}
+        <span className="att-key att-present">P</span> {L.attendance("present")}
+        <span className="att-key att-absent-paid">A</span> {L.attendance("absent_paid")}
+        <span className="att-key att-absent-free">a</span> {L.attendance("absent_free")}
         <span className="att-key att-none" /> Pas encore inscrit
       </div>
 
@@ -77,8 +80,8 @@ export default function AttendanceGrid({ classId }: { classId: string }) {
         <table className="table att-grid">
           <thead>
             <tr>
-              <th className="att-sticky att-name-col">Nom et prénom</th>
-              <th className="att-sticky att-phone-col">Téléphone</th>
+              <th className="att-sticky att-name-col">{t("att.col_name")}</th>
+              <th className="att-sticky att-phone-col">{t("att.col_phone")}</th>
               {cols.map((s, i) => (
                 <th key={s.id} className="att-date-col" title={new Date(s.date).toLocaleDateString()}>
                   <span className="att-date-n">{i + 1}</span>
@@ -101,7 +104,7 @@ export default function AttendanceGrid({ classId }: { classId: string }) {
                       <td
                         key={ses.id}
                         className={"att-cell " + (state ? CELL_CLASS[state] : "att-none")}
-                        title={state ? ATTENDANCE_LABEL[state] : "—"}
+                        title={state ? L.attendance(state) : "—"}
                       >
                         {state ? MARK[state] : ""}
                       </td>

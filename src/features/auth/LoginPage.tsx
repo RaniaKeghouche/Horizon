@@ -318,7 +318,7 @@ export default function LoginPage() {
                 <div className="c-icon-new c-cyan"><MapPin size={24} /></div>
                 <div>
                   <strong>{t("contact.location")}</strong>
-                  <span>Horizon Academy, Cité Daksi, Constantine</span>
+                  <span>Horizon Skills Academy, Cité Daksi, Constantine</span>
                 </div>
               </div>
             </div>

@@ -1,4 +1,6 @@
 // Dependency-free, theme-aware horizontal bar chart.
+import { useTranslation } from "react-i18next";
+
 export interface Bar {
   label: string;
   value: number;
@@ -12,8 +14,9 @@ export default function BarChart({
   data: Bar[];
   format?: (n: number) => string;
 }) {
+  const { t } = useTranslation();
   const max = Math.max(1, ...data.map((d) => d.value));
-  if (data.length === 0) return <p className="muted">Pas encore de données.</p>;
+  if (data.length === 0) return <p className="muted">{t("common.no_data")}</p>;
   return (
     <div className="bars">
       {data.map((d) => (

@@ -82,10 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSignedIn(true);
         setUid(user.id);
         setEmail(user.email ?? null);
-        const isOwner = await provisionOwner(user.id, user.email ?? null);
-        await startSync();
-        if (isOwner) seedDefaultSubjects().catch(() => {});
-        setLoading(false);
+        // try/finally : sans lui, une erreur de provisionOwner ou du chargement
+        // initial laissait `loading` a true pour toujours — un ecran de
+        // chargement sans fin, et aucune trace de la cause.
+        try {
+          const isOwner = await provisionOwner(user.id, user.email ?? null);
+          await startSync();
+          if (isOwner) seedDefaultSubjects().catch(() => {});
+        } catch (err) {
+          console.error("[auth] chargement initial interrompu", err);
+        } finally {
+          setLoading(false);
+        }
       }
 
       const { data } = await supabase.auth.getSession();
