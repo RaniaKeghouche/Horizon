@@ -99,6 +99,18 @@ export default function DiscoverPage({ mode = "student" }: { mode?: "student" | 
   const [params, setParams] = useSearchParams();
   /** Amorcee par ?q= (lien entrant), puis pilotee par le champ de la carte. */
   const [term, setTerm] = useState(params.get("q") ?? "");
+
+  /**
+   * La recherche de la barre du haut navigue vers /?q=... Sans cette
+   * synchronisation, une recherche lancee alors qu'on est DEJA sur cette page
+   * ne changeait rien : le composant n'etant pas remonte, l'etat initial
+   * restait celui du premier rendu. C'est le cas normal sur telephone, ou la
+   * recherche de l'en-tete est le seul champ disponible.
+   */
+  const urlQuery = params.get("q") ?? "";
+  useEffect(() => {
+    setTerm(urlQuery);
+  }, [urlQuery]);
   const q = term.trim().toLowerCase();
   const [cycle, setCycle] = useState<Cycle>("all");
   const [subjectId, setSubjectId] = useState("all");

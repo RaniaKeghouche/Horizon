@@ -1,15 +1,21 @@
 /* ============================================================================
-   MobileLayout — forme tactile (app Android + web sur téléphone)
+   MobileLayout — la forme tactile (web sur téléphone + app Android)
 
-   Ce n'est pas le layout bureau rétréci : en-tête compact, contenu qui défile
-   seul, barre d'onglets fixe en bas, grandes cibles tactiles.
+   Ce n'est pas le layout bureau rétréci. Trois partis pris, tous dictés par le
+   support :
 
-   Les encoches et la barre de gestes Android/iOS sont gérées via env(safe-area-*) :
-   sans ça, la barre d'onglets passe SOUS les boutons système du téléphone.
+     - l'en-tête porte l'identité, la date et la recherche, parce qu'un
+       téléphone n'a pas de raccourci clavier pour ouvrir cette dernière ;
+     - la navigation flotte en bas, à portée du pouce, et l'onglet actif est
+       marqué par une pastille pleine — lisible d'un coup d'œil en marchant ;
+     - toute cible tactile fait au moins 44 px, la taille d'un doigt.
+
+   Les encoches et la barre de gestes Android/iOS passent par env(safe-area-*) :
+   sans ça, la barre d'onglets se glisse SOUS les boutons système du téléphone.
    ========================================================================= */
 
 .mb-shell {
-  --mb-tabbar-h: 4.25rem;
+  --mb-tabbar-h: 4.5rem;
   --mb-safe-b: env(safe-area-inset-bottom, 0px);
   display: flex;
   flex-direction: column;
@@ -18,23 +24,37 @@
   background: var(--bg);
 }
 
-/* ------------------------------------------------------------- En-tête */
+/* ------------------------------------------------------------------ En-tête */
 
 .mb-header {
   position: sticky;
   top: 0;
   z-index: 20;
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
-  background: var(--sidebar-grad);
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.85rem 1rem 1rem;
+  padding-top: calc(0.85rem + env(safe-area-inset-top, 0px));
+  background: var(--hero-grad);
   color: #fff;
+  /* Le bord arrondi détache l'en-tête du contenu sans ajouter de trait. */
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: 0 6px 22px rgba(8, 19, 42, 0.18);
 }
 
-.mb-header-id { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
-.mb-header-id div { display: flex; flex-direction: column; min-width: 0; }
+.mb-header-top {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.mb-header-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  line-height: 1.25;
+}
 .mb-header-id strong {
   font-size: 1rem;
   font-weight: 750;
@@ -42,16 +62,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.mb-header-id span { font-size: 0.75rem; color: var(--sb-muted); }
+/* La date, en clair : sur un téléphone on consulte souvent « aujourd'hui ». */
+.mb-header-id span {
+  font-size: 0.73rem;
+  color: var(--sky-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .mb-avatar {
   flex: none;
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.6rem;
+  height: 2.6rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.14);
+  /* Un liseré doré : la même marque que le bouton principal de la vitrine. */
+  box-shadow: 0 0 0 2px var(--gold-400);
   font-size: 0.85rem;
   font-weight: 800;
   color: #fff;
@@ -60,40 +89,78 @@
 .mb-icon-btn {
   position: relative;
   flex: none;
-  margin-inline-start: auto;
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.6rem;
+  height: 2.6rem;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: inherit;
   cursor: pointer;
 }
-.mb-icon-btn:active { background: rgba(255, 255, 255, 0.2); }
-.mb-dot {
-  position: absolute;
-  top: 0.6rem;
-  inset-inline-end: 0.65rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--color-accent);
-  border: 2px solid var(--navy-800);
+.mb-icon-btn:active {
+  background: rgba(255, 255, 255, 0.24);
+}
+.mb-icon-btn.ghost {
+  background: var(--surface-2);
+  color: var(--text);
 }
 
-/* ------------------------------------------------------------- Contenu */
+/* Un compteur plutôt qu'un point : « 3 » vaut mieux que « il y a du neuf ». */
+.mb-badge {
+  position: absolute;
+  top: 0.15rem;
+  inset-inline-end: 0.1rem;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: var(--gold-400);
+  border: 2px solid var(--navy-800);
+  color: var(--navy-900);
+  font-size: 0.6rem;
+  font-weight: 800;
+  line-height: 1.05rem;
+  text-align: center;
+}
+
+.mb-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.6rem;
+  padding: 0 0.9rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--sky-300);
+}
+.mb-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.87rem;
+  outline: none;
+}
+.mb-search input::placeholder {
+  color: var(--sky-300);
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------------ Contenu */
 
 .mb-content {
   flex: 1;
   min-height: 0;
-  padding: var(--space-4);
+  padding: 1rem;
   /* Laisse passer la barre d'onglets ET la zone de gestes système. */
-  padding-bottom: calc(var(--mb-tabbar-h) + var(--mb-safe-b) + var(--space-4));
+  padding-bottom: calc(var(--mb-tabbar-h) + var(--mb-safe-b) + 1.5rem);
 }
 
-/* ------------------------------------------------------------- Onglets */
+/* ------------------------------------------------------------------ Onglets */
 
 .mb-tabbar {
   position: fixed;
@@ -104,18 +171,20 @@
   align-items: stretch;
   height: calc(var(--mb-tabbar-h) + var(--mb-safe-b));
   padding-bottom: var(--mb-safe-b);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
-  box-shadow: 0 -6px 24px rgba(15, 37, 71, 0.08);
+  box-shadow: 0 -8px 28px rgba(15, 37, 71, 0.1);
 }
 
 .mb-tab {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0.25rem;
   min-width: 0;
   padding: 0 0.15rem;
   border: none;
@@ -126,7 +195,19 @@
   cursor: pointer;
   transition: color var(--dur-fast) var(--ease);
 }
-.mb-tab span {
+
+/* La pastille : c'est elle qui porte l'état actif, pas un filet de 3 px.
+   Sur un écran tenu à bout de bras, une forme pleine se lit, un trait non. */
+.mb-tab-pill {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.1rem;
+  height: 2rem;
+  border-radius: var(--radius-pill);
+  transition: background var(--dur-base) var(--ease), color var(--dur-base) var(--ease);
+}
+.mb-tab-label {
   font-size: 0.66rem;
   font-weight: 650;
   line-height: 1.2;
@@ -135,79 +216,152 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.mb-tab.active { color: var(--color-primary); }
-.mb-tab.active svg { stroke-width: 2.4; }
 
-/* Repère d'onglet actif, aligné sur le filet doré de la nav publique. */
-.mb-tab.active::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 1.75rem;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: var(--color-accent);
+.mb-tab.active {
+  color: var(--primary-dark);
 }
-.mb-tab { position: relative; }
+.mb-tab.active .mb-tab-pill {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.mb-tab.active .mb-tab-label {
+  font-weight: 800;
+}
+.mb-tab:active .mb-tab-pill {
+  background: var(--surface-2);
+}
 
-/* ------------------------------------------------------------- Feuille « Plus » */
+/* Pastille de non-lus sur l'onglet des notifications. */
+.mb-tab-dot {
+  position: absolute;
+  top: 0.15rem;
+  inset-inline-end: 0.55rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--danger);
+}
 
-.mb-sheet-wrap { position: fixed; inset: 0; z-index: 40; }
-.mb-sheet-backdrop { position: absolute; inset: 0; background: rgba(8, 19, 42, 0.5); }
+/* -------------------------------------------------------- Feuille « Plus » */
+
+.mb-sheet-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.mb-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 19, 42, 0.5);
+  backdrop-filter: blur(2px);
+}
 
 .mb-sheet {
   position: absolute;
   inset-inline: 0;
   bottom: 0;
-  padding: var(--space-4);
-  padding-bottom: calc(var(--space-4) + var(--mb-safe-b));
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 0.6rem 1rem 1rem;
+  padding-bottom: calc(1rem + var(--mb-safe-b));
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   background: var(--surface);
   box-shadow: 0 -12px 40px rgba(8, 19, 42, 0.28);
+  animation: mb-rise var(--dur-base) var(--ease);
+}
+@keyframes mb-rise {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+/* Les animations sont une aide, pas une obligation. */
+@media (prefers-reduced-motion: reduce) {
+  .mb-sheet { animation: none; }
+}
+
+/* Poignée : le geste attendu d'une feuille qui monte du bas. */
+.mb-sheet-grip {
+  display: block;
+  width: 2.5rem;
+  height: 0.25rem;
+  margin: 0 auto 0.9rem;
+  border-radius: 999px;
+  background: var(--border);
 }
 
 .mb-sheet-head {
   display: flex;
   align-items: center;
-  margin-bottom: var(--space-4);
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
 }
-.mb-sheet-head strong { font-size: 1.05rem; font-weight: 800; color: var(--text); }
-.mb-sheet-head .mb-icon-btn { background: var(--surface-2); color: var(--text); }
+.mb-sheet-head div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.mb-sheet-head strong {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mb-sheet-head span {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--primary);
+}
 
 .mb-sheet-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
-  gap: var(--space-3);
+  gap: 0.6rem;
 }
 .mb-sheet-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-4) var(--space-2);
+  gap: 0.45rem;
+  padding: 0.9rem 0.5rem;
   border-radius: var(--radius);
   background: var(--surface-2);
   color: var(--text);
   text-decoration: none;
   text-align: center;
 }
-.mb-sheet-item:active { background: var(--primary-soft); }
-.mb-sheet-item span { font-size: 0.72rem; font-weight: 650; line-height: 1.25; }
+.mb-sheet-icon {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.mb-sheet-item:active {
+  background: var(--primary-soft);
+}
+.mb-sheet-item span:last-child {
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
 
 .mb-sheet-foot {
   display: grid;
-  gap: var(--space-2);
-  margin-top: var(--space-5);
-  padding-top: var(--space-4);
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
 .mb-sheet-action {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 0.75rem;
   width: 100%;
-  padding: var(--space-4);
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -218,12 +372,95 @@
   text-align: start;
   cursor: pointer;
 }
-.mb-sheet-action:active { background: var(--surface-2); }
-.mb-sheet-action.danger { color: var(--color-danger); border-color: rgba(180, 35, 24, 0.28); }
+.mb-sheet-action span:first-of-type {
+  flex: 1;
+}
+.mb-sheet-action:active {
+  background: var(--surface-2);
+}
+.mb-sheet-action.danger {
+  color: var(--color-danger);
+  border-color: rgba(180, 35, 24, 0.28);
+}
+.mb-sheet-go {
+  color: var(--muted);
+}
+[dir="rtl"] .mb-sheet-go {
+  transform: scaleX(-1);
+}
 
-/* Les pages du dossier features/ ont été dessinées pour la largeur bureau —
-   on assouplit ici ce qui déborde sur un écran de téléphone. */
-.mb-content .page-head { flex-direction: column; align-items: stretch; gap: var(--space-3); }
-.mb-content .grid-cards { grid-template-columns: minmax(0, 1fr); }
-.mb-content .table-wrap { overflow-x: auto; }
-.mb-content h1 { font-size: 1.35rem; }
+/* Interrupteur du thème, repris de la barre latérale du bureau. */
+.mb-switch {
+  flex: none;
+  width: 2.4rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: var(--border);
+  padding: 0.15rem;
+  transition: background var(--dur-fast) var(--ease);
+}
+.mb-switch i {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.mb-switch.on {
+  background: var(--primary);
+}
+.mb-switch.on i {
+  transform: translateX(1.05rem);
+}
+[dir="rtl"] .mb-switch.on i {
+  transform: translateX(-1.05rem);
+}
+
+/* ------------------------------------------------------- Pages, sur écran étroit
+
+   Les pages de features/ sont dessinées pour la largeur bureau. On resserre
+   ici ce qui, sinon, paraît surdimensionné sur un téléphone : titres,
+   en-têtes de page, grilles de cartes. */
+
+.mb-content .page-head {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+.mb-content .grid-cards {
+  grid-template-columns: minmax(0, 1fr);
+}
+.mb-content .table-wrap {
+  overflow-x: auto;
+}
+.mb-content h1 {
+  font-size: 1.3rem;
+}
+.mb-content h2 {
+  font-size: 1.05rem;
+}
+/* Les en-têtes de page perdent leur marge haute : l'en-tête de l'application
+   joue déjà ce rôle, et l'espace vide coûte cher sur un téléphone. */
+.mb-content .disc-filters,
+.mb-content .crs-hero,
+.mb-content .sat-head,
+.mb-content .pay-head {
+  margin-top: 0;
+}
+
+/* L'en-tête de l'application salue déjà, donne la date et porte la recherche.
+   Les pages, dessinées pour le bureau où cet en-tête n'existe pas, les
+   répétaient : deux « Bonjour » et deux champs de recherche sur le même
+   écran. On masque les doublons plutôt que de dessiner deux fois. */
+.mb-content .dash-greeting-wrap h1,
+.mb-content .dash-head-actions,
+.mb-content .disc-search {
+  display: none;
+}
+/* Sans le titre au-dessus, le sous-titre devient l'accroche de la page. */
+.mb-content .dash-sub {
+  margin-top: 0;
+  font-size: 0.9rem;
+}
