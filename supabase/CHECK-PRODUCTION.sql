@@ -23,9 +23,14 @@
 
 
 -- ÉTAPE 0 ───────────────────────────────────────────────────────────────────
--- Avant de commencer : la base doit être à jour.
--- Attendu : que des « OK ». Sinon, exécutez le fichier nommé dans a_executer.
--- (C'est le contenu de VERIFY.sql — lancez-le d'abord.)
+-- Avant TOUT : exécutez `supabase/columns-catchup.sql`, puis `VERIFY.sql`.
+--
+-- Le rattrapage ajoute les colonnes que votre base n'a pas encore parce que
+-- SETUP.sql y a été exécuté dans une version antérieure. Il ne touche aucune
+-- donnée. VERIFY.sql doit ensuite n'afficher que des « OK ».
+--
+-- Sans cela, certaines requêtes ci-dessous échoueront sur une colonne absente
+-- — et surtout, l'application perdrait ces champs en silence à l'écriture.
 
 
 -- ÉTAPE 1 ───────────────────────────────────────────────────────────────────

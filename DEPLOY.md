@@ -41,6 +41,9 @@ conserve aucune inscription.
 3. `supabase/self-service.sql` — inscription par l'élève, paiements par l'enseignant
 4. `supabase/self-service-2.sql` — réservations d'un compte en attente
 5. `supabase/i18n-columns.sql` — notifications et journal dans la langue du lecteur
+6. `supabase/columns-catchup.sql` — **filet de sécurité** : ajoute toute colonne
+   manquante, engendré depuis `src/lib/types.ts` donc complet par construction.
+   À relancer après chaque mise à jour de l'application.
 
 Puis `supabase/VERIFY.sql` : tout doit afficher « OK ».
 
