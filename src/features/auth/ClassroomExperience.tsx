@@ -90,7 +90,7 @@ export default function ClassroomExperience() {
             }}
           >
             <img 
-              src="/constantine_classy_classroom.jpg" 
+              src="/constantine_classy_classroom.webp" 
               alt={t("media.classroom_alt")} 
               className="showcase-img"
             />

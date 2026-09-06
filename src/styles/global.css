@@ -809,7 +809,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
     );
 }
 
-/* A narrow column pinned to the inline-start edge. climb.png's right-hand side
+/* A narrow column pinned to the inline-start edge. The source illustration's right-hand side
    has the headline burned into it, so the window is sized to reveal only the
    left ~44% (pencil, ladder, boy) and the trailing edge is masked to a fade. */
 /* Arched window rather than a photo bleeding off the edge — an academic
@@ -2159,7 +2159,7 @@ textarea.input { min-height: 72px; resize: vertical; font-family: inherit; line-
   isolation: isolate;
   background:
     linear-gradient(120deg, rgba(11, 22, 45, 0.72) 0%, rgba(11, 22, 45, 0.35) 45%, rgba(11, 22, 45, 0.55) 100%),
-    url("/constantine_classy_classroom.jpg") center / cover no-repeat,
+    url("/constantine_classy_classroom.webp") center / cover no-repeat,
     var(--ink);
   padding: 1rem;
 }

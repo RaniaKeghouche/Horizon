@@ -116,7 +116,7 @@ export default function AuthPage() {
             </p>
           </div>
 
-          <img src="/climb2_clean.png" alt="" className="au-art" width={1536} height={1024} />
+          <img src="/climb2_clean.webp" alt="" className="au-art" width={1536} height={1024} />
         </aside>
 
         <main className="au-main">

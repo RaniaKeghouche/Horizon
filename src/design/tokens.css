@@ -43,7 +43,9 @@
   --brand-blue: #1b63ad;
   --brand-gradient: linear-gradient(135deg, var(--brand-magenta) 0%, var(--brand-violet) 50%, var(--brand-blue) 100%);
 
-  /* Échantillonné sur climb.png pour que la page et l'illustration partagent un même ciel. */
+  /* Échantillonné sur l'illustration d'origine (climb.png, retirée du dépôt une
+     fois devenue inutilisée — elle reste dans l'historique git) pour que la page
+     et l'illustration partagent un même ciel. */
   --sky-500: #9fd2ea;
   --sky-300: #c8e4f4;
   --sky-100: #eef6fc;

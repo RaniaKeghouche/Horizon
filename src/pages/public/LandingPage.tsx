@@ -46,25 +46,25 @@ const PROGRAMMES = [
   {
     key: "primaire",
     icon: Backpack,
-    photo: "/primaire_photo.png",
+    photo: "/primaire_photo.webp",
     tone: "gold",
   },
   {
     key: "moyen",
     icon: BookOpen,
-    photo: "/college_photo.png",
+    photo: "/college_photo.webp",
     tone: "navy",
   },
   {
     key: "lycee",
     icon: GraduationCap,
-    photo: "/lycee_photo.png",
+    photo: "/lycee_photo.webp",
     tone: "green",
   },
   {
     key: "soutien",
     icon: PenLine,
-    photo: "/soutien_scolaire_photo.png",
+    photo: "/soutien_scolaire_photo.webp",
     tone: "violet",
   },
 ] as const;
@@ -269,7 +269,7 @@ function Hero() {
           <PaperPlaneDoodle />
           <DotsGridPattern cols={4} rows={3} />
 
-          <img src="/climb2_clean.png" alt={t("hz.hero.art_alt")} className="hz-hero-img" width={1536} height={1024} />
+          <img src="/climb2_clean.webp" alt={t("hz.hero.art_alt")} className="hz-hero-img" width={1536} height={1024} />
 
           <div className="hz-hero-script" aria-hidden="true">
             <span className="hz-word">{t("hz.hero.w1")}</span>
@@ -298,9 +298,9 @@ function Hero() {
               </p>
               <div className="hz-hero-card-foot">
                 <span className="hz-avatars" aria-hidden="true">
-                  <img src="/kids.jpg" alt="" />
-                  <img src="/caring_community.jpg" alt="" />
-                  <img src="/teacher_classroom.jpg" alt="" />
+                  <img src="/kids.webp" alt="" />
+                  <img src="/caring_community.webp" alt="" />
+                  <img src="/teacher_classroom.webp" alt="" />
                 </span>
                 <span className="hz-hero-card-pill">
                   <strong>{t("hz.hero.pill_strong")}</strong> {t("hz.hero.pill_rest")}
@@ -334,7 +334,7 @@ function About() {
   return (
     <section className="hz-section hz-about" id="about">
       <div className="hz-about-media">
-        <img src="/constantine_classy_classroom.jpg" alt={t("hz.about.photo_alt")} loading="lazy" />
+        <img src="/constantine_classy_classroom.webp" alt={t("hz.about.photo_alt")} loading="lazy" />
         <span className="hz-about-seal">
           <strong>4+</strong>
           <span>{t("hz.about.years")}</span>
