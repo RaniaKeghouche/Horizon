@@ -40,6 +40,9 @@ conserve aucune inscription.
 2. `supabase/SETUP.sql` — colonnes et tables ajoutées depuis
 3. `supabase/self-service.sql` — inscription par l'élève, paiements par l'enseignant
 4. `supabase/self-service-2.sql` — réservations d'un compte en attente
+5. `supabase/i18n-columns.sql` — notifications et journal dans la langue du lecteur
+
+Puis `supabase/VERIFY.sql` : tout doit afficher « OK ».
 
 Sans 3 et 4, l'application fonctionne pour l'administration mais les élèves ne
 peuvent rien enregistrer : les écritures sont refusées et l'inscription
@@ -76,7 +79,22 @@ Même principe ; `public/_redirects` est pris en compte automatiquement.
 - Testez une inscription depuis un compte élève, puis vérifiez qu'elle apparaît
   bien dans le groupe de l'enseignant.
 
-## 5. Point d'attention connu
+## 5. Le contrôle qui compte vraiment
+
+`npm test` (176 vérifications) s'exécute en **mode démonstration**, où les
+écritures vers Supabase ne font rien. Ces tests ne disent donc rien des règles
+de sécurité, de la file d'attente hors-ligne ni de la synchronisation — or
+c'est exactement là que se logent les pannes silencieuses : une écriture
+refusée, et l'interface affiche quand même un succès.
+
+Après la première mise en ligne, faites **une fois** le parcours décrit dans
+`supabase/CHECK-PRODUCTION.sql` : créer un enseignant → un groupe → inscrire un
+élève → faire l'appel → encaisser. Le fichier donne, à chaque étape, la requête
+qui prouve que la ligne est bien en base. Comptez dix minutes.
+
+C'est le seul moyen de savoir que l'application écrit vraiment.
+
+## 6. Point d'attention connu
 
 `public/` pèse une trentaine de mégaoctets d'images et une vidéo (`climb.png`
 fait 4 Mo à lui seul). Le site fonctionnera, mais la première visite sera lente
