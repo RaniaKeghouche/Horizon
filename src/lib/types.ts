@@ -178,7 +178,18 @@ export interface AppNotification {
   id: string;
   userId: string;
   type: NotificationType;
+  /** Texte deja rendu, en francais. Conserve pour la sauvegarde Google Sheets
+   *  (qui doit rester lisible) et pour les lignes creees avant `msgKey`. */
   message: string;
+  /** Cle i18n et parametres du message.
+   *
+   *  Une notification est ecrite par une personne et lue par une autre : la
+   *  stocker deja traduite la fige dans la langue de l'emetteur. Un parent en
+   *  interface arabe recevait donc « Ahmed a ete marque Present. ». En gardant
+   *  la cle et les valeurs, la phrase se compose dans la langue du LECTEUR, au
+   *  moment de l'affichage. */
+  msgKey?: string;
+  msgParams?: Record<string, string | number>;
   read: boolean;
   createdAt: number;
 }
@@ -187,6 +198,12 @@ export interface ActivityLog {
   id: string;
   userId: string;
   action: string;
+  /** Cle i18n et parametres du detail — meme principe que `AppNotification` :
+   *  le journal se lit dans la langue de celui qui le consulte. `details`
+   *  reste le texte francais, pour les lignes anterieures et pour la
+   *  sauvegarde Google Sheets. */
+  msgKey?: string;
+  msgParams?: Record<string, string | number>;
   details: string;
   createdAt: number;
 }

@@ -28,12 +28,17 @@ export interface AttendanceReport {
   rate: number | null;
 }
 
-/** Les trois libelles du releve, dans la langue du document (francais). */
-const LABEL: Record<AttendanceState, string> = {
-  present: "Présent",
-  // Une absence non facturee est une absence excusee par l'ecole.
-  absent_free: "Justifiée",
-  absent_paid: "Absente",
+
+/** Le traducteur passe par les appelants : ces documents sont remis a une
+ *  famille, ils doivent etre dans SA langue, pas dans celle du code. */
+export type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+/** Les trois etats, traduits comme partout ailleurs dans l'application.
+ *  Une absence non facturee est une absence excusee par l'ecole. */
+const STATE_KEY: Record<AttendanceState, string> = {
+  present: "attendance.present",
+  absent_free: "attendance.absent_free",
+  absent_paid: "attendance.absent_paid",
 };
 
 const STYLES = `
@@ -56,7 +61,12 @@ const STYLES = `
   @media print { body { margin: 12mm; } }
 `;
 
-export function buildAttendanceReportHTML(r: AttendanceReport): string {
+export function buildAttendanceReportHTML(
+  r: AttendanceReport,
+  t: Translate,
+  lang = "fr"
+): string {
+  const rtl = lang === "ar";
   const rows = r.lines
     .map(
       (l) => `<tr>
@@ -64,37 +74,37 @@ export function buildAttendanceReportHTML(r: AttendanceReport): string {
         <td>${esc(l.subject)}</td>
         <td>${esc(l.teacher)}</td>
         <td>${esc(l.slot)}</td>
-        <td class="st ${l.state}">${LABEL[l.state]}</td>
+        <td class="st ${l.state}">${esc(t(STATE_KEY[l.state]))}</td>
       </tr>`
     )
     .join("");
 
-  return `<!doctype html><html lang="fr" dir="ltr"><head><meta charset="utf-8" />
-<title>Relevé de présences — ${esc(r.studentName)}</title><style>${STYLES}</style></head>
+  return `<!doctype html><html lang="${lang}" dir="${rtl ? "rtl" : "ltr"}"><head><meta charset="utf-8" />
+<title>${esc(t("doc.att_title"))} — ${esc(r.studentName)}</title><style>${STYLES}</style></head>
 <body>
-  <h1>Relevé de présences</h1>
+  <h1>${esc(t("doc.att_title"))}</h1>
   <p class="sub">${esc(r.studentName)} — ${esc(r.level)} · ${esc(r.period)}</p>
   <div class="kpis">
-    <div class="kpi"><b>${r.rate === null ? "—" : r.rate + " %"}</b><span>Taux de présence</span></div>
-    <div class="kpi"><b>${r.present}</b><span>Séances suivies</span></div>
-    <div class="kpi"><b>${r.excused}</b><span>Absences justifiées</span></div>
-    <div class="kpi"><b>${r.absent}</b><span>Absences</span></div>
+    <div class="kpi"><b>${r.rate === null ? "—" : r.rate + " %"}</b><span>${esc(t("doc.att_rate"))}</span></div>
+    <div class="kpi"><b>${r.present}</b><span>${esc(t("doc.att_done"))}</span></div>
+    <div class="kpi"><b>${r.excused}</b><span>${esc(t("doc.att_excused"))}</span></div>
+    <div class="kpi"><b>${r.absent}</b><span>${esc(t("doc.att_missed"))}</span></div>
   </div>
   <table>
-    <thead><tr><th>Date</th><th>Matière</th><th>Enseignant</th><th>Créneau</th><th>État</th></tr></thead>
-    <tbody>${rows || '<tr><td colspan="5">Aucune séance sur la période.</td></tr>'}</tbody>
+    <thead><tr><th>${esc(t("doc.col_date"))}</th><th>${esc(t("doc.col_subject"))}</th><th>${esc(t("doc.col_teacher"))}</th><th>${esc(t("doc.col_slot"))}</th><th>${esc(t("doc.col_state"))}</th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="5">${esc(t("doc.att_empty"))}</td></tr>`}</tbody>
   </table>
-  <footer>Horizon Skills Academy — document généré le ${formatDate(Date.now())}.</footer>
+  <footer>${esc(t("doc.generated", { school: "Horizon Skills Academy", date: formatDate(Date.now()) }))}</footer>
 </body></html>`;
 }
 
-export function printAttendanceReport(r: AttendanceReport): void {
+export function printAttendanceReport(r: AttendanceReport, t: Translate, lang = "fr"): void {
   const win = window.open("", "_blank", "width=880,height=940");
   if (!win) {
-    alert("Autorisez les pop-ups pour imprimer le relevé.");
+    alert(t("doc.popup_att"));
     return;
   }
-  win.document.write(buildAttendanceReportHTML(r));
+  win.document.write(buildAttendanceReportHTML(r, t, lang));
   win.document.close();
   win.focus();
   setTimeout(() => win.print(), 300);

@@ -289,7 +289,7 @@ export default function RegisterFlow({
     <div className="au-reg">
       <h2 className="au-title">
         <span className="au-title-bar" />
-        <span>Inscription</span>
+        <span>{t("auth.signup")}</span>
       </h2>
       <p className="au-subtitle">{t("auth.reg_subtitle")}</p>
 
@@ -446,14 +446,14 @@ export default function RegisterFlow({
                 autoFocus
               />
               <button type="button" className="btn btn-primary sm" onClick={commitNewSubject}>
-                Ajouter
+                {t("common.add")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost sm"
                 onClick={() => { setAddingSubject(false); setNewSubjectDraft(""); }}
               >
-                Annuler
+                {t("common.cancel")}
               </button>
             </div>
           )}
@@ -563,8 +563,8 @@ export default function RegisterFlow({
 
       {onCancel && (
         <p className="au-alt">
-          Vous avez déjà un compte ?{" "}
-          <button type="button" onClick={onCancel}>Se connecter</button>
+          {t("auth.already")}{" "}
+          <button type="button" onClick={onCancel}>{t("auth.login")}</button>
         </p>
       )}
     </div>

@@ -24,3 +24,20 @@ export function formatDateTime(millis: number): string {
     minute: "2-digit",
   });
 }
+
+/** "2026-09-05" pour un `<input type="date">`, dans le fuseau local.
+ *
+ *  `toISOString()` convertit d'abord en UTC : en Algerie (UTC+1) une date prise
+ *  entre minuit et 1h du matin y perd un jour, et l'appel du samedi se serait
+ *  enregistre au vendredi. On lit donc les composantes locales. */
+export function isoDate(d: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** L'inverse : "2026-09-05" -> minuit local (et non minuit UTC, ce que ferait
+ *  `new Date("2026-09-05")`). Reciproque exacte de `isoDate`. */
+export function parseIsoDate(s: string): Date {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
+}

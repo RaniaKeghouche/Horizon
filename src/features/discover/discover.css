@@ -1652,3 +1652,29 @@ a.gp-link:hover {
   font-size: 0.83rem;
   line-height: 1.5;
 }
+
+/* Portail invite : meme principe que dans l'application. */
+.gp-langs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.gp-langs > svg { opacity: 0.6; margin-inline-end: 2px; }
+.gp-lang {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 28px;
+}
+.gp-lang:hover { background: var(--primary-soft); }
+.gp-lang.on {
+  background: var(--navy, #0f2557);
+  border-color: var(--navy, #0f2557);
+  color: #fff;
+}

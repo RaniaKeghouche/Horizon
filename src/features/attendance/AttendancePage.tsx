@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
-import { formatDate } from "../../lib/format";
+import { formatDate, isoDate, parseIsoDate } from "../../lib/format";
+import { classOnDay, lastOccurrence } from "../../lib/schedule";
 import type { AttendanceState } from "../../lib/types";
 import "./attendance.css";
 import StackedTable from "../../components/StackedTable";
@@ -28,15 +29,30 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
   const saveAttendance = useData((s) => s.saveAttendance);
 
   const myClasses = teacherId ? classes.filter((c) => c.teacherId === teacherId) : classes;
-  const [classId, setClassId] = useState(myClasses[0]?.id ?? "");
+  // Le groupe propose d'emblee est celui qui a cours AUJOURD'HUI, pas le
+  // premier de la liste : ouvrir la page un samedi sur un groupe du lundi
+  // faisait enregistrer la seance du lundi a la date du samedi.
+  const todaysClass = (list: typeof myClasses) => classOnDay(list) ?? list[0];
+  const [classId, setClassId] = useState(() => todaysClass(myClasses)?.id ?? "");
+  // La date suit le groupe : la derniere fois qu'il a eu cours, aujourd'hui
+  // compris. L'enseignant reste libre de la changer — c'est le seul cas ou
+  // elle s'ecarte du calendrier du groupe.
+  const [date, setDate] = useState(() => {
+    const c = todaysClass(myClasses);
+    return isoDate(c ? lastOccurrence(c.dayOfWeek) : new Date());
+  });
   // In Supabase mode the store is still empty on the first render, so a classId
-  // initialised from myClasses[0] stays "" forever and the page looks empty even
-  // though groups exist. Adopt the first group as soon as the data arrives, and
-  // re-adopt if the selected group disappears.
+  // initialised at mount stays "" forever and the page looks empty even though
+  // groups exist. Adopt the group as soon as the data arrives — and la date avec
+  // lui, sinon elle resterait sur celle calculee quand la liste etait vide.
   useEffect(() => {
     if (myClasses.length === 0) return;
     if (myClasses.some((c) => c.id === classId)) return;
-    setClassId(myClasses[0].id);
+    const pick = todaysClass(myClasses);
+    if (!pick) return;
+    setClassId(pick.id);
+    setDate(isoDate(lastOccurrence(pick.dayOfWeek)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myClasses, classId]);
 
   // Sidebar filter: with many groups, scanning a list is slower than typing.
@@ -49,7 +65,6 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myClasses, groupSearch, subjects]);
 
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState("");
   const [marks, setMarks] = useState<Record<string, AttendanceState>>({});
   /**
@@ -106,7 +121,8 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     setExtra(false);
     setFill("present");
     setFillLocked(false);
-    setDate(new Date().toISOString().slice(0, 10));
+    const next = classes.find((c) => c.id === nextClassId);
+    setDate(isoDate(next ? lastOccurrence(next.dayOfWeek) : new Date()));
   }
 
   useEffect(() => {
@@ -122,7 +138,7 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     // ecraserait justement la seance ordinaire qu'elle vient completer.
     if (extra) return;
     const already = classSessions.find(
-      (x) => !x.isExtra && new Date(x.date).toISOString().slice(0, 10) === date
+      (x) => !x.isExtra && isoDate(new Date(x.date)) === date
     );
     if (already) {
       // Already recorded: load it, so saving can only update it.
@@ -172,7 +188,7 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     if (!sess) return;
     setEditingId(sess.id);
     setExtra(!!sess.isExtra);
-    setDate(new Date(sess.date).toISOString().slice(0, 10));
+    setDate(isoDate(new Date(sess.date)));
     setNote(sess.notes ?? "");
     setMarks({ ...sess.attendance });
     setSelected(new Set(Object.keys(sess.attendance)));
@@ -187,14 +203,14 @@ function TeacherAttendance({ teacherId }: { teacherId?: string }) {
     // toujours une nouvelle entree, meme si le groupe a deja cours ce jour-la.
     const target = editingId ?? (extra
       ? undefined
-      : classSessions.find((x) => !x.isExtra && new Date(x.date).toISOString().slice(0, 10) === date)?.id);
+      : classSessions.find((x) => !x.isExtra && isoDate(new Date(x.date)) === date)?.id);
 
     const full: Record<string, AttendanceState> = {};
     for (const s of roster) if (selected.has(s.id)) full[s.id] = stateOf(s.id);
     saveAttendance(
       klass.id,
       klass.teacherId,
-      new Date(date).getTime(),
+      parseIsoDate(date).getTime(),
       full,
       note.trim() || undefined,
       target ?? undefined,

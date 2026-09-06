@@ -112,9 +112,9 @@ export default function GroupPicker({
     <div className="gp">
       <div className="gp-filters">
         <label className="field">
-          <span className="muted small">Enseignant</span>
+          <span className="muted small">{t("grp.teacher_label")}</span>
           <select className="input" value={filters.teacherId} onChange={(e) => set({ teacherId: e.target.value })}>
-            <option value="">Tous ({opts.teachers.length})</option>
+            <option value="">{t("common.all")} ({opts.teachers.length})</option>
             {opts.teachers.map((id) => (
               <option key={id} value={id}>{teacherName(id)}</option>
             ))}
@@ -122,7 +122,7 @@ export default function GroupPicker({
         </label>
 
         <label className="field">
-          <span className="muted small">Niveau</span>
+          <span className="muted small">{t("stu.level")}</span>
           <select className="input" value={filters.level} onChange={(e) => set({ level: e.target.value })}>
             <option value="">Tous ({opts.levels.length})</option>
             {L.levelGroups().map((g) => {
@@ -142,7 +142,7 @@ export default function GroupPicker({
         <label className="field">
           <span className="muted small">{t("nav.subjects")}</span>
           <select className="input" value={filters.subjectId} onChange={(e) => set({ subjectId: e.target.value })}>
-            <option value="">Toutes ({opts.subjects.length})</option>
+            <option value="">{t("common.all_f")} ({opts.subjects.length})</option>
             {opts.subjects.map((id) => (
               <option key={id} value={id}>{subjName(id)}</option>
             ))}
@@ -151,7 +151,7 @@ export default function GroupPicker({
 
         {activeCount > 0 && (
           <button className="btn btn-ghost sm gp-clear" onClick={() => set(EMPTY_FILTERS)}>
-            Réinitialiser
+            {t("common.reset_filters")}
           </button>
         )}
       </div>
@@ -159,7 +159,7 @@ export default function GroupPicker({
       {showGroups && (
         <div className="gp-groups">
           {matching.length === 0 ? (
-            <span className="muted small">{t("grp.none_filter")}</span>
+            <span className="muted small">{t("att.no_group_match")}</span>
           ) : (
             matching.map((c) => (
               <button

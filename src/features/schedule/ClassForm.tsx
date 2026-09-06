@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Trash2, Copy } from "lucide-react";
 import Modal from "../../components/Modal";
 import { useData } from "../../data/store";
-import { checkSlot, freeRoomsAt, DAYS, SESSION_HOURS, TIME_SLOTS } from "../../lib/schedule";
+import { checkSlot, freeRoomsAt, DAYS, SESSION_HOURS, TIME_SLOTS, allowedTeachersFor } from "../../lib/schedule";
 import { roomsOrDefault } from "../../lib/rooms";
 import { defaultPrice, computeCut } from "../../lib/payments";
 import { formatDA } from "../../lib/format";
@@ -68,6 +68,38 @@ export default function ClassForm({
   const [pricePerSession, setPricePerSession] = useState(
     initial?.pricePerSession ?? prefill?.pricePerSession ?? defaultPrice(sessionType, level) ?? 2000
   );
+  /**
+   * Les enseignants habilites pour cette matiere A CE NIVEAU.
+   *
+   * Si rien n'a ete declare pour ce couple, on propose tout le monde : une
+   * liste vide empecherait purement et simplement de creer le groupe.
+   * L'enseignant deja choisi reste toujours dans la liste, sinon ouvrir un
+   * groupe existant en modification le remplacerait en silence.
+   */
+  const allowedTeachers = useMemo(
+    () =>
+      allowedTeachersFor(
+        subjects.find((x) => x.id === subjectId)?.teachersByLevel,
+        level,
+        teachers,
+        teacherId
+      ),
+    [subjects, teachers, subjectId, level, teacherId]
+  );
+
+  const restricted = allowedTeachers.length < teachers.length;
+
+  // A la creation seulement : si l'enseignant retenu n'est pas habilite pour la
+  // matiere et le niveau choisis, on bascule sur le premier qui l'est. En
+  // modification on ne touche a rien — ce serait changer l'enseignant d'un
+  // groupe existant sans que personne ne l'ait demande.
+  useEffect(() => {
+    if (initial) return;
+    const declared = subjects.find((x) => x.id === subjectId)?.teachersByLevel?.[level] ?? [];
+    if (declared.length > 0 && !declared.includes(teacherId)) setTeacherId(declared[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId, level]);
+
   const teacher = teachers.find((x) => x.id === teacherId);
   const [schoolCutMode, setSchoolCutMode] = useState<PaymentMode>(
     initial?.schoolCutMode ?? teacher?.paymentMode ?? "percentage"
@@ -114,7 +146,7 @@ export default function ClassForm({
 
   return (
     <Modal
-      title={initial ? "Modifier la classe" : "Nouvelle classe"}
+      title={initial ? t("cf.title_edit") : t("cf.title_new")}
       onClose={onClose}
       footer={
         <>
@@ -149,8 +181,9 @@ export default function ClassForm({
         <label className="field">
           <span>{t("roles.teacher")}</span>
           <select className="input" value={teacherId} onChange={(e) => setTeacherId(e.target.value)}>
-            {teachers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            {allowedTeachers.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
           </select>
+          {restricted && <span className="muted small">{t("cf.teachers_filtered")}</span>}
         </label>
         <label className="field">
           <span>{t("stu.level")}</span>
@@ -184,7 +217,7 @@ export default function ClassForm({
             })}
           </select>
           <span className="muted small">
-            {freeIds.length} salle(s) libre(s) {t("sch.day").toLowerCase()} {t(`days.${dayOfWeek}`)} {timeSlot}
+            {t("cf.rooms_free", { n: freeIds.length, day: t(`days.${dayOfWeek}`), slot: timeSlot })}
           </span>
         </label>
         <label className="field">

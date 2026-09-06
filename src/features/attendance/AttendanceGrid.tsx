@@ -64,7 +64,7 @@ export default function AttendanceGrid({ classId }: { classId: string }) {
   }, [roster, cols]);
 
   if (cols.length === 0) {
-    return <p className="muted">{t("att.no_session_group")}</p>;
+    return <p className="muted">{t("att.no_session")}</p>;
   }
 
   return (
@@ -73,7 +73,7 @@ export default function AttendanceGrid({ classId }: { classId: string }) {
         <span className="att-key att-present">P</span> {L.attendance("present")}
         <span className="att-key att-absent-paid">A</span> {L.attendance("absent_paid")}
         <span className="att-key att-absent-free">a</span> {L.attendance("absent_free")}
-        <span className="att-key att-none" /> Pas encore inscrit
+        <span className="att-key att-none" /> {t("att.not_enrolled_yet")}
       </div>
 
       <div className="card table-wrap att-wrap">
@@ -88,7 +88,7 @@ export default function AttendanceGrid({ classId }: { classId: string }) {
                   {shortDate(s.date)}
                 </th>
               ))}
-              <th className="att-total-col">Total</th>
+              <th className="att-total-col">{t("common.total")}</th>
             </tr>
           </thead>
           <tbody>
@@ -121,7 +121,7 @@ export default function AttendanceGrid({ classId }: { classId: string }) {
             {roster.length === 0 && (
               <tr>
                 <td colSpan={cols.length + 3} className="muted center">
-                  Aucun élève inscrit.
+                  {t("att.no_roster")}
                 </td>
               </tr>
             )}

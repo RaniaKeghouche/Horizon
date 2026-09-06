@@ -11,7 +11,7 @@ import { callRpc } from "./rpc";
 import { dropQueued } from "./outbox";
 import { DEMO_MODE } from "../lib/config";
 import { computeCut, isBillable, defaultPrice } from "../lib/payments";
-import { billingMonth } from "../lib/format";
+import { billingMonth, formatDA, isoDate } from "../lib/format";
 import { DAY_LABEL } from "../lib/labels";
 import {
   COLLECTIONS,
@@ -70,7 +70,13 @@ interface DataState {
   teacherPayouts: TeacherPayoutRecord[];
   enrollmentRequests: EnrollmentRequest[];
 
-  log: (userId: string, action: string, details: string) => void;
+  log: (
+    userId: string,
+    action: string,
+    details: string,
+    msgKey?: string,
+    msgParams?: Record<string, string | number>
+  ) => void;
 
   addSubject: (name: string, teachersByLevel?: Subject["teachersByLevel"]) => Subject;
   updateSubject: (id: string, patch: Partial<Subject>) => void;
@@ -110,6 +116,9 @@ interface DataState {
   ) => void;
 
   markPaid: (paymentId: string, note?: string) => void;
+  /** Encaisser PLUSIEURS factures en un seul geste (un cycle, par exemple).
+   *  La famille recoit UN accuse portant le total, pas un par ligne. */
+  markPaidMany: (paymentIds: string[], note?: string) => void;
   markUnpaid: (paymentId: string) => void;
   markMonthPaid: (studentId: string, month: string) => void;
   markMonthUnpaid: (studentId: string, month: string) => void;
@@ -119,7 +128,15 @@ interface DataState {
   payTeacher: (teacherId: string, amount: number, month: string) => void;
   confirmPayout: (payoutId: string) => void;
 
-  addNotification: (userId: string, type: AppNotification["type"], message: string) => void;
+  /** `message` reste le texte francais (sauvegarde Sheets, lignes anciennes) ;
+   *  `msgKey`/`msgParams` permettent de l'afficher dans la langue du lecteur. */
+  addNotification: (
+    userId: string,
+    type: AppNotification["type"],
+    message: string,
+    msgKey?: string,
+    msgParams?: Record<string, string | number>
+  ) => void;
   markNotificationRead: (id: string) => void;
 
   resolveSlotRequest: (id: string, status: "approved" | "rejected") => void;
@@ -163,13 +180,43 @@ interface DataState {
 
 const noopStorage: StateStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 
+/**
+ * Renumerote les seances ordinaires d'un groupe dans l'ordre des dates.
+ *
+ * Le numero etait auparavant « le nombre de seances existantes + 1 », donc
+ * l'ordre de SAISIE. Rattraper une seance oubliee du mois dernier lui donnait
+ * un numero superieur a celles qui l'ont suivie, et une seance supplementaire
+ * consommait un numero au passage. Le numero est une position dans le
+ * calendrier du groupe : il se deduit des dates.
+ *
+ * Les seances supplementaires n'en recoivent pas — elles s'affichent comme
+ * « supplementaire » et non « seance n° ».
+ */
+function renumberSessions(all: Session[], classId: string): Session[] {
+  const rank = new Map<string, number>();
+  all
+    .filter((s) => s.classId === classId && !s.isExtra)
+    .sort((a, b) => a.date - b.date || a.id.localeCompare(b.id))
+    .forEach((s, i) => rank.set(s.id, i + 1));
+
+  return all.map((s) => {
+    if (s.classId !== classId) return s;
+    const want = s.isExtra ? undefined : rank.get(s.id);
+    return s.sessionNumber === want ? s : { ...s, sessionNumber: want };
+  });
+}
+
 export const useData = create<DataState>()(
   persist(
     (set, get) => ({
       ...(DEMO_MODE ? makeSeed() : EMPTY()),
 
-      log: (userId, action, details) => {
-        const entry: ActivityLog = { id: uid(), userId, action, details, createdAt: now() };
+      log: (userId, action, details, msgKey, msgParams) => {
+        const entry: ActivityLog = {
+          id: uid(), userId, action, details, createdAt: now(),
+          ...(msgKey ? { msgKey } : {}),
+          ...(msgParams ? { msgParams } : {}),
+        };
         set((s) => ({ activityLog: [entry, ...s.activityLog] }));
         fbWrite(COLLECTIONS.activityLog, entry);
       },
@@ -201,7 +248,8 @@ export const useData = create<DataState>()(
         };
         set((s) => ({ students: [...s.students, student] }));
         fbWrite(COLLECTIONS.students, student);
-        get().log("u_admin", "student.create", `Ajout de l'étudiant ${student.name}`);
+        get().log("u_admin", "student.create", `Ajout de l'étudiant ${student.name}`,
+          "act.d_student_create", { name: student.name });
         return student;
       },
       updateStudent: (id, patch) => {
@@ -209,13 +257,35 @@ export const useData = create<DataState>()(
         fbPatch(COLLECTIONS.students, id, patch);
       },
       deleteStudent: (id) => {
-        const removed = get().enrollments.filter((e) => e.studentId === id);
+        const state = get();
+        const removed = state.enrollments.filter((e) => e.studentId === id);
+        // Les places doivent revenir aux groupes. Sans ce recalcul, `enroll`
+        // continuait de voir le groupe plein : la place liberee etait perdue
+        // pour de bon, et `isLocked` reste a true — plus personne, ni
+        // l'administration ni l'eleve, ne pouvait la reprendre.
+        const touched = [...new Set(removed.map((e) => e.classId))];
+        const restant = (classId: string) =>
+          state.enrollments.filter((e) => e.classId === classId && e.studentId !== id).length;
+
         set((s) => ({
           students: s.students.filter((x) => x.id !== id),
           enrollments: s.enrollments.filter((e) => e.studentId !== id),
+          classes: s.classes.map((c) =>
+            touched.includes(c.id)
+              ? { ...c, currentStudents: restant(c.id), isLocked: restant(c.id) >= c.maxStudents }
+              : c
+          ),
         }));
         fbDelete(COLLECTIONS.students, id);
         removed.forEach((e) => fbDelete(COLLECTIONS.enrollments, e.id));
+        for (const classId of touched) {
+          const c = state.classes.find((x) => x.id === classId);
+          if (!c) continue;
+          fbPatch(COLLECTIONS.classes, classId, {
+            currentStudents: restant(classId),
+            isLocked: restant(classId) >= c.maxStudents,
+          });
+        }
       },
 
       // ---- Teachers ----
@@ -223,7 +293,8 @@ export const useData = create<DataState>()(
         const teacher: Teacher = { id: uid(), createdAt: now(), ...data };
         set((s) => ({ teachers: [...s.teachers, teacher] }));
         fbWrite(COLLECTIONS.teachers, teacher);
-        get().log("u_admin", "teacher.create", `Ajout de l'enseignant ${teacher.name}`);
+        get().log("u_admin", "teacher.create", `Ajout de l'enseignant ${teacher.name}`,
+          "act.d_teacher_create", { name: teacher.name });
         return teacher;
       },
       updateTeacher: (id, patch) => {
@@ -231,6 +302,11 @@ export const useData = create<DataState>()(
         fbPatch(COLLECTIONS.teachers, id, patch);
       },
       deleteTeacher: (id) => {
+        // Meme regle que pour une matiere en service : on refuse plutot que de
+        // laisser des groupes pointer vers un enseignant qui n'existe plus.
+        // L'interface desactive deja le bouton ; cette garde tient l'invariant
+        // quel que soit l'appelant.
+        if (get().classes.some((c) => c.teacherId === id)) return;
         set((s) => ({ teachers: s.teachers.filter((x) => x.id !== id) }));
         fbDelete(COLLECTIONS.teachers, id);
       },
@@ -244,9 +320,12 @@ export const useData = create<DataState>()(
         const account = get().users.find((u) => u.teacherId === data.teacherId);
         if (account) {
           const subj = get().subjects.find((s) => s.id === data.subjectId)?.name ?? "un cours";
-          get().addNotification(account.id, "teacher_request", `Nouveau créneau qui vous est assigné : ${subj} · ${DAY_LABEL[data.dayOfWeek]} ${data.timeSlot}.`);
+          get().addNotification(account.id, "teacher_request",
+            `Nouveau créneau qui vous est assigné : ${subj} · ${DAY_LABEL[data.dayOfWeek]} ${data.timeSlot}.`,
+            "notif.slot_assigned", { subject: subj, day: data.dayOfWeek, slot: data.timeSlot });
         }
-        get().log("u_admin", "class.create", `Nouvelle classe ${data.timeSlot}`);
+        get().log("u_admin", "class.create", `Nouvelle classe ${data.timeSlot}`,
+          "act.d_class_create", { slot: data.timeSlot });
         return klass;
       },
       updateClass: (id, patch) => {
@@ -267,7 +346,11 @@ export const useData = create<DataState>()(
             const msg = changedTeacher
               ? `Un créneau vous a été assigné : ${subj} · ${DAY_LABEL[merged.dayOfWeek]} ${merged.timeSlot}.`
               : `Votre créneau ${subj} a été modifié : ${DAY_LABEL[merged.dayOfWeek]} ${merged.timeSlot}.`;
-            get().addNotification(account.id, "teacher_request", msg);
+            get().addNotification(
+              account.id, "teacher_request", msg,
+              changedTeacher ? "notif.slot_reassigned" : "notif.slot_changed",
+              { subject: subj, day: merged.dayOfWeek, slot: merged.timeSlot }
+            );
           }
         }
       },
@@ -314,7 +397,8 @@ export const useData = create<DataState>()(
         fbWrite(COLLECTIONS.enrollments, enrollment);
         fbPatch(COLLECTIONS.classes, classId, { currentStudents: nextCount, isLocked });
         fbPatch(COLLECTIONS.students, studentId, { enrolledSubjects: newSubjects });
-        get().log("u_admin", "enroll", `${student.name} inscrit à une classe`);
+        get().log("u_admin", "enroll", `${student.name} inscrit à une classe`,
+          "act.d_enroll", { name: student.name });
       },
       unenroll: (enrollmentId) => {
         const state = get();
@@ -334,11 +418,14 @@ export const useData = create<DataState>()(
         if (waitingFirst) {
           const waited = state.students.find((s) => s.id === waitingFirst);
           if (waited?.linkedAccountId) {
-            get().addNotification(waited.linkedAccountId, "waiting_list", `Une place s'est libérée dans une de vos classes en attente.`);
+            get().addNotification(waited.linkedAccountId, "waiting_list",
+              `Une place s'est libérée dans une de vos classes en attente.`, "notif.seat_freed");
           }
           state.users
             .filter((u) => u.role === "admin")
-            .forEach((admin) => get().addNotification(admin.id, "waiting_list", `Place libérée : ${waited?.name ?? "un élève"} peut être inscrit (liste d'attente).`));
+            .forEach((admin) => get().addNotification(admin.id, "waiting_list",
+              `Place libérée : ${waited?.name ?? "un élève"} peut être inscrit (liste d'attente).`,
+              "notif.seat_freed_admin", { name: waited?.name ?? "—" }));
         }
       },
 
@@ -387,7 +474,16 @@ export const useData = create<DataState>()(
           classes: state.classes,
           students: state.students,
         };
-        get().enroll(studentId, classId, defaultPrice(klass.sessionType, klass.level) ?? 2000);
+        // Le prix du groupe fait foi : l'administration l'a fixe a la creation,
+        // et c'est celui que le catalogue affiche a l'eleve. `defaultPrice` ne
+        // renvoie un tarif que pour les groupes ordinaires — pour un cours
+        // particulier ou un groupe special elle rend `null`, et le repli code en
+        // dur facturait alors 2 000 DA au lieu du prix annonce.
+        get().enroll(
+          studentId,
+          classId,
+          klass.pricePerSession || defaultPrice(klass.sessionType, klass.level) || 2000
+        );
         const added = get().enrollments.find(
           (e) => e.studentId === studentId && e.classId === classId
         );
@@ -421,7 +517,9 @@ export const useData = create<DataState>()(
             get().addNotification(
               a.id,
               "enrollment",
-              `${student.name} s'est inscrit(e) au groupe ${subj} (${klass.timeSlot}).`
+              `${student.name} s'est inscrit(e) au groupe ${subj} (${klass.timeSlot}).`,
+              "notif.self_enrolled",
+              { name: student.name, subject: subj, slot: klass.timeSlot }
             )
           );
         return true;
@@ -435,7 +533,9 @@ export const useData = create<DataState>()(
         const klass = state.classes.find((c) => c.id === classId);
         if (student?.linkedAccountId && klass && get().enrollments.some((e) => e.studentId === studentId && e.classId === classId)) {
           const subj = state.subjects.find((s) => s.id === klass.subjectId)?.name ?? "un cours";
-          get().addNotification(student.linkedAccountId, "enrollment", `Vous avez été affecté(e) au groupe ${subj} (${klass.timeSlot}).`);
+          get().addNotification(student.linkedAccountId, "enrollment",
+            `Vous avez été affecté(e) au groupe ${subj} (${klass.timeSlot}).`,
+            "notif.assigned", { subject: subj, slot: klass.timeSlot });
         }
       },
 
@@ -446,12 +546,17 @@ export const useData = create<DataState>()(
         const newClass = state.classes.find((c) => c.id === newClassId);
         if (!enr || !newClass) return;
         const student = state.students.find((s) => s.id === enr.studentId);
-        const price = defaultPrice(newClass.sessionType, newClass.level) ?? enr.pricePerSession;
+        const price =
+          newClass.pricePerSession ||
+          defaultPrice(newClass.sessionType, newClass.level) ||
+          enr.pricePerSession;
         get().unenroll(enrollmentId);
         get().enroll(enr.studentId, newClassId, price);
         if (student?.linkedAccountId && get().enrollments.some((e) => e.studentId === enr.studentId && e.classId === newClassId)) {
           const subj = state.subjects.find((s) => s.id === newClass.subjectId)?.name ?? "un cours";
-          get().addNotification(student.linkedAccountId, "enrollment", `Vous avez été déplacé(e) vers le groupe ${subj} (${newClass.timeSlot}).`);
+          get().addNotification(student.linkedAccountId, "enrollment",
+            `Vous avez été déplacé(e) vers le groupe ${subj} (${newClass.timeSlot}).`,
+            "notif.moved", { subject: subj, slot: newClass.timeSlot });
         }
       },
 
@@ -462,15 +567,25 @@ export const useData = create<DataState>()(
         if (!klass) return;
         const teacher = state.teachers.find((t) => t.id === teacherId);
 
-        const id = sessionId ?? uid();
-        // Session number = its rank among this class's sessions (kept when editing).
+        // Une seance par groupe et par date : si aucune n'est designee mais qu'il
+        // en existe deja une ce jour-la, on la CORRIGE au lieu d'en ouvrir une
+        // seconde. La regle vivait uniquement dans l'ecran d'appel, qui la
+        // deduisait de ce qu'il avait deja recu ; en mode Supabase, une seance
+        // pas encore synchronisee ou deux appareils simultanes creaient un
+        // doublon — donc une seconde facturation de la meme lecon.
+        // Une seance supplementaire echappe a la regle : c'est sa raison d'etre.
+        const sameDay = (t: number) => isoDate(new Date(t)) === isoDate(new Date(date));
+        const id =
+          sessionId ??
+          (isExtra
+            ? uid()
+            : state.sessions.find((s) => s.classId === classId && !s.isExtra && sameDay(s.date))?.id ??
+              uid());
         const existing = state.sessions.find((s) => s.id === id);
-        const sessionNumber =
-          existing?.sessionNumber ?? state.sessions.filter((s) => s.classId === classId).length + 1;
         // On garde le drapeau d'une seance deja enregistree : la corriger ne doit
         // pas la transformer en seance ordinaire.
         const extra = isExtra ?? existing?.isExtra;
-        const session: Session = { id, classId, teacherId, date, notes, attendance, sessionNumber, ...(extra ? { isExtra: true } : {}) };
+        const session: Session = { id, classId, teacherId, date, notes, attendance, ...(extra ? { isExtra: true } : {}) };
 
         const newPayments: Payment[] = [];
         const newNotifs: AppNotification[] = [];
@@ -501,7 +616,11 @@ export const useData = create<DataState>()(
             });
           }
 
-          if (student?.linkedAccountId) {
+          // Ne prevenir que si le pointage a REELLEMENT change. Sans cette
+          // comparaison, corriger une faute de frappe dans la note renvoyait
+          // une alerte a chaque parent, pour un pointage identique.
+          const wasVal = existing?.attendance[studentId];
+          if (student?.linkedAccountId && wasVal !== stateVal) {
             const label =
               stateVal === "present" ? "Présent" : stateVal === "absent_paid" ? "Absent (facturé)" : "Absent (gratuit)";
             newNotifs.push({
@@ -509,6 +628,8 @@ export const useData = create<DataState>()(
               userId: student.linkedAccountId,
               type: "attendance",
               message: `${student.name} a été marqué ${label}.`,
+              msgKey: "notif.attendance",
+              msgParams: { name: student.name, state: stateVal },
               read: false,
               createdAt: now(),
             });
@@ -528,16 +649,32 @@ export const useData = create<DataState>()(
           )
           .map((p) => p.id);
 
+        // Les numeros suivent la chronologie, pas l'ordre de saisie : rattraper
+        // une seance oubliee la remet a sa vraie place au lieu de lui donner le
+        // numero suivant. Les seances supplementaires ne consomment pas de
+        // numero — elles s'affichent comme « supplementaire ».
+        const merged = [...state.sessions.filter((x) => x.id !== id), session];
+        const renumbered = renumberSessions(merged, classId);
+        const changed = renumbered.filter((x) => {
+          const was = merged.find((m) => m.id === x.id);
+          return was && was.sessionNumber !== x.sessionNumber;
+        });
+
         set((s) => ({
-          sessions: [...s.sessions.filter((x) => x.id !== id), session],
+          sessions: renumberSessions([...s.sessions.filter((x) => x.id !== id), session], classId),
           payments: [...s.payments.filter((p) => !staleIds.includes(p.id)), ...newPayments],
           notifications: [...newNotifs, ...s.notifications],
         }));
-        fbWrite(COLLECTIONS.sessions, session);
+        fbWrite(COLLECTIONS.sessions, renumbered.find((x) => x.id === id) ?? session);
+        // Seules les seances dont le numero a bouge sont reecrites.
+        changed
+          .filter((x) => x.id !== id)
+          .forEach((x) => fbPatch(COLLECTIONS.sessions, x.id, { sessionNumber: x.sessionNumber }));
         staleIds.forEach((pid) => fbDelete(COLLECTIONS.payments, pid));
         newPayments.forEach((p) => fbWrite(COLLECTIONS.payments, p));
         newNotifs.forEach((n) => fbWrite(COLLECTIONS.notifications, n));
-        get().log(teacherId, "attendance.mark", `Présence enregistrée (${Object.keys(attendance).length} élèves)`);
+        get().log(teacherId, "attendance.mark", `Présence enregistrée (${Object.keys(attendance).length} élèves)`,
+          "act.d_attendance_mark", { n: Object.keys(attendance).length });
       },
 
       // ---- Payments ----
@@ -557,8 +694,67 @@ export const useData = create<DataState>()(
         get().log(
           "u_admin",
           "payment.mark_paid",
-          `Paiement encaissé${who ? ` — ${who}` : ""}${note ? ` · ${note}` : ""}`
+          `Paiement encaissé${who ? ` — ${who}` : ""}${note ? ` · ${note}` : ""}`,
+          "act.d_payment_mark_paid",
+          { name: who || "—" }
         );
+        // La famille est prevenue de l'encaissement. Sans cet accuse, un paiement
+        // regle au comptoir ne laissait aucune trace visible cote eleve : le
+        // reglement n'apparaissait que dans un solde, jamais comme evenement.
+        const student = get().students.find((x) => x.id === p?.studentId);
+        if (student?.linkedAccountId && p) {
+          get().addNotification(
+            student.linkedAccountId,
+            "payment_reminder",
+            `Paiement reçu : ${p.amount} DA. Merci.`,
+            "notif.payment_received",
+            { amount: p.amount }
+          );
+        }
+      },
+      // Un encaissement porte sur un cycle entier : le marquer facture par
+      // facture envoyait autant d'accuses identiques a la famille. On regroupe
+      // par eleve et on n'en envoie qu'un, portant le total reellement encaisse.
+      markPaidMany: (paymentIds, note) => {
+        const paidAt = now();
+        const state = get();
+        const cibles = state.payments.filter(
+          (p) => paymentIds.includes(p.id) && p.status === "unpaid"
+        );
+        if (cibles.length === 0) return;
+
+        set((s) => ({
+          payments: s.payments.map((p) =>
+            cibles.some((c) => c.id === p.id)
+              ? { ...p, status: "paid" as const, paidAt, note: note ?? p.note }
+              : p
+          ),
+        }));
+        cibles.forEach((p) =>
+          fbPatch(COLLECTIONS.payments, p.id, { status: "paid", paidAt, ...(note ? { note } : {}) })
+        );
+
+        const parEleve = new Map<string, number>();
+        for (const p of cibles) parEleve.set(p.studentId, (parEleve.get(p.studentId) ?? 0) + p.amount);
+        for (const [studentId, total] of parEleve) {
+          const who = state.students.find((x) => x.id === studentId);
+          get().log(
+            "u_admin",
+            "payment.mark_paid",
+            `Paiement encaissé — ${who?.name ?? "—"}${note ? ` · ${note}` : ""}`,
+            "act.d_payment_mark_paid",
+            { name: who?.name ?? "—" }
+          );
+          if (who?.linkedAccountId) {
+            get().addNotification(
+              who.linkedAccountId,
+              "payment_reminder",
+              `Paiement reçu : ${total} DA. Merci.`,
+              "notif.payment_received",
+              { amount: total }
+            );
+          }
+        }
       },
       markUnpaid: (paymentId) => {
         set((s) => ({ payments: s.payments.map((p) => (p.id === paymentId ? { ...p, status: "unpaid", paidAt: undefined } : p)) }));
@@ -574,7 +770,21 @@ export const useData = create<DataState>()(
           ),
         }));
         targets.forEach((p) => fbPatch(COLLECTIONS.payments, p.id, { status: "paid", paidAt }));
-        get().log("u_admin", "payment.mark_month_paid", `Mois ${month} encaissé (${targets.length} séances)`);
+        get().log("u_admin", "payment.mark_month_paid", `Mois ${month} encaissé (${targets.length} séances)`,
+          "act.d_payment_mark_month_paid", { month, n: targets.length });
+        // Encaisser un mois entier ne prevenait personne : la famille ne voyait
+        // le reglement que dans un solde, jamais comme evenement.
+        const total = targets.reduce((sum, p) => sum + p.amount, 0);
+        const who = get().students.find((x) => x.id === studentId);
+        if (who?.linkedAccountId && total > 0) {
+          get().addNotification(
+            who.linkedAccountId,
+            "payment_reminder",
+            `Paiement reçu : ${total} DA. Merci.`,
+            "notif.payment_received",
+            { amount: total }
+          );
+        }
       },
       // Revert a whole month back to unpaid (uncheck).
       markMonthUnpaid: (studentId, month) => {
@@ -599,6 +809,8 @@ export const useData = create<DataState>()(
               userId: student.linkedAccountId,
               type: "payment_reminder" as const,
               message: `Rappel : paiement en attente — ${payment.amount} DA.`,
+              msgKey: "notif.payment_reminder",
+              msgParams: { amount: payment.amount },
               read: false,
               createdAt: now(),
             }
@@ -627,9 +839,12 @@ export const useData = create<DataState>()(
         const teacher = get().teachers.find((t) => t.id === teacherId);
         const account = get().users.find((u) => u.teacherId === teacherId);
         if (account) {
-          get().addNotification(account.id, "payment_reminder", `Paie reçue : ${amount} DA (${month}). Merci de confirmer.`);
+          get().addNotification(account.id, "payment_reminder",
+            `Paie reçue : ${amount} DA (${month}). Merci de confirmer.`,
+            "notif.payout_sent", { amount, month });
         }
-        get().log("u_admin", "teacher.pay", `Paie versée à ${teacher?.name ?? teacherId} : ${amount} DA`);
+        get().log("u_admin", "teacher.pay", `Paie versée à ${teacher?.name ?? teacherId} : ${amount} DA`,
+          "act.d_teacher_pay", { name: teacher?.name ?? teacherId, amount: formatDA(amount) });
       },
       confirmPayout: (payoutId) => {
         const confirmedAt = now();
@@ -638,8 +853,12 @@ export const useData = create<DataState>()(
       },
 
       // ---- Notifications ----
-      addNotification: (userId, type, message) => {
-        const notif: AppNotification = { id: uid(), userId, type, message, read: false, createdAt: now() };
+      addNotification: (userId, type, message, msgKey, msgParams) => {
+        const notif: AppNotification = {
+          id: uid(), userId, type, message, read: false, createdAt: now(),
+          ...(msgKey ? { msgKey } : {}),
+          ...(msgParams ? { msgParams } : {}),
+        };
         set((s) => ({ notifications: [notif, ...s.notifications] }));
         fbWrite(COLLECTIONS.notifications, notif);
       },
@@ -662,7 +881,9 @@ export const useData = create<DataState>()(
         const teacherName = state.teachers.find((t) => t.id === teacherId)?.name ?? "Un enseignant";
         state.users
           .filter((u) => u.role === "admin")
-          .forEach((admin) => get().addNotification(admin.id, "teacher_request", `${teacherName} demande un créneau : ${dayOfWeek} ${timeSlot}.`));
+          .forEach((admin) => get().addNotification(admin.id, "teacher_request",
+            `${teacherName} demande un créneau : ${DAY_LABEL[dayOfWeek]} ${timeSlot}.`,
+            "notif.slot_request", { teacher: teacherName, day: dayOfWeek, slot: timeSlot }));
       },
 
       // ---- Waiting list (cahier §5.3) ----
@@ -720,10 +941,13 @@ export const useData = create<DataState>()(
             get().addNotification(
               u.id,
               "enrollment",
-              `Nouvelle inscription : ${student?.name ?? "—"} — ${subject?.name ?? "—"} avec ${teacher?.name ?? "—"}`
+              `Nouvelle inscription : ${student?.name ?? "—"} — ${subject?.name ?? "—"} avec ${teacher?.name ?? "—"}`,
+              "notif.enrollment_request",
+              { student: student?.name ?? "—", subject: subject?.name ?? "—", teacher: teacher?.name ?? "—" }
             )
           );
-        get().log(studentId, "enrollment_request", `${subject?.name ?? "—"} / ${teacher?.name ?? "—"}`);
+        get().log(studentId, "enrollment_request", `${subject?.name ?? "—"} / ${teacher?.name ?? "—"}`,
+          "act.d_enrollment_request", { subject: subject?.name ?? "—", teacher: teacher?.name ?? "—" });
         return req;
       },
 
@@ -742,7 +966,8 @@ export const useData = create<DataState>()(
         fbPatch(COLLECTIONS.enrollmentRequests, id, patch);
         const student = get().students.find((x) => x.id === req.studentId);
         if (student?.linkedAccountId) {
-          get().addNotification(student.linkedAccountId, "enrollment", "Votre demande d'inscription a été refusée.");
+          get().addNotification(student.linkedAccountId, "enrollment",
+            "Votre demande d'inscription a été refusée.", "notif.registration_rejected");
         }
       },
 
@@ -813,7 +1038,9 @@ export const useData = create<DataState>()(
             get().addNotification(
               student.linkedAccountId,
               "enrollment",
-              `Vous êtes inscrit(e) : ${opts.dayOfWeek} ${opts.timeSlot}`
+              `Vous êtes inscrit(e) : ${DAY_LABEL[opts.dayOfWeek]} ${opts.timeSlot}`,
+              "notif.group_formed_student",
+              { day: opts.dayOfWeek, slot: opts.timeSlot }
             );
           }
         });
@@ -824,10 +1051,13 @@ export const useData = create<DataState>()(
           get().addNotification(
             teacherAccount.id,
             "enrollment",
-            `Nouveau groupe : ${reqs.length} élève(s), ${opts.dayOfWeek} ${opts.timeSlot}`
+            `Nouveau groupe : ${reqs.length} élève(s), ${DAY_LABEL[opts.dayOfWeek]} ${opts.timeSlot}`,
+            "notif.group_formed_teacher",
+            { n: reqs.length, day: opts.dayOfWeek, slot: opts.timeSlot }
           );
         }
-        get().log("admin", "form_group", `${teacher?.name ?? "—"} — ${reqs.length} élève(s)`);
+        get().log("admin", "form_group", `${teacher?.name ?? "—"} — ${reqs.length} élève(s)`,
+          "act.d_form_group", { teacher: teacher?.name ?? "—", n: reqs.length });
         return klass;
       },
 
@@ -842,7 +1072,9 @@ export const useData = create<DataState>()(
             get().addNotification(
               a.id,
               "teacher_request",
-              `Nouvelle demande d'inscription : ${req.name} (${req.role === "teacher" ? "enseignant" : "étudiant"}).`
+              `Nouvelle demande d'inscription : ${req.name} (${req.role === "teacher" ? "enseignant" : "étudiant"}).`,
+              "notif.registration_request",
+              { name: req.name, role: req.role }
             )
           );
       },
@@ -886,7 +1118,8 @@ export const useData = create<DataState>()(
         const reviewedAt = now();
         set((s) => ({ registrationRequests: s.registrationRequests.map((r) => (r.id === requestId ? { ...r, status: "approved", reviewedAt } : r)) }));
         fbPatch(COLLECTIONS.registrationRequests, requestId, { status: "approved", reviewedAt });
-        get().log("u_admin", "registration.approve", `Inscription acceptée : ${req.name}`);
+        get().log("u_admin", "registration.approve", `Inscription acceptée : ${req.name}`,
+          "act.d_registration_approve", { name: req.name });
         return { email: req.email, name: req.name };
       },
       rejectRegistration: (requestId) => {
@@ -895,7 +1128,8 @@ export const useData = create<DataState>()(
         const reviewedAt = now();
         set((s) => ({ registrationRequests: s.registrationRequests.map((r) => (r.id === requestId ? { ...r, status: "rejected", reviewedAt } : r)) }));
         fbPatch(COLLECTIONS.registrationRequests, requestId, { status: "rejected", reviewedAt });
-        get().log("u_admin", "registration.reject", `Inscription refusée : ${req.name}`);
+        get().log("u_admin", "registration.reject", `Inscription refusée : ${req.name}`,
+          "act.d_registration_reject", { name: req.name });
         return { email: req.email, name: req.name };
       },
 

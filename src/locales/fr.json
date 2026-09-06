@@ -103,7 +103,13 @@
     "need_phone": "un numéro de téléphone à 10 chiffres",
     "need_parent_name": "le nom du parent",
     "need_parent_phone": "le téléphone du parent, à 10 chiffres",
-    "need_password": "un mot de passe d'au moins {{n}} caractères"
+    "need_password": "un mot de passe d'au moins {{n}} caractères",
+    "reg_subtitle": "Créez votre compte en quelques étapes.",
+    "pick_subject": "Choisir une matière…",
+    "other_subject": "Autre matière…",
+    "subject_name_ph": "Nom de la matière",
+    "pwd_create_ph": "Choisissez un mot de passe",
+    "already": "Vous avez déjà un compte ?"
   },
   "login": {
     "headline": "Gérez votre école, simplement",
@@ -186,7 +192,10 @@
     "reject": "Refuser",
     "actions": "Actions",
     "reset_filters": "Réinitialiser les filtres",
-    "no_data": "Pas encore de données."
+    "no_data": "Pas encore de données.",
+    "all": "Tous",
+    "all_f": "Toutes",
+    "total": "Total"
   },
   "hero": {
     "title_start": "Grimpez vers",
@@ -375,7 +384,13 @@
     "add_one": "Ajouter une matière",
     "no_group": "Aucun groupe",
     "banner_title": "Organisez vos matières efficacement",
-    "banner_text": "Créez des matières, assignez-les à des groupes et gérez les plannings facilement."
+    "banner_text": "Créez des matières, assignez-les à des groupes et gérez les plannings facilement.",
+    "teachers_by_level": "Enseignants par niveau",
+    "assign_title": "Enseignants — {{subject}}",
+    "pick_level": "Niveau",
+    "allowed_teachers": "Enseignants habilités à enseigner cette matière à ce niveau :",
+    "no_teacher": "Aucun enseignant enregistré.",
+    "none_assigned": "Aucune habilitation définie : tous les enseignants restent proposés à la création d'un groupe."
   },
   "sd": {
     "billing": "Facturation par matière",
@@ -388,7 +403,9 @@
     "leave": "Quitter",
     "join_waitlist": "Rejoindre la liste",
     "pick_class": "— Choisir une classe —",
-    "enrol_btn": "Inscrire"
+    "enrol_btn": "Inscrire",
+    "per_session": "{{amount}}/séance",
+    "session_of": "Séance {{n}} sur {{total}}"
   },
   "cf": {
     "subject": "Matière",
@@ -404,7 +421,11 @@
     "room": "Salle",
     "teacher_busy": "Cet enseignant a déjà un groupe à ce créneau.",
     "slot_taken": "Ce créneau est déjà occupé dans cette salle.",
-    "cut_pct": "Part école (%)"
+    "cut_pct": "Part école (%)",
+    "title_new": "Nouveau groupe",
+    "title_edit": "Modifier le groupe",
+    "teachers_filtered": "Seuls les enseignants habilités pour cette matière et ce niveau sont proposés.",
+    "rooms_free": "{{n}} salle(s) libre(s) — {{day}} {{slot}}"
   },
   "pm": {
     "close": "Fermer",
@@ -414,7 +435,8 @@
     "mark_paid": "Marquer payé",
     "remind": "Relancer",
     "undo": "Annuler",
-    "none": "Aucun paiement."
+    "none": "Aucun paiement.",
+    "tip_stops_reminders": "Astuce : marquer une séance comme payée arrête automatiquement les relances de cette matière."
   },
   "frm": {
     "edit_student": "Modifier l'étudiant",
@@ -556,7 +578,25 @@
     "reject": "Rejeter",
     "none": "Aucune notification",
     "none_hint": "Présences, paiements et rappels apparaîtront ici.",
-    "digest_exists": "Le récapitulatif du jour existe déjà."
+    "digest_exists": "Le récapitulatif du jour existe déjà.",
+    "slot_assigned": "Nouveau créneau qui vous est assigné : {{subject}} · {{day}} {{slot}}.",
+    "slot_reassigned": "Un créneau vous a été assigné : {{subject}} · {{day}} {{slot}}.",
+    "slot_changed": "Votre créneau {{subject}} a été modifié : {{day}} {{slot}}.",
+    "seat_freed": "Une place s'est libérée dans une de vos classes en attente.",
+    "seat_freed_admin": "Place libérée : {{name}} peut être inscrit (liste d'attente).",
+    "self_enrolled": "{{name}} s'est inscrit(e) au groupe {{subject}} ({{slot}}).",
+    "assigned": "Vous avez été affecté(e) au groupe {{subject}} ({{slot}}).",
+    "moved": "Vous avez été déplacé(e) vers le groupe {{subject}} ({{slot}}).",
+    "payout_sent": "Paie reçue : {{amount}} DA ({{month}}). Merci de confirmer.",
+    "slot_request": "{{teacher}} demande un créneau : {{day}} {{slot}}.",
+    "enrollment_request": "Nouvelle inscription : {{student}} — {{subject}} avec {{teacher}}.",
+    "registration_rejected": "Votre demande d'inscription a été refusée.",
+    "group_formed_student": "Vous êtes inscrit(e) : {{day}} {{slot}}.",
+    "group_formed_teacher": "Nouveau groupe : {{n}} élève(s), {{day}} {{slot}}.",
+    "registration_request": "Nouvelle demande d'inscription : {{name}} ({{role}}).",
+    "attendance": "{{name}} a été marqué(e) {{state}}.",
+    "payment_reminder": "Rappel : paiement en attente — {{amount}} DA.",
+    "payment_received": "Paiement reçu : {{amount}} DA. Merci."
   },
   "act": {
     "subtitle": "Toutes les actions enregistrées : qui, quoi, quand.",
@@ -565,7 +605,31 @@
     "action": "Action",
     "details": "Détails",
     "none": "Aucune activité",
-    "none_hint": "Les actions apparaîtront ici au fil de l'utilisation."
+    "none_hint": "Les actions apparaîtront ici au fil de l'utilisation.",
+    "a_student_create": "Élève ajouté",
+    "a_teacher_create": "Enseignant ajouté",
+    "a_class_create": "Groupe créé",
+    "a_enroll": "Inscription",
+    "a_attendance_mark": "Présences enregistrées",
+    "a_payment_mark_paid": "Paiement encaissé",
+    "a_payment_mark_month_paid": "Mois encaissé",
+    "a_teacher_pay": "Paie versée",
+    "a_enrollment_request": "Demande d'inscription",
+    "a_form_group": "Groupe formé",
+    "a_registration_approve": "Compte accepté",
+    "a_registration_reject": "Compte refusé",
+    "d_student_create": "Ajout de l'élève {{name}}",
+    "d_teacher_create": "Ajout de l'enseignant {{name}}",
+    "d_class_create": "Nouveau groupe {{slot}}",
+    "d_enroll": "{{name}} inscrit(e) à un groupe",
+    "d_attendance_mark": "Présences enregistrées ({{n}} élèves)",
+    "d_payment_mark_paid": "Paiement encaissé — {{name}}",
+    "d_payment_mark_month_paid": "Mois {{month}} encaissé ({{n}} séances)",
+    "d_teacher_pay": "Paie versée à {{name}} : {{amount}}",
+    "d_enrollment_request": "{{subject}} / {{teacher}}",
+    "d_form_group": "{{teacher}} — {{n}} élève(s)",
+    "d_registration_approve": "Compte accepté : {{name}}",
+    "d_registration_reject": "Compte refusé : {{name}}"
   },
   "pmt": {
     "subtitle": "Suivi des encaissements du mois {{month}}.",
@@ -743,7 +807,8 @@
     "k_available": "{{pct}}% disponibles",
     "k_led": "Encadrés",
     "k_covered": "Couvertes",
-    "none_filtered": "Aucun enseignant ne correspond à cette recherche."
+    "none_filtered": "Aucun enseignant ne correspond à cette recherche.",
+    "cannot_delete": "Encadre {{n}} groupe(s) — impossible à supprimer"
   },
   "att": {
     "title_call": "Faire l'appel",
@@ -803,7 +868,8 @@
     "extra_hint": "Elle s'ajoute à la séance du jour au lieu de la remplacer.",
     "extra_short": "Supplémentaire",
     "fill_present": "Présents",
-    "fill_absent": "Absents"
+    "fill_absent": "Absents",
+    "not_enrolled_yet": "Pas encore inscrit"
   },
   "hz": {
     "brand_sub": "SKILLS ACADEMY",
@@ -1371,5 +1437,54 @@
     "cycle_ap": "Primaire (5 ans)",
     "cycle_am": "CEM / Moyen (4 ans)",
     "cycle_as": "Lycée / Secondaire (3 ans)"
+  },
+  "media": {
+    "classroom_alt": "Salle de classe à Horizon Academy, Constantine",
+    "toggle_autoplay": "Activer ou arrêter le défilement automatique"
+  },
+  "tf": {
+    "cut_example": "Exemple sur une séance à 10 000 DA :"
+  },
+  "sync": {
+    "tables_missing": "La base de données n'est pas à jour — certaines pages resteront vides.",
+    "columns_missing": "Enregistré, mais certains champs ne sont pas encore stockés.",
+    "load_failed": "Certaines données n'ont pas pu être chargées.",
+    "migration_hint": "L'application fonctionne quand même : les champs que la base ne connaît pas encore sont ignorés à l'enregistrement. Pour tout activer, ouvrez Supabase → SQL Editor, collez le fichier {{file}}, cliquez sur Run, puis sur « Revérifier » ici.",
+    "hide_detail": "Masquer le détail",
+    "show_detail": "Voir le détail ({{n}})",
+    "write_refused": "écriture refusée : ",
+    "column_dropped": "enregistré sans la colonne : ",
+    "read_failed": "lecture impossible : ",
+    "rechecking": "Vérification…",
+    "recheck": "Revérifier"
+  },
+  "doc": {
+    "att_title": "Relevé de présences",
+    "att_rate": "Taux de présence",
+    "att_done": "Séances suivies",
+    "att_excused": "Absences justifiées",
+    "att_missed": "Absences",
+    "col_date": "Date",
+    "col_subject": "Matière",
+    "col_teacher": "Enseignant",
+    "col_slot": "Créneau",
+    "col_state": "État",
+    "att_empty": "Aucune séance sur la période.",
+    "generated": "{{school}} — document généré le {{date}}.",
+    "popup_att": "Autorisez les pop-ups pour imprimer le relevé.",
+    "popup_inv": "Autorisez les pop-ups pour imprimer les factures.",
+    "inv_title": "Factures",
+    "inv_subtitle": "Centre de langues — Algérie",
+    "col_progress": "Progression",
+    "col_price": "Prix/séance",
+    "col_paid": "Payé",
+    "col_due": "Dû",
+    "inv_empty": "Aucune inscription.",
+    "total_paid": "Total payé : {{amount}}",
+    "total_due": "Total dû : {{amount}}",
+    "thanks": "{{school}} — Merci de votre confiance.",
+    "issued_on": "Émise le {{date}}",
+    "invoice_for": "Facture — {{name}}",
+    "parent": "Parent : {{name}} · {{phone}}"
   }
 }

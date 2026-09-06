@@ -10,7 +10,7 @@ import StackedTable from "../../components/StackedTable";
 
 // Admin per-session payment manager (cahier §3.4): mark paid/unpaid, send reminders.
 export default function PaymentManage({ student, onClose }: { student: Student; onClose: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { subjects, teachers, enrollments, sessions, payments } = useData();
   const markPaid = useData((s) => s.markPaid);
   const markUnpaid = useData((s) => s.markUnpaid);
@@ -37,7 +37,7 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
       onClose={onClose}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={() => printInvoice(billing)}>
+          <button className="btn btn-ghost" onClick={() => printInvoice(billing, t, i18n.language)}>
             <Receipt size={16} /> {t("pmt.invoice")}
           </button>
           <button className="btn btn-primary" onClick={onClose}>{t("pm.close")}</button>
@@ -101,7 +101,7 @@ export default function PaymentManage({ student, onClose }: { student: Student; 
           </tbody>
       </StackedTable>
       <p className="muted small">
-        Astuce : marquer une séance comme payée arrête automatiquement les relances de cette matière.
+        {t("pm.tip_stops_reminders")}
       </p>
     </Modal>
   );

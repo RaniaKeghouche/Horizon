@@ -14,6 +14,7 @@ import { useAuth } from "../auth/AuthContext";
 import { dayEnum } from "../../lib/digest";
 import { formatDA, formatDate, billingMonth } from "../../lib/format";
 import { cycleBalance } from "../../lib/cycles";
+import { notificationText } from "../../lib/notifications";
 import { LEVEL_LABEL } from "../../lib/labels";
 import type { LucideIcon } from "lucide-react";
 import "./dashboard.css";
@@ -396,9 +397,11 @@ function AdminHome() {
 
   const totalDebt = debts.reduce((sum, d) => sum + d.due, 0);
   const owingCount = debts.filter((d) => d.due > 0).length;
+  // `null` quand il n'y a aucun eleve : afficher « 100 % a jour » sur une ecole
+  // vide laisse croire que tout est regle, alors qu'il n'y a rien a regler.
   const clearPct = students.length
     ? Math.round(((students.length - owingCount) / students.length) * 100)
-    : 100;
+    : null;
 
   /** Cash actually taken this month. */
   const collected = useMemo(
@@ -557,7 +560,7 @@ function AdminHome() {
                 <div className="dash-activity-item" key={n.id}>
                   <span className="dash-activity-icon tone-green"><CheckCircle2 size={18} /></span>
                   <div className="dash-activity-content">
-                    <strong>{n.message}</strong>
+                    <strong>{notificationText(n, t)}</strong>
                     <p>{formatDate(n.createdAt)}</p>
                   </div>
                 </div>
@@ -654,13 +657,13 @@ function AdminHome() {
             <div className="dash-fin-bars">
               <div className="dash-fin-bar">
                 <span>{t("dash.students_clear")}</span>
-                <span className="dash-bar-track"><span className="dash-bar ok" style={{ width: `${clearPct}%` }} /></span>
-                <b>{clearPct}%</b>
+                <span className="dash-bar-track"><span className="dash-bar ok" style={{ width: `${clearPct ?? 0}%` }} /></span>
+                <b>{clearPct === null ? "—" : `${clearPct}%`}</b>
               </div>
               <div className="dash-fin-bar">
                 <span>{t("dash.students_owing")}</span>
-                <span className="dash-bar-track"><span className="dash-bar no" style={{ width: `${100 - clearPct}%` }} /></span>
-                <b>{100 - clearPct}%</b>
+                <span className="dash-bar-track"><span className="dash-bar no" style={{ width: `${clearPct === null ? 0 : 100 - clearPct}%` }} /></span>
+                <b>{clearPct === null ? "—" : `${100 - clearPct}%`}</b>
               </div>
             </div>
 
@@ -710,7 +713,7 @@ function Bars({ values }: { values: number[] }) {
 }
 
 /** Anneau de progression du bandeau financier. */
-function Donut({ pct, label }: { pct: number; label: string }) {
+function Donut({ pct, label }: { pct: number | null; label: string }) {
   const r = 42;
   const c = 2 * Math.PI * r;
   return (
@@ -719,14 +722,14 @@ function Donut({ pct, label }: { pct: number; label: string }) {
         <circle cx="50" cy="50" r={r} fill="none" stroke="var(--border)" strokeWidth="9" />
         <circle
           cx="50" cy="50" r={r} fill="none"
-          stroke={pct >= 100 ? "var(--success)" : "var(--gold)"}
+          stroke={pct !== null && pct >= 100 ? "var(--success)" : "var(--gold)"}
           strokeWidth="9" strokeLinecap="round"
-          strokeDasharray={`${(c * pct) / 100} ${c}`}
+          strokeDasharray={`${(c * (pct ?? 0)) / 100} ${c}`}
           transform="rotate(-90 50 50)"
         />
       </svg>
       <div className="dash-donut-text">
-        <strong>{pct}%</strong>
+        <strong>{pct === null ? "—" : `${pct}%`}</strong>
         <span>{label}</span>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 
 export default function Modal({
@@ -12,12 +13,13 @@ export default function Modal({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <header className="modal-head">
           <h2>{title}</h2>
-          <button className="icon-btn" onClick={onClose} aria-label="close">
+          <button className="icon-btn" onClick={onClose} aria-label={t("pm.close")}>
             <X size={18} />
           </button>
         </header>

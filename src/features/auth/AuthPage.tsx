@@ -57,7 +57,7 @@ export default function AuthPage() {
     try {
       await login(toLoginEmail(identifier), password);
     } catch (err) {
-      setError((err as { message?: string })?.message ?? "Nom d'utilisateur ou mot de passe incorrect.");
+      setError((err as { message?: string })?.message ?? t("auth.error"));
     } finally {
       setBusy(false);
     }
@@ -70,7 +70,7 @@ export default function AuthPage() {
           {HAS_PUBLIC_SITE && (
             <a href="/" className="au-back">
               <ArrowLeft size={15} />
-              <span>Accueil</span>
+              <span>{t("nav.home")}</span>
             </a>
           )}
 
@@ -99,22 +99,20 @@ export default function AuthPage() {
           <div className="au-aside-copy">
             {register ? (
               <h1>
-                Rejoignez
+                {t("auth.aside_join_1")}
                 <br />
-                <span className="au-script">{t("login.join_today")}</span>
+                <span className="au-script">{t("auth.aside_join_2")}</span>
               </h1>
             ) : (
               <h1>
-                Bienvenue
+                {t("auth.aside_welcome_1")}
                 <br />
-                chez <span className="au-script-wrap"><em className="au-script">Horizon !</em><span className="au-brush" /></span>
+                <span className="au-script-wrap"><em className="au-script">{t("auth.aside_welcome_2")}</em><span className="au-brush" /></span>
               </h1>
             )}
 
             <p>
-              {register
-                ? "Créez votre compte et faites le premier pas vers un avenir plein de possibilités."
-                : "Connectez-vous pour accéder à votre espace et continuer à apprendre sans limites."}
+              {register ? t("auth.aside_join_lead") : t("auth.aside_welcome_lead")}
             </p>
           </div>
 
@@ -135,13 +133,13 @@ export default function AuthPage() {
               <>
                 <h2 className="au-title">
                   <span className="au-title-bar" />
-                  <span>Connexion</span>
+                  <span>{t("auth.login")}</span>
                 </h2>
-                <p className="au-subtitle">{t("login.subtitle_access")}</p>
+                <p className="au-subtitle">{t("auth.signInTitle")}</p>
 
                 {DEMO_MODE && (
                   <div className="au-demo">
-                    <p className="au-demo-hint">{t("login.demo_pick")}</p>
+                    <p className="au-demo-hint">{t("login.demoHint")}</p>
                     <div className="au-demo-roles">
                       {DEMO_ROLES.map(({ role, icon: Icon }) => (
                         <button key={role} type="button" onClick={() => loginAs(role)}>
@@ -155,11 +153,11 @@ export default function AuthPage() {
 
                 <form onSubmit={onSubmit}>
                   <label className="au-field">
-                    <span>Email ou Identifiant</span>
+                    <span>{t("auth.emailLabel")}</span>
                     <div className="au-input">
                       <input
                         type="text"
-                        placeholder={t("login.id_ph")}
+                        placeholder={t("auth.emailPlaceholder")}
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
                         required
@@ -170,12 +168,12 @@ export default function AuthPage() {
 
                   <div className="au-field">
                     <label>
-                      <span>Mot de passe</span>
+                      <span>{t("auth.passwordLabel")}</span>
                     </label>
                     <div className="au-input">
                       <input
                         type={showPassword ? "text" : "password"}
-                        placeholder={t("login.pwd_ph")}
+                        placeholder={t("auth.passwordPlaceholder")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -185,7 +183,7 @@ export default function AuthPage() {
                         type="button"
                         className="au-eye"
                         onClick={() => setShowPassword((s) => !s)}
-                        aria-label={showPassword ? "Masquer" : "Afficher"}
+                        aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -203,7 +201,7 @@ export default function AuthPage() {
                   {error && <p className="au-error">{error}</p>}
 
                   <button type="submit" className="au-submit" disabled={busy}>
-                    <span>{busy ? "Connexion..." : "Se connecter"}</span>
+                    <span>{busy ? t("auth.loading") : t("auth.signInBtn")}</span>
                     <ArrowRight size={18} />
                   </button>
                 </form>
@@ -224,8 +222,8 @@ export default function AuthPage() {
                 </div>
 
                 <p className="au-alt">
-                  Vous n'avez pas de compte ?{" "}
-                  <button type="button" onClick={() => setRegister(true)}>S'inscrire</button>
+                  {t("auth.notRegistered")}{" "}
+                  <button type="button" onClick={() => setRegister(true)}>{t("auth.signup")}</button>
                 </p>
               </>
             )}

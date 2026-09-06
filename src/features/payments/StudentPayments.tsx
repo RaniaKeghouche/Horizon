@@ -127,7 +127,9 @@ export default function StudentPayments() {
           className="btn btn-ghost pay-invoice"
           onClick={() =>
             printInvoice(
-              computeStudentBilling(student!, enrollments, sessions, payments, { subjects, teachers })
+              computeStudentBilling(student!, enrollments, sessions, payments, { subjects, teachers }),
+              t,
+              i18n.language
             )
           }
         >

@@ -7,7 +7,7 @@ import {
 import { useData } from "../../data/store";
 import { useAuth } from "../auth/AuthContext";
 import { buildDigest } from "../../lib/digest";
-import { liveNotifications } from "../../lib/notifications";
+import { liveNotifications, notificationText } from "../../lib/notifications";
 import { formatDateTime } from "../../lib/format";
 import "./notifications.css";
 import type { NotificationType } from "../../lib/types";
@@ -145,7 +145,7 @@ export default function NotificationsPage() {
               >
                 <span className="notif-icon"><Icon size={22} /></span>
                 <div className="notif-body">
-                  <div className="notif-text">{n.message}</div>
+                  <div className="notif-text">{notificationText(n, t)}</div>
                   <div className="notif-time">{formatDateTime(n.createdAt)}</div>
                 </div>
                 <Doodle seed={i} />

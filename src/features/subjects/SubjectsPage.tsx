@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Trash2, BookOpen, Search, MoreHorizontal, Users, Sparkles } from "lucide-react";
+import { Plus, Trash2, BookOpen, Search, MoreHorizontal, Users, Sparkles, UserCog } from "lucide-react";
 import { useData } from "../../data/store";
+import Modal from "../../components/Modal";
+import { LEVELS, LEVEL_LABEL } from "../../lib/labels";
+import type { StudentLevel, Subject } from "../../lib/types";
 import { formatDate } from "../../lib/format";
 import { subjectIcon, tintStyle } from "../../lib/subjectLook";
 import "./subjects.css";
@@ -11,11 +14,17 @@ export default function SubjectsPage() {
   const { t } = useTranslation();
   const subjects = useData((s) => s.subjects);
   const classes = useData((s) => s.classes);
+  const teachers = useData((s) => s.teachers);
+  const updateSubject = useData((s) => s.updateSubject);
+
   const addSubject = useData((s) => s.addSubject);
   const deleteSubject = useData((s) => s.deleteSubject);
 
   const [name, setName] = useState("");
   const [menu, setMenu] = useState<string | null>(null);
+  /** Matiere dont on regle les habilitations, et niveau affiche. */
+  const [assigning, setAssigning] = useState<Subject | null>(null);
+  const [assignLevel, setAssignLevel] = useState<StudentLevel>("3as");
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Un clic hors du menu le referme : sans ça il resterait ouvert en naviguant
@@ -119,6 +128,12 @@ export default function SubjectsPage() {
                     </button>
                     {menu === s.id && (
                       <div className="sub-menu" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="sub-menu-item"
+                          onClick={() => { setAssigning(s); setMenu(null); }}
+                        >
+                          <UserCog size={15} /> {t("sub.teachers_by_level")}
+                        </button>
                         {/* Une matière rattachée à des groupes n'est pas
                             supprimable : l'entrée inerte dit pourquoi. */}
                         <button
@@ -150,6 +165,63 @@ export default function SubjectsPage() {
         </div>
         <PlantArt />
       </aside>
+      {assigning && (() => {
+        const subject = subjects.find((x) => x.id === assigning.id) ?? assigning;
+        const byLevel = subject.teachersByLevel ?? {};
+        const current = byLevel[assignLevel] ?? [];
+        const toggle = (teacherId: string) => {
+          const next = current.includes(teacherId)
+            ? current.filter((x) => x !== teacherId)
+            : [...current, teacherId];
+          updateSubject(subject.id, {
+            teachersByLevel: { ...byLevel, [assignLevel]: next },
+          });
+        };
+        const filled = LEVELS.filter((lv) => (byLevel[lv] ?? []).length > 0);
+        return (
+          <Modal title={t("sub.assign_title", { subject: subject.name })} onClose={() => setAssigning(null)}>
+            <label className="field">
+              <span>{t("sub.pick_level")}</span>
+              <select
+                className="input"
+                value={assignLevel}
+                onChange={(e) => setAssignLevel(e.target.value as StudentLevel)}
+              >
+                {LEVELS.map((lv) => <option key={lv} value={lv}>{LEVEL_LABEL[lv]}</option>)}
+              </select>
+            </label>
+
+            <p className="muted small">{t("sub.allowed_teachers")}</p>
+            {teachers.length === 0 ? (
+              <p className="muted">{t("sub.no_teacher")}</p>
+            ) : (
+              <div className="sub-assign-list">
+                {teachers.map((te) => (
+                  <label key={te.id} className="sub-assign-row">
+                    <input
+                      type="checkbox"
+                      checked={current.includes(te.id)}
+                      onChange={() => toggle(te.id)}
+                    />
+                    <span>{te.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <p className="muted small sub-assign-summary">
+              {filled.length === 0
+                ? t("sub.none_assigned")
+                : filled
+                    .map((lv) => `${LEVEL_LABEL[lv]} — ${(byLevel[lv] ?? [])
+                      .map((id) => teachers.find((x) => x.id === id)?.name ?? "—")
+                      .join(", ")}`)
+                    .join(" · ")}
+            </p>
+          </Modal>
+        );
+      })()}
+
     </div>
   );
 }

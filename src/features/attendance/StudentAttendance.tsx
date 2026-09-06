@@ -171,7 +171,7 @@ export default function StudentAttendance() {
       })),
       ...tally(inMonth),
       rate: mth.total > 0 ? Math.round((mth.present / mth.total) * 100) : null,
-    });
+    }, t, i18n.language);
   }
 
   if (!student) return <p className="muted">{t("dash.no_student_link")}</p>;

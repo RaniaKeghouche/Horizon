@@ -4,7 +4,12 @@
 import type { StudentBilling } from "./billing";
 import { formatDA, formatDate } from "./format";
 
-const SCHOOL = { name: "Horizon Skills Academy", subtitle: "Centre de langues — Algérie" };
+const SCHOOL_NAME = "Horizon Skills Academy";
+
+/** Le traducteur passe par les appelants : ces documents sont remis a une
+ *  famille, ils doivent etre dans SA langue, pas dans celle du code. */
+export type Translate = (key: string, options?: Record<string, unknown>) => string;
+
 
 const STYLES = `
   * { font-family: "Segoe UI", Arial, sans-serif; }
@@ -26,7 +31,7 @@ const STYLES = `
   .foot { margin-top: 30px; color: #9aa6ba; font-size: 12px; text-align: center; }
 `;
 
-function invoiceBody(billing: StudentBilling): string {
+function invoiceBody(billing: StudentBilling, t: Translate): string {
   const rows = billing.subjects
     .map(
       (s) => `
@@ -43,48 +48,48 @@ function invoiceBody(billing: StudentBilling): string {
 
   return `<div class="invoice">
     <div class="head">
-      <div><div class="brand">${SCHOOL.name}</div><div class="sub">${SCHOOL.subtitle}</div></div>
-      <div class="sub">Émise le ${formatDate(Date.now())}</div>
+      <div><div class="brand">${SCHOOL_NAME}</div><div class="sub">${escapeHtml(t("doc.inv_subtitle"))}</div></div>
+      <div class="sub">${escapeHtml(t("doc.issued_on", { date: formatDate(Date.now()) }))}</div>
     </div>
-    <h1>Facture — ${escapeHtml(billing.student.name)}</h1>
-    <div class="meta">Parent : ${escapeHtml(billing.student.parentName)} · ${escapeHtml(billing.student.parentPhone)}</div>
+    <h1>${escapeHtml(t("doc.invoice_for", { name: billing.student.name }))}</h1>
+    <div class="meta">${escapeHtml(t("doc.parent", { name: billing.student.parentName, phone: billing.student.parentPhone }))}</div>
     <table>
       <thead><tr>
-        <th>Matière</th><th>Enseignant</th><th>Progression</th>
-        <th class="r">Prix/séance</th><th class="r">Payé</th><th class="r">Dû</th>
+        <th>${escapeHtml(t("doc.col_subject"))}</th><th>${escapeHtml(t("doc.col_teacher"))}</th><th>${escapeHtml(t("doc.col_progress"))}</th>
+        <th class="r">${escapeHtml(t("doc.col_price"))}</th><th class="r">${escapeHtml(t("doc.col_paid"))}</th><th class="r">${escapeHtml(t("doc.col_due"))}</th>
       </tr></thead>
-      <tbody>${rows || `<tr><td colspan="6">Aucune inscription.</td></tr>`}</tbody>
+      <tbody>${rows || `<tr><td colspan="6">${escapeHtml(t("doc.inv_empty"))}</td></tr>`}</tbody>
     </table>
-    <div class="total">Total payé : ${formatDA(billing.totalPaid)}<br/>Total dû : <strong>${formatDA(billing.totalDue)}</strong></div>
-    <div class="foot">Horizon Skills Academy — Merci de votre confiance.</div>
+    <div class="total">${escapeHtml(t("doc.total_paid", { amount: formatDA(billing.totalPaid) }))}<br/><strong>${escapeHtml(t("doc.total_due", { amount: formatDA(billing.totalDue) }))}</strong></div>
+    <div class="foot">${escapeHtml(t("doc.thanks", { school: SCHOOL_NAME }))}</div>
   </div>`;
 }
 
-export function buildInvoiceHTML(billing: StudentBilling): string {
-  return buildInvoicesHTML([billing]);
+export function buildInvoiceHTML(billing: StudentBilling, t: Translate, lang = "fr"): string {
+  return buildInvoicesHTML([billing], t, lang);
 }
 
-export function buildInvoicesHTML(billings: StudentBilling[]): string {
-  return `<!doctype html><html lang="fr" dir="ltr"><head><meta charset="utf-8" />
-<title>Factures — Horizon Skills Academy</title><style>${STYLES}</style></head>
-<body>${billings.map(invoiceBody).join("")}</body></html>`;
+export function buildInvoicesHTML(billings: StudentBilling[], t: Translate, lang = "fr"): string {
+  return `<!doctype html><html lang="${lang}" dir="${lang === "ar" ? "rtl" : "ltr"}"><head><meta charset="utf-8" />
+<title>${t("doc.inv_title")} — ${SCHOOL_NAME}</title><style>${STYLES}</style></head>
+<body>${billings.map((b) => invoiceBody(b, t)).join("")}</body></html>`;
 }
 
-export function printInvoices(billings: StudentBilling[]) {
+export function printInvoices(billings: StudentBilling[], t: Translate, lang = "fr") {
   if (billings.length === 0) return;
   const win = window.open("", "_blank", "width=820,height=920");
   if (!win) {
-    alert("Autorisez les pop-ups pour imprimer les factures.");
+    alert(t("doc.popup_inv"));
     return;
   }
-  win.document.write(buildInvoicesHTML(billings));
+  win.document.write(buildInvoicesHTML(billings, t, lang));
   win.document.close();
   win.focus();
   setTimeout(() => win.print(), 300);
 }
 
-export function printInvoice(billing: StudentBilling) {
-  printInvoices([billing]);
+export function printInvoice(billing: StudentBilling, t: Translate, lang = "fr") {
+  printInvoices([billing], t, lang);
 }
 
 function escapeHtml(s: string): string {

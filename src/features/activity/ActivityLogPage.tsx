@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { activityText } from "../../lib/notifications";
 import { useTranslation } from "react-i18next";
 import { ScrollText } from "lucide-react";
 import { useData } from "../../data/store";
@@ -55,8 +56,14 @@ export default function ActivityLogPage() {
                 <tr key={a.id}>
                   <td className="muted small">{formatDateTime(a.createdAt)}</td>
                   <td>{who(a.userId)}</td>
-                  <td><span className="pill pill-soft">{a.action}</span></td>
-                  <td>{a.details}</td>
+                  <td><span className="pill pill-soft">
+                    {/* L'action etait affichee telle quelle : « registration.approve »
+                        est une cle machine, pas un libelle pour un humain. */}
+                    {/* Le point est le separateur de niveaux d'i18next : « student.create »
+                        deviendrait un chemin. On l'aplatit. */}
+                    {t(`act.a_${a.action.replace(/\./g, "_")}`, { defaultValue: a.action })}
+                  </span></td>
+                  <td>{activityText(a, t)}</td>
                 </tr>
               ))}
             </tbody>

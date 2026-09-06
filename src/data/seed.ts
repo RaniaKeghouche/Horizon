@@ -2,6 +2,7 @@
 // Fixed IDs let the demo logins (teacher/student) link to a real record.
 import { computeCut } from "../lib/payments";
 import { billingMonth } from "../lib/format";
+import { lastOccurrence } from "../lib/schedule";
 import type {
   AppUser,
   Student,
@@ -18,6 +19,7 @@ import type {
   RegistrationRequest,
   EnrollmentRequest,
   TeacherPayoutRecord,
+  DayOfWeek,
 } from "../lib/types";
 
 const DAY = 86_400_000;
@@ -210,7 +212,7 @@ const classes: ClassRoom[] = [
     pricePerSession: 2700,
     schoolCutMode: "percentage",
     schoolCutValue: 25,
-    currentStudents: 2,
+    currentStudents: 3,
     isLocked: false,
     createdAt: now - 45 * DAY,
   },
@@ -260,12 +262,25 @@ const enrollments: Enrollment[] = [
 ];
 
 // ---- Sessions (3 weekly English sessions already held this month) ----
+/** La seance hebdomadaire d'un groupe, `weeksAgo` semaines avant la derniere
+ *  fois qu'il a eu cours.
+ *
+ *  Les dates etaient calculees en jours pleins depuis maintenant (`now - 21 *
+ *  DAY`), donc elles tombaient sur le jour ou la demonstration etait ouverte :
+ *  un groupe du lundi affichait un historique de samedis. Les ancrer au jour
+ *  du groupe rend la demonstration coherente avec son propre calendrier. */
+function weeklySession(day: DayOfWeek, weeksAgo: number): number {
+  const d = lastOccurrence(day);
+  d.setDate(d.getDate() - weeksAgo * 7);
+  return d.getTime();
+}
+
 const sessions: Session[] = [
   {
     id: "sess_c1_1",
     classId: "c1",
     teacherId: "t1",
-    date: now - 21 * DAY,
+    date: weeklySession("monday", 3),
     sessionNumber: 1,
     notes: "Révision des temps du présent.",
     attendance: { s1: "present", s2: "present", s3: "present" },
@@ -274,7 +289,7 @@ const sessions: Session[] = [
     id: "sess_c1_2",
     classId: "c1",
     teacherId: "t1",
-    date: now - 14 * DAY,
+    date: weeklySession("monday", 2),
     sessionNumber: 2,
     attendance: { s1: "present", s2: "absent_free", s3: "present" },
   },
@@ -282,7 +297,7 @@ const sessions: Session[] = [
     id: "sess_c1_3",
     classId: "c1",
     teacherId: "t1",
-    date: now - 7 * DAY,
+    date: weeklySession("monday", 1),
     sessionNumber: 3,
     attendance: { s1: "absent_paid", s2: "present", s3: "present" },
   },
@@ -290,7 +305,7 @@ const sessions: Session[] = [
     id: "sess_c3_1",
     classId: "c3",
     teacherId: "t2",
-    date: now - 20 * DAY,
+    date: weeklySession("tuesday", 3),
     sessionNumber: 1,
     attendance: { s1: "present" },
   },
@@ -352,17 +367,52 @@ const users: AppUser[] = [
 ];
 
 // ---- Notifications ----
+// Chaque notification porte sa cle et ses parametres : la demonstration montre
+// donc le comportement reel, ou la phrase se compose dans la langue du lecteur.
+// `message` reste le repli francais, comme pour les lignes anterieures en base.
 const notifications: AppNotification[] = [
-  { id: "n1", userId: "u_student", type: "payment_reminder", message: "Rappel : le paiement de English est en attente — 2 700 DA.", read: false, createdAt: now - 2 * DAY },
-  { id: "n2", userId: "u_student", type: "attendance", message: "Ahmed a été marqué Absent (facturé) en English — la séance sera facturée.", read: true, createdAt: now - 7 * DAY },
-  { id: "n3", userId: "u_admin", type: "daily_digest", message: "Programme du jour : 2 classes. Demain : 1 classe.", read: false, createdAt: now - 1 * DAY },
-  { id: "n4", userId: "u_admin", type: "teacher_request", message: "Amine demande un créneau : jeudi 17:00-18:30.", read: false, createdAt: now - 3 * DAY },
+  {
+    id: "n1", userId: "u_student", type: "payment_reminder",
+    message: "Rappel : paiement en attente — 2 700 DA.",
+    msgKey: "notif.payment_reminder", msgParams: { amount: 2700 },
+    read: false, createdAt: now - 2 * DAY,
+  },
+  {
+    id: "n2", userId: "u_student", type: "attendance",
+    message: "Ahmed Saïdi a été marqué Absent (facturé).",
+    msgKey: "notif.attendance", msgParams: { name: "Ahmed Saïdi", state: "absent_paid" },
+    read: true, createdAt: now - 7 * DAY,
+  },
+  {
+    id: "n3", userId: "u_admin", type: "daily_digest",
+    message: "Programme du jour : 2 classes. Demain : 1 classe.",
+    read: false, createdAt: now - 1 * DAY,
+  },
+  {
+    id: "n4", userId: "u_admin", type: "teacher_request",
+    message: "Amine Belkacem demande un créneau : Jeudi 17:00-18:30.",
+    msgKey: "notif.slot_request",
+    msgParams: { teacher: "Amine Belkacem", day: "thursday", slot: "17:00-18:30" },
+    read: false, createdAt: now - 3 * DAY,
+  },
 ];
 
 // ---- Activity log ----
+// Comme les notifications : cle + parametres, pour que la demonstration montre
+// le journal dans la langue du lecteur et non dans celle du code.
 const activityLog: ActivityLog[] = [
-  { id: "a1", userId: "u_admin", action: "student.create", details: "Ajout de l'étudiant Ahmed Saïdi", createdAt: now - 40 * DAY },
-  { id: "a2", userId: "u_teacher", action: "attendance.mark", details: "Présence marquée pour English (séance 3)", createdAt: now - 7 * DAY },
+  {
+    id: "a1", userId: "u_admin", action: "student.create",
+    details: "Ajout de l'étudiant Ahmed Saïdi",
+    msgKey: "act.d_student_create", msgParams: { name: "Ahmed Saïdi" },
+    createdAt: now - 40 * DAY,
+  },
+  {
+    id: "a2", userId: "u_teacher", action: "attendance.mark",
+    details: "Présences enregistrées (3 élèves)",
+    msgKey: "act.d_attendance_mark", msgParams: { n: 3 },
+    createdAt: now - 7 * DAY,
+  },
 ];
 
 // ---- Slot requests ----

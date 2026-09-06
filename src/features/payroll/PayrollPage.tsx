@@ -232,6 +232,11 @@ function AdminPayroll() {
                         <td>
                           <button
                             className={"pay-review" + (on ? " on" : "")}
+                            /* Deplie, le bouton n'affiche qu'un chevron : sans nom
+                               explicite un lecteur d'ecran n'annoncerait que
+                               « bouton ». */
+                            aria-label={t("pay.review")}
+                            aria-expanded={on}
                             onClick={(e) => { e.stopPropagation(); setPickedId(l.teacher.id); }}
                           >
                             {on ? <ChevronRight size={14} /> : t("pay.review")}

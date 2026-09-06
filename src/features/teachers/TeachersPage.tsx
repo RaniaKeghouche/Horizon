@@ -382,7 +382,10 @@ export default function TeachersPage() {
                         </button>
                         <button
                           className="icon-btn danger"
-                          title={t("common.delete")}
+                          disabled={p.groups.length > 0}
+                          title={p.groups.length > 0
+                            ? t("tea.cannot_delete", { n: p.groups.length })
+                            : t("common.delete")}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (confirm(t("stu.confirm_delete", { name: teacher.name }))) deleteTeacher(teacher.id);
@@ -448,7 +451,10 @@ export default function TeachersPage() {
                     </button>
                     <button
                       className="icon-btn danger"
-                      title={t("common.delete")}
+                      disabled={p.groups.length > 0}
+                      title={p.groups.length > 0
+                        ? t("tea.cannot_delete", { n: p.groups.length })
+                        : t("common.delete")}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (confirm(t("stu.confirm_delete", { name: teacher.name }))) deleteTeacher(teacher.id);

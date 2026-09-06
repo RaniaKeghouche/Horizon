@@ -33,3 +33,19 @@ i18n.on("languageChanged", (lng) => {
 applyDirection(i18n.language);
 
 export default i18n;
+
+/**
+ * Les trois langues de l'application, dans l'ordre d'affichage.
+ *
+ * Elles etaient jusqu'ici declarees uniquement sur la page publique, et les
+ * coquilles de l'application basculaient entre l'arabe et le francais avec un
+ * simple `language === "ar" ? "fr" : "ar"`. Consequence : une fois connecte,
+ * l'anglais devenait inatteignable, alors que sa traduction est complete.
+ */
+export const LANGUAGES = [
+  { code: "ar", label: "العربية", short: "AR" },
+  { code: "fr", label: "Français", short: "FR" },
+  { code: "en", label: "English", short: "EN" },
+] as const;
+
+export type LanguageCode = (typeof LANGUAGES)[number]["code"];

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, RefreshCw, ChevronDown } from "lucide-react";
 import { DEMO_MODE } from "../lib/config";
 import { useSyncIssues, isSchemaError } from "../data/syncStatus";
@@ -32,28 +33,25 @@ export default function SyncBanner() {
     }
   }
 
+  const { t } = useTranslation();
+
   return (
     <div className="sync-banner">
       <AlertTriangle size={18} className="sync-banner-icon" aria-hidden />
       <div className="sync-banner-body">
         <strong>
           {missingTables.length > 0
-            ? "La base de données n'est pas à jour — certaines pages resteront vides."
+            ? t("sync.tables_missing")
             : droppedColumns.length > 0
-            ? "Enregistré, mais certains champs ne sont pas encore stockés."
-            : "Certaines données n'ont pas pu être chargées."}
+            ? t("sync.columns_missing")
+            : t("sync.load_failed")}
         </strong>
         {isMigration && (
-          <p className="muted small">
-            L'application fonctionne quand même : les champs que la base ne connaît pas encore
-            sont ignorés à l'enregistrement. Pour tout activer, ouvrez Supabase → SQL Editor,
-            collez le fichier <code>supabase/SETUP.sql</code>, cliquez sur Run, puis sur
-            « Revérifier » ici.
-          </p>
+          <p className="muted small">{t("sync.migration_hint", { file: "supabase/SETUP.sql" })}</p>
         )}
         <button className="btn btn-ghost sm sync-banner-toggle" onClick={() => setOpen((o) => !o)}>
           <ChevronDown size={14} className={open ? "rot" : ""} aria-hidden />
-          {open ? "Masquer le détail" : `Voir le détail (${issues.length})`}
+          {open ? t("sync.hide_detail") : t("sync.show_detail", { n: issues.length })}
         </button>
         {open && (
           <ul className="sync-banner-list">
@@ -62,10 +60,10 @@ export default function SyncBanner() {
                 <code>{i.table}</code>
                 <span className="muted small">
                   {i.kind === "write"
-                    ? "écriture refusée : "
+                    ? t("sync.write_refused")
                     : i.kind === "column"
-                    ? "enregistré sans la colonne : "
-                    : "lecture impossible : "}
+                    ? t("sync.column_dropped")
+                    : t("sync.read_failed")}
                   {i.kind === "column" ? <code>{i.reason}</code> : i.reason}
                 </span>
               </li>
@@ -75,7 +73,7 @@ export default function SyncBanner() {
       </div>
       <button className="btn btn-primary sm" onClick={recheck} disabled={busy}>
         <RefreshCw size={14} className={busy ? "spin" : ""} aria-hidden />
-        {busy ? "Vérification…" : "Revérifier"}
+        {busy ? t("sync.rechecking") : t("sync.recheck")}
       </button>
     </div>
   );

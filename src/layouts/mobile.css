@@ -464,3 +464,30 @@
   margin-top: 0;
   font-size: 0.9rem;
 }
+
+/* Feuille du bas : la ligne « Langue » porte les trois choix a droite.
+   44 px de haut minimum, comme toutes les cibles tactiles de cette coquille. */
+.mb-langs { cursor: default; }
+.mb-lang-set {
+  display: flex;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+.mb-lang {
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mb-lang.on {
+  background: var(--navy, #0f2557);
+  border-color: var(--navy, #0f2557);
+  color: #fff;
+}

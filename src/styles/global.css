@@ -4960,3 +4960,31 @@ a[href^="https://wa.me"],
 [dir="rtl"] .num {
   text-align: right;
 }
+
+/* Choix de langue : trois pastilles au lieu d'une bascule a deux etats. Le
+   bouton actif est marque par un fond plein, lisible sans couleur seule. */
+.menu-langs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+.menu-lang {
+  flex: 1;
+  padding: 6px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 32px;
+}
+.menu-lang:hover { background: var(--primary-soft); }
+.menu-lang.on {
+  background: var(--navy, #0f2557);
+  border-color: var(--navy, #0f2557);
+  color: #fff;
+}

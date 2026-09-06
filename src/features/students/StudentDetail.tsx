@@ -49,7 +49,9 @@ export default function StudentDetail({
   function onPickClass(id: string) {
     setClassId(id);
     const k = classes.find((c) => c.id === id);
-    if (k) setPrice(defaultPrice(k.sessionType, k.level) ?? 0);
+    // Le prix du groupe d'abord : sans lui, choisir un cours particulier ou un
+    // groupe special mettait le champ a 0 et desactivait le bouton d'inscription.
+    if (k) setPrice(k.pricePerSession || defaultPrice(k.sessionType, k.level) || 0);
   }
 
   function doEnroll() {
@@ -81,10 +83,10 @@ export default function StudentDetail({
             <div>
               <strong>{s.subjectName}</strong>
               <div className="muted small">
-                {s.teacherName} · {formatDA(s.pricePerSession)}/séance
+                {s.teacherName} · {t("sd.per_session", { amount: formatDA(s.pricePerSession) })}
               </div>
               <div className="pill pill-soft">
-                Séance {s.currentSession} sur {s.totalSessions}
+                {t("sd.session_of", { n: s.currentSession, total: s.totalSessions })}
               </div>
             </div>
             <div className="billing-amounts">

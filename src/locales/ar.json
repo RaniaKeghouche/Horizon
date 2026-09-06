@@ -103,7 +103,13 @@
     "need_phone": "رقم هاتف من 10 أرقام",
     "need_parent_name": "اسم الولي",
     "need_parent_phone": "هاتف الولي، من 10 أرقام",
-    "need_password": "كلمة مرور من {{n}} أحرف على الأقل"
+    "need_password": "كلمة مرور من {{n}} أحرف على الأقل",
+    "reg_subtitle": "أنشئ حسابك في بضع خطوات.",
+    "pick_subject": "اختر مادة…",
+    "other_subject": "مادة أخرى…",
+    "subject_name_ph": "اسم المادة",
+    "pwd_create_ph": "اختر كلمة مرور",
+    "already": "هل لديك حساب بالفعل؟"
   },
   "login": {
     "headline": "أدِر مدرستك بكل بساطة",
@@ -157,7 +163,10 @@
     "reject": "رفض",
     "actions": "إجراءات",
     "reset_filters": "إعادة ضبط عوامل التصفية",
-    "no_data": "لا توجد بيانات بعد."
+    "no_data": "لا توجد بيانات بعد.",
+    "all": "الكل",
+    "all_f": "الكل",
+    "total": "المجموع"
   },
   "hero": {
     "title_start": "ارتقِ نحو",
@@ -375,7 +384,13 @@
     "add_one": "إضافة مادة",
     "no_group": "لا فوج",
     "banner_title": "نظّم موادك بفعالية",
-    "banner_text": "أنشئ المواد وأسندها إلى الأفواج وأدر الجداول بسهولة."
+    "banner_text": "أنشئ المواد وأسندها إلى الأفواج وأدر الجداول بسهولة.",
+    "teachers_by_level": "الأساتذة حسب المستوى",
+    "assign_title": "الأساتذة — {{subject}}",
+    "pick_level": "المستوى",
+    "allowed_teachers": "الأساتذة المخوَّلون لتدريس هذه المادة في هذا المستوى:",
+    "no_teacher": "لا يوجد أستاذ مسجَّل.",
+    "none_assigned": "لم تُحدَّد أي صلاحية: يبقى كل الأساتذة متاحين عند إنشاء فوج."
   },
   "sd": {
     "billing": "الفوترة حسب المادة",
@@ -388,7 +403,9 @@
     "leave": "مغادرة",
     "join_waitlist": "الانضمام للقائمة",
     "pick_class": "— اختر فوجًا —",
-    "enrol_btn": "تسجيل"
+    "enrol_btn": "تسجيل",
+    "per_session": "{{amount}}/حصة",
+    "session_of": "الحصة {{n}} من {{total}}"
   },
   "cf": {
     "subject": "المادة",
@@ -404,7 +421,11 @@
     "room": "القاعة",
     "teacher_busy": "هذا الأستاذ لديه مجموعة في هذا الموعد.",
     "slot_taken": "هذا الموعد محجوز بالفعل في هذه القاعة.",
-    "cut_pct": "حصة المدرسة (٪)"
+    "cut_pct": "حصة المدرسة (٪)",
+    "title_new": "فوج جديد",
+    "title_edit": "تعديل الفوج",
+    "teachers_filtered": "لا تُقترح إلا أسماء الأساتذة المخوَّلين لهذه المادة وهذا المستوى.",
+    "rooms_free": "{{n}} قاعة متاحة — {{day}} {{slot}}"
   },
   "pm": {
     "close": "إغلاق",
@@ -414,7 +435,8 @@
     "mark_paid": "تعليم كمدفوع",
     "remind": "تذكير",
     "undo": "تراجع",
-    "none": "لا دفعة."
+    "none": "لا دفعة.",
+    "tip_stops_reminders": "ملاحظة: تعليم الحصة كمدفوعة يوقف تلقائيًا تذكيرات هذه المادة."
   },
   "frm": {
     "edit_student": "تعديل الطالب",
@@ -556,7 +578,25 @@
     "reject": "رفض",
     "none": "لا إشعارات",
     "none_hint": "ستظهر هنا الحضور والمدفوعات والتذكيرات.",
-    "digest_exists": "ملخّص اليوم موجود بالفعل."
+    "digest_exists": "ملخّص اليوم موجود بالفعل.",
+    "slot_assigned": "أُسنِد إليك موعد جديد: {{subject}} · {{day}} {{slot}}.",
+    "slot_reassigned": "أُسنِد إليك موعد: {{subject}} · {{day}} {{slot}}.",
+    "slot_changed": "تغيّر موعد {{subject}} الخاص بك: {{day}} {{slot}}.",
+    "seat_freed": "شغر مقعد في أحد الأفواج التي تنتظرها.",
+    "seat_freed_admin": "مقعد شاغر: يمكن تسجيل {{name}} (قائمة الانتظار).",
+    "self_enrolled": "سجّل {{name}} في فوج {{subject}} ({{slot}}).",
+    "assigned": "تمّ تسجيلك في فوج {{subject}} ({{slot}}).",
+    "moved": "تمّ نقلك إلى فوج {{subject}} ({{slot}}).",
+    "payout_sent": "تمّ استلام الأجر: {{amount}} دج ({{month}}). يُرجى التأكيد.",
+    "slot_request": "يطلب {{teacher}} موعدًا: {{day}} {{slot}}.",
+    "enrollment_request": "تسجيل جديد: {{student}} — {{subject}} مع {{teacher}}.",
+    "registration_rejected": "تمّ رفض طلب تسجيلك.",
+    "group_formed_student": "أنت مسجَّل: {{day}} {{slot}}.",
+    "group_formed_teacher": "فوج جديد: {{n}} طالبًا، {{day}} {{slot}}.",
+    "registration_request": "طلب تسجيل جديد: {{name}} ({{role}}).",
+    "attendance": "تمّ تسجيل {{name}} بحالة {{state}}.",
+    "payment_reminder": "تذكير: دفعة قيد الانتظار — {{amount}} دج.",
+    "payment_received": "تمّ استلام الدفعة: {{amount}} دج. شكرًا لكم."
   },
   "act": {
     "subtitle": "كل الإجراءات المسجّلة: من، ماذا، متى.",
@@ -565,7 +605,31 @@
     "action": "الإجراء",
     "details": "التفاصيل",
     "none": "لا نشاط",
-    "none_hint": "ستظهر الإجراءات هنا مع الاستعمال."
+    "none_hint": "ستظهر الإجراءات هنا مع الاستعمال.",
+    "a_student_create": "إضافة طالب",
+    "a_teacher_create": "إضافة أستاذ",
+    "a_class_create": "إنشاء فوج",
+    "a_enroll": "تسجيل",
+    "a_attendance_mark": "تسجيل الحضور",
+    "a_payment_mark_paid": "تحصيل دفعة",
+    "a_payment_mark_month_paid": "تحصيل شهر",
+    "a_teacher_pay": "صرف أجر",
+    "a_enrollment_request": "طلب تسجيل",
+    "a_form_group": "تكوين فوج",
+    "a_registration_approve": "قبول حساب",
+    "a_registration_reject": "رفض حساب",
+    "d_student_create": "إضافة الطالب {{name}}",
+    "d_teacher_create": "إضافة الأستاذ {{name}}",
+    "d_class_create": "فوج جديد {{slot}}",
+    "d_enroll": "تسجيل {{name}} في فوج",
+    "d_attendance_mark": "تسجيل الحضور ({{n}} طالبًا)",
+    "d_payment_mark_paid": "تحصيل دفعة — {{name}}",
+    "d_payment_mark_month_paid": "تحصيل شهر {{month}} ({{n}} حصة)",
+    "d_teacher_pay": "صرف أجر لـ {{name}}: {{amount}}",
+    "d_enrollment_request": "{{subject}} / {{teacher}}",
+    "d_form_group": "{{teacher}} — {{n}} طالبًا",
+    "d_registration_approve": "قبول حساب: {{name}}",
+    "d_registration_reject": "رفض حساب: {{name}}"
   },
   "pmt": {
     "subtitle": "متابعة تحصيلات شهر {{month}}.",
@@ -743,7 +807,8 @@
     "k_available": "{{pct}}% متاح",
     "k_led": "مؤطَّرة",
     "k_covered": "مغطّاة",
-    "none_filtered": "لا أستاذ يطابق هذا البحث."
+    "none_filtered": "لا أستاذ يطابق هذا البحث.",
+    "cannot_delete": "يؤطّر {{n}} فوجًا — لا يمكن حذفه"
   },
   "att": {
     "title_call": "تسجيل الحضور",
@@ -803,7 +868,8 @@
     "extra_hint": "تُضاف إلى حصة اليوم بدل أن تحلّ محلّها.",
     "extra_short": "إضافية",
     "fill_present": "حاضرون",
-    "fill_absent": "غائبون"
+    "fill_absent": "غائبون",
+    "not_enrolled_yet": "غير مسجّل بعد"
   },
   "hz": {
     "brand_sub": "SKILLS ACADEMY",
@@ -1375,5 +1441,54 @@
     "cycle_ap": "الابتدائي (5 سنوات)",
     "cycle_am": "المتوسط (4 سنوات)",
     "cycle_as": "الثانوي (3 سنوات)"
+  },
+  "media": {
+    "classroom_alt": "قاعة دراسية في أكاديمية هورايزن، قسنطينة",
+    "toggle_autoplay": "تشغيل أو إيقاف العرض التلقائي"
+  },
+  "tf": {
+    "cut_example": "مثال على حصة بـ 10 000 دج:"
+  },
+  "sync": {
+    "tables_missing": "قاعدة البيانات غير محدَّثة — ستبقى بعض الصفحات فارغة.",
+    "columns_missing": "تمّ الحفظ، لكن بعض الحقول لم تُخزَّن بعد.",
+    "load_failed": "تعذّر تحميل بعض البيانات.",
+    "migration_hint": "التطبيق يعمل رغم ذلك: الحقول التي لا تعرفها القاعدة تُهمَل عند الحفظ. لتفعيل كل شيء، افتح Supabase ← SQL Editor، ألصق الملف {{file}}، اضغط Run، ثم «إعادة التحقق» هنا.",
+    "hide_detail": "إخفاء التفاصيل",
+    "show_detail": "عرض التفاصيل ({{n}})",
+    "write_refused": "رُفضت الكتابة: ",
+    "column_dropped": "حُفظ بدون العمود: ",
+    "read_failed": "تعذّرت القراءة: ",
+    "rechecking": "جارٍ التحقق…",
+    "recheck": "إعادة التحقق"
+  },
+  "doc": {
+    "att_title": "كشف الحضور",
+    "att_rate": "نسبة الحضور",
+    "att_done": "الحصص المحضورة",
+    "att_excused": "الغيابات المبرَّرة",
+    "att_missed": "الغيابات",
+    "col_date": "التاريخ",
+    "col_subject": "المادة",
+    "col_teacher": "الأستاذ",
+    "col_slot": "الموعد",
+    "col_state": "الحالة",
+    "att_empty": "لا حصة في هذه الفترة.",
+    "generated": "{{school}} — وثيقة صادرة بتاريخ {{date}}.",
+    "popup_att": "اسمح بالنوافذ المنبثقة لطباعة الكشف.",
+    "popup_inv": "اسمح بالنوافذ المنبثقة لطباعة الفواتير.",
+    "inv_title": "الفواتير",
+    "inv_subtitle": "مركز لغات — الجزائر",
+    "col_progress": "التقدّم",
+    "col_price": "السعر/حصة",
+    "col_paid": "المدفوع",
+    "col_due": "المستحق",
+    "inv_empty": "لا تسجيل.",
+    "total_paid": "مجموع المدفوع: {{amount}}",
+    "total_due": "مجموع المستحق: {{amount}}",
+    "thanks": "{{school}} — شكرًا لثقتكم.",
+    "issued_on": "صادرة بتاريخ {{date}}",
+    "invoice_for": "فاتورة — {{name}}",
+    "parent": "الولي: {{name}} · {{phone}}"
   }
 }

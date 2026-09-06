@@ -30,6 +30,10 @@ with attendu(categorie, nom, detail, fichier) as (
     ('colonne',  'registrationRequests',  'wantedClassIds',   'SETUP.sql'),
     ('colonne',  'sessions',              'isExtra',          'SETUP.sql'),
     ('colonne',  'classes',               'roomId',           'SETUP.sql'),
+    ('colonne',  'notifications',         'msgKey',           'i18n-columns.sql'),
+    ('colonne',  'notifications',         'msgParams',        'i18n-columns.sql'),
+    ('colonne',  'activityLog',           'msgKey',           'i18n-columns.sql'),
+    ('colonne',  'activityLog',           'msgParams',        'i18n-columns.sql'),
     -- Fonctions ------------------------------------------------------------
     ('fonction', 'is_admin',              null,               'schema.sql'),
     ('fonction', 'my_student_id',         null,               'rls-hardening.sql'),

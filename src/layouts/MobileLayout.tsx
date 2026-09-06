@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { LANGUAGES } from "../lib/i18n";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Bell, LogOut, Globe, MoreHorizontal, X, Search, Moon, ChevronRight } from "lucide-react";
+import { Bell, LogOut, Globe, MoreHorizontal, X, Search, Moon } from "lucide-react";
 import { useAuth } from "../features/auth/AuthContext";
 import { useData } from "../data/store";
 import { useTheme } from "../app/useTheme";
@@ -161,14 +162,22 @@ export default function MobileLayout() {
             )}
 
             <div className="mb-sheet-foot">
-              <button
-                className="mb-sheet-action"
-                onClick={() => i18n.changeLanguage(i18n.language === "ar" ? "fr" : "ar")}
-              >
+              <div className="mb-sheet-action mb-langs" role="group" aria-label={t("common.language")}>
                 <Globe size={18} />
-                <span>{i18n.language === "ar" ? "Français" : "العربية"}</span>
-                <ChevronRight size={16} className="mb-sheet-go" />
-              </button>
+                <span>{t("common.language")}</span>
+                <span className="mb-lang-set">
+                  {LANGUAGES.map((l) => (
+                    <button
+                      key={l.code}
+                      className={"mb-lang" + (i18n.language === l.code ? " on" : "")}
+                      aria-pressed={i18n.language === l.code}
+                      onClick={() => i18n.changeLanguage(l.code)}
+                    >
+                      {l.short}
+                    </button>
+                  ))}
+                </span>
+              </div>
               <button className="mb-sheet-action" onClick={toggleTheme} role="switch" aria-checked={dark}>
                 <Moon size={18} />
                 <span>{t("nav.dark_mode")}</span>

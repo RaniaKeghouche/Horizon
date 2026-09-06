@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { LANGUAGES } from "../../lib/i18n";
 import { useTranslation } from "react-i18next";
 import {
   Phone, Mail, MapPin, Star, ArrowRight, Play, Globe, ChevronDown, Menu, X,
@@ -27,11 +28,8 @@ const SECTIONS = [
   { id: "contact", labelKey: "hz.nav.contact" },
 ] as const;
 
-const LANGS = [
-  { code: "fr", label: "FR" },
-  { code: "ar", label: "AR" },
-  { code: "en", label: "EN" },
-] as const;
+// La liste vit desormais dans lib/i18n.ts, partagee avec les coquilles.
+const LANGS = LANGUAGES.map((l) => ({ code: l.code, label: l.short }));
 
 /* Le libelle est desormais une cle i18n : ecrit ici, il etait fige au
    chargement du module et restait francais quelle que soit la langue. */

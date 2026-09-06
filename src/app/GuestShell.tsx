@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { LANGUAGES } from "../lib/i18n";
 import { useTranslation } from "react-i18next";
 import {
   Globe, LogOut, Compass, FileClock, Moon, ArrowRight, BadgeCheck, MapPin,
@@ -119,13 +120,19 @@ export default function GuestShell() {
           </nav>
 
           <div className="gp-nav-end">
-            <button
-              className="gp-icon-btn gp-lang"
-              onClick={() => i18n.changeLanguage(i18n.language === "ar" ? "fr" : "ar")}
-            >
-              <Globe size={15} />
-              <span>{i18n.language === "ar" ? "FR" : "العربية"}</span>
-            </button>
+            <div className="gp-langs" role="group" aria-label={t("common.language")}>
+              <Globe size={15} aria-hidden="true" />
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  className={"gp-lang" + (i18n.language === l.code ? " on" : "")}
+                  aria-pressed={i18n.language === l.code}
+                  onClick={() => i18n.changeLanguage(l.code)}
+                >
+                  {l.short}
+                </button>
+              ))}
+            </div>
             <button className="gp-icon-btn" onClick={toggleTheme} role="switch" aria-checked={dark} aria-label={t("nav.dark_mode")}>
               <Moon size={16} />
             </button>

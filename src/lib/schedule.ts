@@ -138,3 +138,71 @@ export function freeRoomsAt(
   );
   return roomIds.filter((id) => !busy.has(id));
 }
+
+/** Le jour de la semaine d'une date, dans le vocabulaire de l'application.
+ *  `getDay()` compte a partir de dimanche = 0 ; DAYS commence a samedi, qui
+ *  est le premier jour ouvre de la semaine scolaire algerienne. */
+export function dayOfWeekOf(d: Date = new Date()): DayOfWeek {
+  const fromSunday: DayOfWeek[] = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  return fromSunday[d.getDay()];
+}
+
+/** La derniere fois que ce jour est tombe, aujourd'hui compris.
+ *
+ *  C'est la date qu'attend un appel : on pointe une seance qui a eu lieu, pas
+ *  une seance a venir. Pour un groupe du lundi consulte un samedi, la reponse
+ *  est le lundi precedent — jamais le lundi suivant, qui n'a pas encore eu
+ *  lieu et pour lequel il n'y a rien a pointer. */
+export function lastOccurrence(day: DayOfWeek, from: Date = new Date()): Date {
+  const d = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const target = DAYS.indexOf(day);
+  const current = DAYS.indexOf(dayOfWeekOf(d));
+  if (target < 0 || current < 0) return d;
+  // Modulo 7 : si le jour vise est plus loin dans la semaine que le jour
+  // courant, il faut remonter a la semaine precedente.
+  const back = (current - target + 7) % 7;
+  d.setDate(d.getDate() - back);
+  return d;
+}
+
+/** Le groupe qui a cours ce jour-la, le plus tot dans la journee.
+ *  `undefined` si aucun groupe ne se reunit ce jour. */
+export function classOnDay<T extends { dayOfWeek: DayOfWeek; timeSlot: string }>(
+  list: T[],
+  day: DayOfWeek = dayOfWeekOf()
+): T | undefined {
+  return list
+    .filter((c) => c.dayOfWeek === day)
+    .sort((a, b) => normalizeSlot(a.timeSlot).localeCompare(normalizeSlot(b.timeSlot)))[0];
+}
+
+/**
+ * Les enseignants habilites pour une matiere A UN NIVEAU donne.
+ *
+ * Regle de repli deliberee : si rien n'a ete declare pour ce couple, on rend la
+ * liste complete. Une liste vide empecherait de creer le moindre groupe, ce qui
+ * transformerait une aide a la saisie en blocage.
+ *
+ * `currentId` est l'enseignant deja retenu : il reste toujours dans la liste,
+ * sinon ouvrir un groupe existant en modification le remplacerait en silence.
+ */
+export function allowedTeachersFor<T extends { id: string }>(
+  teachersByLevel: Partial<Record<string, string[]>> | undefined,
+  level: string,
+  teachers: T[],
+  currentId?: string
+): T[] {
+  const declared = teachersByLevel?.[level] ?? [];
+  const allowed = teachers.filter((x) => declared.includes(x.id));
+  if (allowed.length === 0) return teachers;
+  const current = teachers.find((x) => x.id === currentId);
+  return current && !allowed.some((x) => x.id === currentId) ? [...allowed, current] : allowed;
+}

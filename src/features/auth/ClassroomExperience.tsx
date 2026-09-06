@@ -91,7 +91,7 @@ export default function ClassroomExperience() {
           >
             <img 
               src="/constantine_classy_classroom.jpg" 
-              alt="Classy Classroom in Constantine Horizon Academy" 
+              alt={t("media.classroom_alt")} 
               className="showcase-img"
             />
             <div className="showcase-overlay-gradient" />
@@ -122,7 +122,7 @@ export default function ClassroomExperience() {
             <button 
               className="showcase-play-btn"
               onClick={() => setIsPlaying(!isPlaying)}
-              aria-label="Toggle auto play"
+              aria-label={t("media.toggle_autoplay")}
             >
               {isPlaying ? <Pause size={16} /> : <Play size={16} />}
               <span>{isPlaying ? "Pause" : (i18n.language === "ar" ? "تشغيل تلقائي" : i18n.language === "en" ? "Auto Tour" : "Mode Cinéma")}</span>

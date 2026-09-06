@@ -79,7 +79,7 @@ export default function TeacherForm({
           <input className="input" value={v.name} onChange={(e) => set("name", e.target.value)} />
         </label>
         <label className="field">
-          <span>{t("reg.phoneLabel")}</span>
+          <span>{t("auth.phone")}</span>
           <input className="input" value={v.phone} onChange={(e) => set("phone", e.target.value)} />
         </label>
       </div>
@@ -155,7 +155,7 @@ export default function TeacherForm({
       </div>
 
       <div className="preview-box">
-        Exemple sur une séance à 10 000 DA :
+        {t("tf.cut_example")}
         <strong> enseignant {formatDA(preview.teacherCut)}</strong> ·
         <strong> école {formatDA(preview.schoolCut)}</strong>
       </div>

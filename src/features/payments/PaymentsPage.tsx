@@ -25,7 +25,7 @@ function AdminPayments() {
   const {
     students, subjects, teachers, classes, enrollments, sessions, payments,
   } = useData();
-  const markPaid = useData((s) => s.markPaid);
+  const markPaidMany = useData((s) => s.markPaidMany);
 
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("");
@@ -138,9 +138,12 @@ function AdminPayments() {
   function applyPayment(sessionIds: string[], note: string) {
     if (!collecting) return;
     const ids = new Set(sessionIds);
-    collecting.rows
+    // Un seul appel pour tout le cycle : la famille recoit un accuse portant le
+    // total, et non un par facture.
+    const aEncaisser = collecting.rows
       .filter((p) => ids.has(p.sessionId) && p.status === "unpaid")
-      .forEach((p) => markPaid(p.id, note || undefined));
+      .map((p) => p.id);
+    markPaidMany(aEncaisser, note || undefined);
     setCollecting(null);
   }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { LANGUAGES } from "../lib/i18n";
 import {
   Search, Bell, Globe, LogOut, ChevronDown, ChevronRight, Hand,
   Menu, Moon,
@@ -56,9 +57,6 @@ export default function AppLayout() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  function toggleLang() {
-    i18n.changeLanguage(i18n.language === "ar" ? "fr" : "ar");
-  }
   function toggleSection(key: string) {
     setCollapsed((prev) => {
       const n = new Set(prev);
@@ -182,9 +180,21 @@ export default function AppLayout() {
                       <strong>{profile?.displayName}</strong>
                       <span className="muted small">{roleLabel}</span>
                     </div>
-                    <button className="menu-item" onClick={() => { toggleLang(); setMenuOpen(false); }}>
-                      <Globe size={16} /> {i18n.language === "ar" ? "Français" : "العربية"}
-                    </button>
+                    {/* Les trois langues, pas une bascule : l'anglais etait
+                        inatteignable une fois connecte. */}
+                    <div className="menu-langs" role="group" aria-label={t("common.language")}>
+                      <Globe size={16} aria-hidden="true" />
+                      {LANGUAGES.map((l) => (
+                        <button
+                          key={l.code}
+                          className={"menu-lang" + (i18n.language === l.code ? " on" : "")}
+                          aria-pressed={i18n.language === l.code}
+                          onClick={() => { i18n.changeLanguage(l.code); setMenuOpen(false); }}
+                        >
+                          {l.short}
+                        </button>
+                      ))}
+                    </div>
                     <button className="menu-item" onClick={() => { toggleTheme(); setMenuOpen(false); }}>
                       <Moon size={16} /> {t("nav.dark_mode")}
                     </button>

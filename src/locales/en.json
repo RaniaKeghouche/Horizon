@@ -103,7 +103,13 @@
     "need_phone": "a 10-digit phone number",
     "need_parent_name": "the parent's name",
     "need_parent_phone": "the parent's phone, 10 digits",
-    "need_password": "a password of at least {{n}} characters"
+    "need_password": "a password of at least {{n}} characters",
+    "reg_subtitle": "Create your account in a few steps.",
+    "pick_subject": "Choose a subject…",
+    "other_subject": "Other subject…",
+    "subject_name_ph": "Subject name",
+    "pwd_create_ph": "Choose a password",
+    "already": "Already have an account?"
   },
   "login": {
     "cta": "Get Started",
@@ -157,7 +163,10 @@
     "reject": "Reject",
     "actions": "Actions",
     "reset_filters": "Reset filters",
-    "no_data": "No data yet."
+    "no_data": "No data yet.",
+    "all": "All",
+    "all_f": "All",
+    "total": "Total"
   },
   "hero": {
     "title_start": "Helping you climb",
@@ -375,7 +384,13 @@
     "add_one": "Add a subject",
     "no_group": "No group",
     "banner_title": "Keep your subjects organised",
-    "banner_text": "Create subjects, assign them to groups and manage schedules with ease."
+    "banner_text": "Create subjects, assign them to groups and manage schedules with ease.",
+    "teachers_by_level": "Teachers by level",
+    "assign_title": "Teachers — {{subject}}",
+    "pick_level": "Level",
+    "allowed_teachers": "Teachers allowed to teach this subject at this level:",
+    "no_teacher": "No teacher on file.",
+    "none_assigned": "No assignment set: every teacher stays available when creating a group."
   },
   "sd": {
     "billing": "Billing by subject",
@@ -388,7 +403,9 @@
     "leave": "Leave",
     "join_waitlist": "Join the list",
     "pick_class": "— Pick a group —",
-    "enrol_btn": "Enrol"
+    "enrol_btn": "Enrol",
+    "per_session": "{{amount}}/session",
+    "session_of": "Session {{n}} of {{total}}"
   },
   "cf": {
     "subject": "Subject",
@@ -404,7 +421,11 @@
     "room": "Room",
     "teacher_busy": "That teacher already has a group at this slot.",
     "slot_taken": "That slot is already taken in this room.",
-    "cut_pct": "School share (%)"
+    "cut_pct": "School share (%)",
+    "title_new": "New group",
+    "title_edit": "Edit group",
+    "teachers_filtered": "Only teachers approved for this subject and level are offered.",
+    "rooms_free": "{{n}} room(s) free — {{day}} {{slot}}"
   },
   "pm": {
     "close": "Close",
@@ -414,7 +435,8 @@
     "mark_paid": "Mark paid",
     "remind": "Send reminder",
     "undo": "Undo",
-    "none": "No payment."
+    "none": "No payment.",
+    "tip_stops_reminders": "Tip: marking a session as paid automatically stops the reminders for that subject."
   },
   "frm": {
     "edit_student": "Edit student",
@@ -556,7 +578,25 @@
     "reject": "Reject",
     "none": "No notifications",
     "none_hint": "Attendance, payments and reminders will appear here.",
-    "digest_exists": "Today's digest already exists."
+    "digest_exists": "Today's digest already exists.",
+    "slot_assigned": "New slot assigned to you: {{subject}} · {{day}} {{slot}}.",
+    "slot_reassigned": "A slot has been assigned to you: {{subject}} · {{day}} {{slot}}.",
+    "slot_changed": "Your {{subject}} slot has changed: {{day}} {{slot}}.",
+    "seat_freed": "A seat has opened up in one of your waitlisted classes.",
+    "seat_freed_admin": "Seat freed: {{name}} can be enrolled (waiting list).",
+    "self_enrolled": "{{name}} enrolled in the {{subject}} group ({{slot}}).",
+    "assigned": "You have been assigned to the {{subject}} group ({{slot}}).",
+    "moved": "You have been moved to the {{subject}} group ({{slot}}).",
+    "payout_sent": "Payout received: {{amount}} DA ({{month}}). Please confirm.",
+    "slot_request": "{{teacher}} is requesting a slot: {{day}} {{slot}}.",
+    "enrollment_request": "New enrolment: {{student}} — {{subject}} with {{teacher}}.",
+    "registration_rejected": "Your registration request was rejected.",
+    "group_formed_student": "You are enrolled: {{day}} {{slot}}.",
+    "group_formed_teacher": "New group: {{n}} student(s), {{day}} {{slot}}.",
+    "registration_request": "New registration request: {{name}} ({{role}}).",
+    "attendance": "{{name}} was marked {{state}}.",
+    "payment_reminder": "Reminder: payment pending — {{amount}} DA.",
+    "payment_received": "Payment received: {{amount}} DA. Thank you."
   },
   "act": {
     "subtitle": "Every recorded action: who, what, when.",
@@ -565,7 +605,31 @@
     "action": "Action",
     "details": "Details",
     "none": "No activity",
-    "none_hint": "Actions will appear here as the app is used."
+    "none_hint": "Actions will appear here as the app is used.",
+    "a_student_create": "Student added",
+    "a_teacher_create": "Teacher added",
+    "a_class_create": "Group created",
+    "a_enroll": "Enrolment",
+    "a_attendance_mark": "Attendance saved",
+    "a_payment_mark_paid": "Payment collected",
+    "a_payment_mark_month_paid": "Month collected",
+    "a_teacher_pay": "Payout sent",
+    "a_enrollment_request": "Enrolment request",
+    "a_form_group": "Group formed",
+    "a_registration_approve": "Account approved",
+    "a_registration_reject": "Account rejected",
+    "d_student_create": "Added student {{name}}",
+    "d_teacher_create": "Added teacher {{name}}",
+    "d_class_create": "New group {{slot}}",
+    "d_enroll": "{{name}} enrolled in a group",
+    "d_attendance_mark": "Attendance saved ({{n}} students)",
+    "d_payment_mark_paid": "Payment collected — {{name}}",
+    "d_payment_mark_month_paid": "Month {{month}} collected ({{n}} sessions)",
+    "d_teacher_pay": "Payout to {{name}}: {{amount}}",
+    "d_enrollment_request": "{{subject}} / {{teacher}}",
+    "d_form_group": "{{teacher}} — {{n}} student(s)",
+    "d_registration_approve": "Account approved: {{name}}",
+    "d_registration_reject": "Account rejected: {{name}}"
   },
   "pmt": {
     "subtitle": "Collection tracking for {{month}}.",
@@ -743,7 +807,8 @@
     "k_available": "{{pct}}% available",
     "k_led": "Led",
     "k_covered": "Covered",
-    "none_filtered": "No teacher matches this search."
+    "none_filtered": "No teacher matches this search.",
+    "cannot_delete": "Teaches {{n}} group(s) — cannot be deleted"
   },
   "att": {
     "title_call": "Take the register",
@@ -803,7 +868,8 @@
     "extra_hint": "It is added to the day's session instead of replacing it.",
     "extra_short": "Extra",
     "fill_present": "Present",
-    "fill_absent": "Absent"
+    "fill_absent": "Absent",
+    "not_enrolled_yet": "Not enrolled yet"
   },
   "hz": {
     "brand_sub": "SKILLS ACADEMY",
@@ -1371,5 +1437,54 @@
     "cycle_ap": "Primary (5 years)",
     "cycle_am": "Middle school (4 years)",
     "cycle_as": "Secondary (3 years)"
+  },
+  "media": {
+    "classroom_alt": "Classroom at Horizon Academy, Constantine",
+    "toggle_autoplay": "Start or stop automatic scrolling"
+  },
+  "tf": {
+    "cut_example": "Example on a 10,000 DA session:"
+  },
+  "sync": {
+    "tables_missing": "The database is out of date — some pages will stay empty.",
+    "columns_missing": "Saved, but some fields are not stored yet.",
+    "load_failed": "Some data could not be loaded.",
+    "migration_hint": "The app still works: fields the database does not know yet are dropped on save. To enable everything, open Supabase → SQL Editor, paste the file {{file}}, click Run, then click “Recheck” here.",
+    "hide_detail": "Hide details",
+    "show_detail": "Show details ({{n}})",
+    "write_refused": "write refused: ",
+    "column_dropped": "saved without the column: ",
+    "read_failed": "could not be read: ",
+    "rechecking": "Checking…",
+    "recheck": "Recheck"
+  },
+  "doc": {
+    "att_title": "Attendance statement",
+    "att_rate": "Attendance rate",
+    "att_done": "Sessions attended",
+    "att_excused": "Excused absences",
+    "att_missed": "Absences",
+    "col_date": "Date",
+    "col_subject": "Subject",
+    "col_teacher": "Teacher",
+    "col_slot": "Slot",
+    "col_state": "Status",
+    "att_empty": "No session in this period.",
+    "generated": "{{school}} — document generated on {{date}}.",
+    "popup_att": "Allow pop-ups to print the statement.",
+    "popup_inv": "Allow pop-ups to print the invoices.",
+    "inv_title": "Invoices",
+    "inv_subtitle": "Language centre — Algeria",
+    "col_progress": "Progress",
+    "col_price": "Price/session",
+    "col_paid": "Paid",
+    "col_due": "Due",
+    "inv_empty": "No enrolment.",
+    "total_paid": "Total paid: {{amount}}",
+    "total_due": "Total due: {{amount}}",
+    "thanks": "{{school}} — Thank you for your trust.",
+    "issued_on": "Issued on {{date}}",
+    "invoice_for": "Invoice — {{name}}",
+    "parent": "Parent: {{name}} · {{phone}}"
   }
 }
