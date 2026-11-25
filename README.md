@@ -1,85 +1,89 @@
-# Horizon Skills Academy — School Management System
+# Horizon Skills Academy
 
-Application de gestion pour un centre de langues en Algérie (inscriptions, présence,
-paiements, emploi du temps, synchro Google Sheets). Basée sur le cahier des charges v1.1.
+School management app for **Horizon Skills Academy**, a language and tutoring center in Constantine, Algeria. It replaces paper registers and spreadsheets with one tool for the three people who use it every day: the director, the teachers and the students.
 
-## Stack (adaptée vers Tauri)
+Built with **Tauri 2, React 19, TypeScript and Supabase**, so a single codebase ships as a desktop app for the office, a mobile app and a web app (PWA). Arabic is the default language, with a full right-to-left layout; French and English are one click away.
 
-| Couche        | Techno                              | Rôle |
-|---------------|-------------------------------------|------|
-| Coquille app  | **Tauri 2** (Rust)                  | Desktop (admin) + Mobile iOS/Android (profs/étudiants) + PWA — un seul codebase |
-| Frontend      | **React 19 + TypeScript + Vite**    | Toute l'UI |
-| Données/Auth  | **Firebase** (Firestore + Auth)     | Temps réel, offline-first, rôles |
-| Notifications | **Firebase FCM + WhatsApp**         | Push + relances |
-| Backup        | **Google Sheets** (Apps Script)     | Miroir temps réel |
-| i18n          | **i18next** — Arabe (RTL) d'abord   | + Français |
+![Public landing page](docs/screenshots/landing.jpg)
 
-> Choix Tauri plutôt que Next.js + Flutter : un seul projet React/TS se compile à la
-> fois en desktop et en mobile natif. Firebase est conservé pour le offline-first et
-> l'auth par rôles.
+## Features
 
-## Mode démo (par défaut)
+**Enrollment and accounts**
+- Public landing page with the school's programs, methods and contact details
+- Students and teachers sign up themselves; the admin approves or refuses each request (e-mail notification on decision)
+- Role-based access: admin, teacher and student each get their own space and navigation
 
-Tant qu'aucune clé Firebase n'est fournie, l'app tourne en **mode démo** : toutes les
-données vivent dans un store local (localStorage) pré-rempli de données réalistes. On
-peut donc tout tester immédiatement — se connecter en tant qu'admin / prof / étudiant,
-inscrire des élèves, construire l'emploi du temps, pointer la présence, encaisser des
-paiements, générer des factures — **sans backend**. Remplir `.env` bascule
-automatiquement sur Firebase (`DEMO_MODE` dans [src/lib/config.ts](src/lib/config.ts)).
+**Teaching**
+- Subjects, levels (Algerian school years) and groups
+- Weekly timetable that only offers slots where both the room and the teacher are free, with room capacity and conflict checks
+- Attendance in three states (present, absent and billed, absent and free), with a session note visible to parents and an editable history
 
-## Démarrage
+**Money**
+- Payment engine that follows each session: what every student owes, month by month
+- Each fee split between the school and the teacher, as a percentage or a fixed amount
+- Grouped invoices, teacher payroll and a "month paid" status visible to the teacher
+
+**Running the school**
+- Role-based dashboards built on live data, analytics (revenue per month, per subject, school share per teacher) and an activity log
+- In-app notifications: daily digest, payment reminders, slot requests
+
+**Reliability**
+- Offline-first: every action updates a local store instantly, then syncs through an outbox
+- Real-time sync with Supabase and Row Level Security on every table
+- Automatic backup of the data to a Google Sheet
+- Demo mode: with no backend configured, the whole app runs on realistic sample data
+
+## Screenshots
+
+| Admin dashboard | Timetable |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.jpg) | ![Timetable](docs/screenshots/schedule.jpg) |
+| **Attendance** | **Payments** |
+| ![Attendance](docs/screenshots/attendance.jpg) | ![Payments](docs/screenshots/payments.jpg) |
+
+Arabic, right-to-left (default language):
+
+![Dashboard in Arabic](docs/screenshots/dashboard_ar.jpg)
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| App shell | Tauri 2 (Rust): desktop, Android / iOS and PWA from one codebase |
+| Front end | React 19, TypeScript, Vite, React Router |
+| State | Zustand store, offline outbox |
+| Back end | Supabase: Postgres, Auth, Realtime, Row Level Security, pg_cron |
+| i18n | i18next: Arabic (RTL), French, English |
+| Integrations | Google Sheets backup (Apps Script), EmailJS |
+| Validation | Zod |
+
+## Getting started
 
 ```bash
 npm install
-npm run dev               # frontend web sur http://localhost:1420 (mode démo)
-npm run tauri dev         # app desktop native
-
-# Pour brancher Firebase :
-cp .env.example .env      # remplir avec la config Firebase
+npm run dev          # web app on http://localhost:1420 (demo mode by default)
+npm run tauri dev    # native desktop app
+npm test             # rules, store, attendance, i18n and a full-month journey
+npm run build        # type-check + production build
 ```
 
-Pour le mobile (Android) : `npm run tauri android init` puis `npm run tauri android dev`.
+To connect a real backend, copy `.env.example` to `.env`, fill in your Supabase project URL and anon key, then run the SQL files in `supabase/` as described in [DEPLOY.md](DEPLOY.md). Without those two variables the app stays in demo mode.
 
-## Structure
+Android: `npm run tauri android init`, then `npm run tauri android dev`.
+
+## Project structure
 
 ```
 src/
-  lib/                 # cœur non-UI
-    firebase.ts        # init Firebase (Firestore offline + Auth + FCM)
-    types.ts           # types de toutes les collections Firestore + noms de collections
-    payments.ts        # calcul part école/prof (% ou fixe), facturation — pur, testable
-    schedule.ts        # vérif créneaux libres (§5.2) — pur, testable
-    i18n.ts            # config i18next, RTL auto
-  locales/             # ar.json (défaut), fr.json
-  features/            # une feature = un dossier
-    auth/              # AuthContext (RBAC), LoginPage
-    dashboard/         # accueil selon le rôle
-    students/  teachers/  schedule/  attendance/  payments/  notifications/
-  app/                 # coquille : AppLayout, ProtectedRoute, navigation par rôle
-  components/          # UI partagée
-  styles/              # global.css (thème simple, gros boutons, clair/sombre, RTL)
-src-tauri/             # projet Rust/Tauri (config, icônes, capabilities)
-firestore.rules        # règles de sécurité RBAC (§9)
+  app/          app shell, protected routes, navigation per role
+  features/     one folder per feature: auth, registration, students, teachers,
+                subjects, schedule, sessions, attendance, payments, payroll,
+                notifications, analytics, activity, dashboard, discover, courses
+  data/         Zustand store, Supabase sync, demo seed
+  lib/          pure logic (payments, schedule, permissions), types, i18n, config
+  locales/      ar.json, fr.json, en.json
+  layouts/      public and app layouts
+supabase/       schema, migrations, RLS hardening, automation, Apps Script
+src-tauri/      Tauri (Rust) project
+tests/          test suites run in demo mode
 ```
-
-## Feuille de route (mappée sur le cahier §10)
-
-- [x] **P1** Projet + structure
-- [x] **P2** Auth + 3 rôles + routing protégé *(règles Firestore fournies)*
-- [x] **P3** Schéma + types TypeScript + store local
-- [x] **P4** Gestion étudiants / enseignants / matières (formulaires + enrôlement + filtres)
-- [x] **P5** Emploi du temps — grille free-slot complète (add/edit/déplacer/supprimer, conflits, capacité)
-- [x] **P6** Présence (3 états, historique, notif parent en démo)
-- [x] **P7** Moteur de paiement (%/fixe, dette par séance, séance X/Y, relances, facture PDF)
-- [x] **P10** Notifications in-app (digest quotidien, relances, demandes de créneaux)
-- [ ] **P8** Synchro Google Sheets (6 onglets) — *à faire au déploiement*
-- [ ] **Firebase** brancher Firestore/Auth/FCM réels (remplacer le store démo)
-- [ ] **P9** Build mobile → **Tauri mobile** (Android/iOS)
-- [ ] **P11** Déploiement + PWA + APK Android
-
-Tout ce qui est coché fonctionne **dès maintenant** en mode démo.
-
-## Prochaine étape
-
-Créer le projet Firebase, remplir `.env`, écrire la couche de sync Firestore ↔ store,
-déployer `firestore.rules`, puis Google Sheets + build mobile.

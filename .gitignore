@@ -28,3 +28,6 @@ dist-ssr
 *.sln
 *.sw?
 .env.demo
+
+# Local AI tooling (skills, launch config)
+.claude/

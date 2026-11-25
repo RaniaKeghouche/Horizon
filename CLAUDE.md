@@ -9,10 +9,9 @@ Horizon Skills Academy — a school-management app for a language center in Alge
 shell) + React 19 + TypeScript + Vite, so the same codebase builds to desktop, mobile
 (Android/iOS), and PWA.
 
-**The README describes an older Firebase-based design.** The code has since migrated to
-Supabase (Postgres + Auth + Realtime) — trust the source, in particular
-`src/lib/config.ts`, over the README when the two disagree. Filenames like `fb.ts` /
-`firebaseSync.ts` are leftover naming from that migration; they now wrap Supabase.
+The backend is Supabase (Postgres + Auth + Realtime); `src/lib/config.ts` is the source of
+truth for the runtime mode. Filenames like `fb.ts` / `firebaseSync.ts` are leftover naming
+from an earlier Firebase version; they now wrap Supabase.
 
 ## Commands
 
